@@ -1,0 +1,7 @@
+apiVersion: meteor.operate-first.cloud/v1alpha1
+kind: Meteor
+metadata:
+  name: meteor-sample
+spec:
+  # Add fields here
+  foo: bar
