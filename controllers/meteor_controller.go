@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -37,17 +38,44 @@ type MeteorReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+const MeteorPipelineAnnotation = "meteor.operate-first.cloud/pipeline"
+
 // Submit a Tekton PipelineRun from a collection
 func createPipelineRun(ctx *context.Context, meteor *meteorv1alpha1.Meteor, r *MeteorReconciler, pipelineName string) {
 	logger := log.FromContext(*ctx)
 	pipelineRun := &pipelinev1beta1.PipelineRun{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: string(meteor.UID),
+			Name: fmt.Sprintf("meteor-%s-%s", pipelineName, meteor.UID),
+			Annotations: map[string]string{
+				MeteorPipelineAnnotation: pipelineName,
+			},
 		},
 		Spec: pipelinev1beta1.PipelineRunSpec{
 			PipelineRef: &pipelinev1beta1.PipelineRef{
-				Name:   pipelineName,
-				Bundle: "quay.io/aicoe/meteor-tekton-bundle:latest",
+				Name: pipelineName,
+			},
+			Params: []pipelinev1beta1.Param{
+				{
+					Name: "url",
+					Value: pipelinev1beta1.ArrayOrString{
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: meteor.Spec.Url,
+					},
+				},
+				{
+					Name: "ref",
+					Value: pipelinev1beta1.ArrayOrString{
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: meteor.Spec.Ref,
+					},
+				},
+				{
+					Name: "uid",
+					Value: pipelinev1beta1.ArrayOrString{
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: string(meteor.GetUID()),
+					},
+				},
 			},
 		},
 	}
@@ -56,6 +84,14 @@ func createPipelineRun(ctx *context.Context, meteor *meteorv1alpha1.Meteor, r *M
 	if err := r.Client.Create(*ctx, pipelineRun); err != nil {
 		logger.Error(err, fmt.Sprintf("Unable to instantiate %s pipeline", pipelineName))
 	}
+
+	meta.SetStatusCondition(&meteor.Status.Conditions, metav1.Condition{
+		Type:               pipelineName,
+		Status:             "True",
+		Reason:             "BuildStated",
+		Message:            "Tekton pipeline was submitted.",
+		ObservedGeneration: meteor.GetGeneration(),
+	})
 }
 
 //+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteors,verbs=get;list;watch;create;update;patch;delete
@@ -86,6 +122,7 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		createPipelineRun(&ctx, meteor, r, "jupyterHub")
 	}
 
+	meteor.Status.ObservedGeneration = meteor.GetGeneration()
 	return ctrl.Result{}, nil
 }
 

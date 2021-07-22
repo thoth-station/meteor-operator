@@ -29,33 +29,12 @@ type MeteorSpec struct {
 	// Branch or tag or commit reference within the repository.
 	Ref string `json:"ref"`
 	// Time to live after the resource was created. If empty default ttl will be enforced.
-	TTL int `json:"ttl"`
+	TTL int64 `json:"ttl"`
 }
 
 type MeteorImage struct {
 	Name  string `json:"name"`
 	Image string `json:"image"`
-}
-
-type MeteorCondition struct {
-	// Type is the type of the condition.
-	// Currently only JupyterHub, JupyterBook, Deployment.
-	Type string `json:"type"`
-	// Status is the status of the condition.
-	// Can be Unknown, Ready, Progressing, Failed.
-	Status string `json:"status"`
-	// Last time we probed the condition.
-	// +optional
-	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty"`
-	// Last time the condition transitioned from one status to another.
-	// +optional
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
-	// Unique, one-word, CamelCase reason for the condition's last transition.
-	// +optional
-	Reason string `json:"reason,omitempty"`
-	// Human-readable message indicating details about last transition.
-	// +optional
-	Message string `json:"message,omitempty"`
 }
 
 // MeteorStatus defines the observed state of Meteor
@@ -65,7 +44,7 @@ type MeteorStatus struct {
 	Phase string `json:"phase,omitempty"`
 	// Current service state of Meteor.
 	// +optional
-	Conditions []MeteorCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 	// A human readable message indicating details about why the Meteor is in this condition.
 	// +optional
 	Message string `json:"message,omitempty"`
@@ -85,6 +64,9 @@ type MeteorStatus struct {
 	// Once created the expiration clock starts ticking.
 	// +optional
 	ExpireAt metav1.Time `json:"expireAt,omitempty"`
+	// Most recent observed generation of Meteor. Sanity check.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -122,7 +104,7 @@ func (m *Meteor) FilterImages(name string) *MeteorImage {
 	return nil
 }
 
-func (m *Meteor) FilterConditions(name string) *MeteorCondition {
+func (m *Meteor) FilterConditions(name string) *metav1.Condition {
 	for _, mc := range m.Status.Conditions {
 		if mc.Type == name {
 			return &mc
