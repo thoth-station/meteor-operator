@@ -124,11 +124,8 @@ func (in *MeteorStatus) DeepCopyInto(out *MeteorStatus) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if in.Images != nil {
-		in, out := &in.Images, &out.Images
-		*out = make([]MeteorImage, len(*in))
-		copy(*out, *in)
-	}
+	out.JupyterBook = in.JupyterBook
+	out.JupyterHub = in.JupyterHub
 	in.ExpireAt.DeepCopyInto(&out.ExpireAt)
 }
 

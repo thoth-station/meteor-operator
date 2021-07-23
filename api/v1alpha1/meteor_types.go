@@ -33,8 +33,14 @@ type MeteorSpec struct {
 }
 
 type MeteorImage struct {
-	Name  string `json:"name"`
+	// ImageStream name. Empty if not yet created.
+	// +optional
+	ImageStreamName string `json:"name,omitempty"`
+	// Container image name. Points to a constainer registry.
 	Image string `json:"image"`
+	// Url to a running deployment. Routable at least within the cluster. Empty if not yet scheduled.
+	// +optional
+	Url string `json:"url,omitempty"`
 }
 
 // MeteorStatus defines the observed state of Meteor
@@ -52,15 +58,12 @@ type MeteorStatus struct {
 	// e.g. 'DiskPressure'
 	// +optional
 	Reason string `json:"reason,omitempty"`
-	// JupyterBook host for the Meteor. Routable at least within the cluster. Empty if not yet scheduled.
+	// JupyterBook deployment of Meteor. Empty if not created.
 	// +optional
-	JupyterBook string `json:"jupyterBook,omitempty"`
-	// JupyterHub ImageStream name for the Meteor. Empty if not yet created.
+	JupyterBook MeteorImage `json:"jupyterBook,omitempty"`
+	// JupyterHub image of Meteor. Empty if not created.
 	// +optional
-	JupyterHub string `json:"jupyterHub,omitempty"`
-	// Images built from the source for this Meteor. Empty if no image is built yet.
-	// +optional
-	Images []MeteorImage `json:"images,omitempty"`
+	JupyterHub MeteorImage `json:"jupyterHub,omitempty"`
 	// Once created the expiration clock starts ticking.
 	// +optional
 	ExpireAt metav1.Time `json:"expireAt,omitempty"`
@@ -94,16 +97,6 @@ func init() {
 	SchemeBuilder.Register(&Meteor{}, &MeteorList{})
 }
 
-// Filter Meteor images by name
-func (m *Meteor) FilterImages(name string) *MeteorImage {
-	for _, mi := range m.Status.Images {
-		if mi.Name == name {
-			return &mi
-		}
-	}
-	return nil
-}
-
 func (m *Meteor) FilterConditions(name string) *metav1.Condition {
 	for _, mc := range m.Status.Conditions {
 		if mc.Type == name {
@@ -111,8 +104,4 @@ func (m *Meteor) FilterConditions(name string) *metav1.Condition {
 		}
 	}
 	return nil
-}
-
-func (m *Meteor) ReadyToStartPipeline(name string) bool {
-	return m.FilterImages(name) == nil && m.FilterConditions(name).Status == "Unknown"
 }

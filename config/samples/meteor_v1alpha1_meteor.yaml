@@ -1,7 +1,8 @@
 apiVersion: meteor.operate-first.cloud/v1alpha1
 kind: Meteor
 metadata:
-  name: meteor-sample
+  name: demo
 spec:
-  # Add fields here
-  foo: bar
+  url: github.com/aicoe-aiops/meteor-demo
+  ref: main
+  ttl: 100000

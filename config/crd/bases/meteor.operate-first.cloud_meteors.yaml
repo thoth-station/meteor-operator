@@ -129,28 +129,38 @@ spec:
                 description: Once created the expiration clock starts ticking.
                 format: date-time
                 type: string
-              images:
-                description: Images built from the source for this Meteor. Empty if
-                  no image is built yet.
-                items:
-                  properties:
-                    image:
-                      type: string
-                    name:
-                      type: string
-                  required:
-                  - image
-                  - name
-                  type: object
-                type: array
               jupyterBook:
-                description: JupyterBook host for the Meteor. Routable at least within
-                  the cluster. Empty if not yet scheduled.
-                type: string
+                description: JupyterBook deployment of Meteor. Empty if not created.
+                properties:
+                  image:
+                    description: Container image name. Points to a constainer registry.
+                    type: string
+                  name:
+                    description: ImageStream name. Empty if not yet created.
+                    type: string
+                  url:
+                    description: Url to a running deployment. Routable at least within
+                      the cluster. Empty if not yet scheduled.
+                    type: string
+                required:
+                - image
+                type: object
               jupyterHub:
-                description: JupyterHub ImageStream name for the Meteor. Empty if
-                  not yet created.
-                type: string
+                description: JupyterHub image of Meteor. Empty if not created.
+                properties:
+                  image:
+                    description: Container image name. Points to a constainer registry.
+                    type: string
+                  name:
+                    description: ImageStream name. Empty if not yet created.
+                    type: string
+                  url:
+                    description: Url to a running deployment. Routable at least within
+                      the cluster. Empty if not yet scheduled.
+                    type: string
+                required:
+                - image
+                type: object
               message:
                 description: A human readable message indicating details about why
                   the Meteor is in this condition.
