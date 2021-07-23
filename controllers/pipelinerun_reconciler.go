@@ -22,7 +22,7 @@ func updatePipelineRunStatus(meteor *meteorv1alpha1.Meteor, name string, status 
 // Submit a Tekton PipelineRun from a collection
 func (r *MeteorReconciler) ReconcilePipelineRun(pipelineName string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor, status *meteorv1alpha1.MeteorImage) error {
 	logger := log.FromContext(*ctx)
-	pipelineRunName := fmt.Sprintf("meteor-%s-%s", pipelineName, meteor.GetUID())
+	pipelineRunName := fmt.Sprintf(meteor.InterpolateResourceName(meteorv1alpha1.PipelineRun), pipelineName)
 	pipelineRun := &pipelinev1beta1.PipelineRun{}
 
 	if err := r.Get(*ctx, types.NamespacedName{Name: pipelineRunName, Namespace: req.NamespacedName.Namespace}, pipelineRun); err != nil {

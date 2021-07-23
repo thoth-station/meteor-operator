@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -72,6 +73,10 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	meteor := &meteorv1alpha1.Meteor{}
 	if err := r.Get(ctx, req.NamespacedName, meteor); err != nil {
+		if errors.IsNotFound(err) {
+			logger.Info("Resource deleted.")
+			return ctrl.Result{}, nil
+		}
 		logger.Error(err, "Unable to fetch reconciled resource.")
 		return ctrl.Result{Requeue: true}, err
 	}

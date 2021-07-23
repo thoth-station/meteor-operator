@@ -36,7 +36,8 @@ Install `dlv` via `go get -u github.com/go-delve/delve/cmd/dlv`
 #### Launch
 
 1. Log in to your cluster via `oc login`
-2. Start VSCode debugging session by selecting `Meteor Operator` profile
+2. Install CRDs via `make install`
+3. Start VSCode debugging session by selecting `Meteor Operator` profile
 
 ### Run from local machine without debugging
 
@@ -63,4 +64,3 @@ kustomize build config/dev | oc apply -f -
 ## Known issues
 
 - Webhooks are currently disabled due to certificate issues
-- Leader elect is currently disabled

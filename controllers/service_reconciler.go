@@ -23,7 +23,7 @@ func updateServiceStatus(meteor *meteorv1alpha1.Meteor, name string, status meta
 func (r *MeteorReconciler) ReconcileService(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor) error {
 	logger := log.FromContext(*ctx)
 	service := &v1.Service{}
-	serviceName := "meteor-" + string(meteor.GetUID())
+	serviceName := meteor.InterpolateResourceName(meteorv1alpha1.Service)
 	newSpec := &v1.ServiceSpec{
 		Ports:    []v1.ServicePort{{Name: "http", Protocol: v1.ProtocolTCP, TargetPort: intstr.FromInt(8080), Port: 8080}},
 		Selector: MeteorLabels(meteor),

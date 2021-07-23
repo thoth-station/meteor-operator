@@ -27,7 +27,7 @@ func updateDeploymentStatus(meteor *meteorv1alpha1.Meteor, name string, status m
 func (r *MeteorReconciler) ReconcileDeployment(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor) error {
 	logger := log.FromContext(*ctx)
 	deployment := &appsv1.Deployment{}
-	deploymentName := "meteor-" + string(meteor.GetUID())
+	deploymentName := meteor.InterpolateResourceName(meteorv1alpha1.Deployment)
 	deploymentLabels := MeteorLabels(meteor)
 	newSpec := &appsv1.DeploymentSpec{
 		Selector: &metav1.LabelSelector{
