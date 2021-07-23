@@ -42,3 +42,25 @@ Install `dlv` via `go get -u github.com/go-delve/delve/cmd/dlv`
 
 1. Log in to your cluster via `oc login`
 2. Run `make install run ENABLE_WEBHOOKS=false`
+
+## Quick deploy via operator-sdk
+
+Run following commands. Operator will be deployed to `aicoe-meteor` namespace
+
+```sh
+podman login ...
+
+make docker-build
+
+podman tag controller:latest quay.io/<your_account>/meteor-operator:latest
+podman push quay.io/<your_account>/meteor-operator:latest
+
+make deploy
+
+kustomize build config/dev | oc apply -f -
+```
+
+## Known issues
+
+- Webhooks are currently disabled due to certificate issues
+- Leader elect is currently disabled

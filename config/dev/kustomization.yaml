@@ -1,0 +1,6 @@
+# This is a custom devel folder suitable for deployment on openshift, change imagestream reference before applying
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+    - imagestream.yaml

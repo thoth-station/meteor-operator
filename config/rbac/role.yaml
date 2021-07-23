@@ -59,6 +59,32 @@ rules:
   - patch
   - update
 - apiGroups:
+  - image.openshift.io
+  resources:
+  - imagestreams
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - image.openshift.io
+  resources:
+  - imagestreams/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - image.openshift.io
+  resources:
+  - imagestreams/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - meteor.operate-first.cloud
   resources:
   - meteors

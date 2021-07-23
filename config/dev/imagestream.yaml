@@ -1,0 +1,15 @@
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+    name: controller
+spec:
+    lookupPolicy:
+        local: true
+    tags:
+        - name: latest
+          from:
+              kind: DockerImage
+              name: quay.io/tcoufal/meteor-operator:latest
+          importPolicy:
+              scheduled: true

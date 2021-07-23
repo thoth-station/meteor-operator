@@ -28,7 +28,10 @@ spec:
       - command:
         - /manager
         args:
-        - --leader-elect
+        # - --leader-elect
+        env:
+          - name: ENABLE_WEBHOOKS
+            value: "false"
         image: controller:latest
         name: manager
         securityContext:
@@ -48,9 +51,9 @@ spec:
         resources:
           limits:
             cpu: 100m
-            memory: 30Mi
+            memory: 150Mi
           requests:
             cpu: 100m
-            memory: 20Mi
+            memory: 100Mi
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
