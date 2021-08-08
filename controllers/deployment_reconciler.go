@@ -27,7 +27,7 @@ func updateDeploymentStatus(meteor *meteorv1alpha1.Meteor, name string, status m
 func (r *MeteorReconciler) ReconcileDeployment(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor) error {
 	logger := log.FromContext(*ctx)
 	deployment := &appsv1.Deployment{}
-	deploymentName := meteor.InterpolateResourceName(meteorv1alpha1.Deployment)
+	deploymentName := meteor.GetName()
 	deploymentLabels := MeteorLabels(meteor)
 	newSpec := &appsv1.DeploymentSpec{
 		Selector: &metav1.LabelSelector{
@@ -41,7 +41,7 @@ func (r *MeteorReconciler) ReconcileDeployment(name string, ctx *context.Context
 				Containers: []v1.Container{
 					{
 						Name:  name,
-						Image: GetImageName(req.Namespace, name, meteor.GetUID()),
+						Image: fmt.Sprintf("%s-%s", meteor.GetName(), name),
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
 								v1.ResourceCPU:    resource.MustParse("100m"),

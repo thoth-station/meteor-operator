@@ -21,10 +21,10 @@ func updateRouteStatus(meteor *meteorv1alpha1.Meteor, name string, status metav1
 func (r *MeteorReconciler) ReconcileRoute(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor, status *meteorv1alpha1.MeteorImage) error {
 	logger := log.FromContext(*ctx)
 	route := &routev1.Route{}
-	routeName := meteor.InterpolateResourceName(meteorv1alpha1.Route)
+	routeName := meteor.GetName()
 	routeLabels := MeteorLabels(meteor)
 	newSpec := &routev1.RouteSpec{
-		To: routev1.RouteTargetReference{Kind: "Service", Name: meteor.InterpolateResourceName(meteorv1alpha1.Service)},
+		To: routev1.RouteTargetReference{Kind: "Service", Name: meteor.GetName()},
 	}
 
 	if err := r.Get(*ctx, types.NamespacedName{Name: routeName, Namespace: req.NamespacedName.Namespace}, route); err != nil {

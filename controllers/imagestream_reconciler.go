@@ -22,8 +22,8 @@ func (r *MeteorReconciler) ReconcileImageStream(name string, ctx *context.Contex
 	logger := log.FromContext(*ctx)
 
 	imagestream := &imagev1.ImageStream{}
-	imagestreamName := meteor.InterpolateResourceName(meteorv1alpha1.ImageStream)
-	imageName := GetImageName(req.Namespace, name, meteor.GetUID())
+	imagestreamName := meteor.GetName()
+	imageName := fmt.Sprintf(ImageFormatter, req.Namespace, meteor.GetName(), name)
 	imagestreamLabels := MeteorLabels(meteor)
 	imagestreamLabels["opendatahub.io/notebook-image"] = "true"
 
