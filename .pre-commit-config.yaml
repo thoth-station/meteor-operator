@@ -4,6 +4,7 @@ repos:
     rev: v1.1.9
     hooks:
       - id: remove-tabs
+        exclude: Makefile|.*\.go|.*\.mod
 
   - repo: git://github.com/pre-commit/pre-commit-hooks
     rev: v3.3.0
@@ -11,9 +12,11 @@ repos:
       - id: trailing-whitespace
       - id: check-merge-conflict
       - id: end-of-file-fixer
+        exclude: .*\.go\.txt
       - id: check-added-large-files
       - id: check-case-conflict
       - id: check-json
+        exclude: \.vscode/.*
       - id: check-symlinks
       - id: detect-private-key
 

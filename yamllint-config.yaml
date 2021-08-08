@@ -7,3 +7,5 @@ rules:
     indent-sequences: whatever
   hyphens:
     max-spaces-after: 4
+  empty-lines: disable
+  comments: disable
