@@ -36,11 +36,12 @@ type MeteorImage struct {
 	// ImageStream name. Empty if not yet created.
 	// +optional
 	ImageStreamName string `json:"name,omitempty"`
-	// Container image name. Points to a constainer registry.
-	Image string `json:"image"`
 	// Url to a running deployment. Routable at least within the cluster. Empty if not yet scheduled.
 	// +optional
 	Url string `json:"url,omitempty"`
+	// True if build completed successfully.
+	// +optional
+	Ready string `json:"ready,omitempty"`
 }
 
 // MeteorStatus defines the observed state of Meteor

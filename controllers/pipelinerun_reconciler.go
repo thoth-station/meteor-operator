@@ -87,9 +87,8 @@ func (r *MeteorReconciler) ReconcilePipelineRun(pipelineName string, ctx *contex
 		condition := pipelineRun.Status.Conditions[0]
 		updatePipelineRunStatus(meteor, pipelineName, metav1.ConditionStatus(condition.Status), condition.Reason, condition.Message)
 	}
-	if pipelineRun.Status.CompletionTime != nil {
-		// FIXME do only if succesfull
-		status.Image = GetImageName(req.Namespace, pipelineName, meteor.GetUID())
+	if pipelineRun.Status.CompletionTime != nil && pipelineRun.Status.Conditions[0].Reason == "Succeeded" {
+		status.Ready = "True"
 	}
 	return nil
 }
