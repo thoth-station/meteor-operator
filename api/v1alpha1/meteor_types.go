@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"time"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -94,15 +96,24 @@ type MeteorList struct {
 	Items           []Meteor `json:"items"`
 }
 
+// Add to scheme
 func init() {
 	SchemeBuilder.Register(&Meteor{}, &MeteorList{})
 }
 
-func (m *Meteor) FilterConditions(name string) *metav1.Condition {
-	for _, mc := range m.Status.Conditions {
-		if mc.Type == name {
-			return &mc
-		}
-	}
-	return nil
+// Return true if TTL is reached
+func (m *Meteor) IsTTLReached() bool {
+	return m.GetCreationTimestamp().Add(time.Duration(m.Spec.TTL) * time.Second).Before(time.Now())
+}
+
+const (
+	MeteorPipelineLabel   = "meteor.operate-first.cloud/pipeline"
+	MeteorDeploymentLabel = "meteor.operate-first.cloud/deployment"
+	MeteorLabel           = "meteor.operate-first.cloud/meteor"
+	ODHJupyterHubLabel    = "opendatahub.io/notebook-image"
+)
+
+// Pre-populate labels for children resources
+func (m *Meteor) SeedLabels() map[string]string {
+	return map[string]string{MeteorLabel: string(m.GetUID())}
 }

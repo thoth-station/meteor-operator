@@ -19,19 +19,17 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-func updateDeploymentStatus(meteor *meteorv1alpha1.Meteor, name string, status metav1.ConditionStatus, reason, message string) {
-	updateStatus(meteor, "Deployment", name, status, reason, message)
-}
-
 // Reconciler for a deployment owned from Metor
-func (r *MeteorReconciler) ReconcileDeployment(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor) error {
+func (r *MeteorReconciler) ReconcileDeployment(name string, ctx *context.Context, req ctrl.Request) error {
 	res := &appsv1.Deployment{}
-	resourceName := meteor.GetName()
+	resourceName := r.Meteor.GetName()
 	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
 
 	logger := log.FromContext(*ctx).WithValues("deployment", namespacedName)
 
-	labels := MeteorLabels(meteor)
+	labels := r.Meteor.SeedLabels()
+	labels[meteorv1alpha1.MeteorDeploymentLabel] = name
+
 	newSpec := &appsv1.DeploymentSpec{
 		Selector: &metav1.LabelSelector{
 			MatchLabels: labels,
@@ -44,7 +42,7 @@ func (r *MeteorReconciler) ReconcileDeployment(name string, ctx *context.Context
 				Containers: []v1.Container{
 					{
 						Name:  name,
-						Image: fmt.Sprintf("%s-%s", meteor.GetName(), name),
+						Image: fmt.Sprintf("%s-%s", r.Meteor.GetName(), name),
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
 								v1.ResourceCPU:    resource.MustParse("100m"),
@@ -57,6 +55,9 @@ func (r *MeteorReconciler) ReconcileDeployment(name string, ctx *context.Context
 		},
 	}
 
+	updateStatus := func(status metav1.ConditionStatus, reason, message string) {
+		r.UpdateStatus(r.Meteor, "Deployment", name, status, reason, message)
+	}
 	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Info("Creating Deployment")
@@ -68,20 +69,20 @@ func (r *MeteorReconciler) ReconcileDeployment(name string, ctx *context.Context
 				},
 				Spec: *newSpec,
 			}
-			controllerutil.SetControllerReference(meteor, res, r.Scheme)
+			controllerutil.SetControllerReference(r.Meteor, res, r.Scheme)
 
 			if err := r.Create(*ctx, res); err != nil {
 				logger.Error(err, "Unable to create Deployment")
-				updateDeploymentStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to create deployment. %s", err))
+				updateStatus(metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to create deployment. %s", err))
 				return err
 			}
 
-			updateDeploymentStatus(meteor, name, metav1.ConditionTrue, "Created", "Deployment was created.")
+			updateStatus(metav1.ConditionTrue, "Created", "Deployment was created.")
 			return nil
 		}
 		logger.Error(err, "Error fetching Deployment")
 
-		updateDeploymentStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
+		updateStatus(metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
 		return err
 	}
 
@@ -89,10 +90,10 @@ func (r *MeteorReconciler) ReconcileDeployment(name string, ctx *context.Context
 		res.Spec = *newSpec
 		if err := r.Update(*ctx, res); err != nil {
 			logger.Error(err, "Unable to update Deployment")
-			updateDeploymentStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to update deployment. %s", err))
+			updateStatus(metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to update deployment. %s", err))
 			return err
 		}
 	}
-	updateDeploymentStatus(meteor, name, metav1.ConditionTrue, "Ready", "Deployment was reconciled successfully.")
+	updateStatus(metav1.ConditionTrue, "Ready", "Deployment was reconciled successfully.")
 	return nil
 }

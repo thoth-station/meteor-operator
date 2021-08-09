@@ -15,19 +15,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func updateImageStreamStatus(meteor *meteorv1alpha1.Meteor, name string, status metav1.ConditionStatus, reason, message string) {
-	updateStatus(meteor, "ImageStream", name, status, reason, message)
-}
-func (r *MeteorReconciler) ReconcileImageStream(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor, status *meteorv1alpha1.MeteorImage) error {
+func (r *MeteorReconciler) ReconcileImageStream(name string, ctx *context.Context, req ctrl.Request, status *meteorv1alpha1.MeteorImage) error {
 	res := &imagev1.ImageStream{}
-	resourceName := fmt.Sprintf("%s-%s", meteor.GetName(), name)
+	resourceName := fmt.Sprintf("%s-%s", r.Meteor.GetName(), name)
 	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
 
 	logger := log.FromContext(*ctx).WithValues("imagestream", namespacedName)
 
-	imageName := fmt.Sprintf(ImageFormatter, req.Namespace, meteor.GetName(), name)
-	labels := MeteorLabels(meteor)
-	labels["opendatahub.io/notebook-image"] = "true"
+	imageName := fmt.Sprintf(ImageFormatter, req.Namespace, r.Meteor.GetName(), name)
+	labels := r.Meteor.SeedLabels()
+	labels[meteorv1alpha1.ODHJupyterHubLabel] = "true"
 
 	newSpec := &imagev1.ImageStreamSpec{
 		LookupPolicy: imagev1.ImageLookupPolicy{Local: true},
@@ -47,6 +44,9 @@ func (r *MeteorReconciler) ReconcileImageStream(name string, ctx *context.Contex
 			},
 		},
 	}
+	updateStatus := func(status metav1.ConditionStatus, reason, message string) {
+		r.UpdateStatus(r.Meteor, "ImageStream", name, status, reason, message)
+	}
 
 	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if errors.IsNotFound(err) {
@@ -58,25 +58,25 @@ func (r *MeteorReconciler) ReconcileImageStream(name string, ctx *context.Contex
 					Namespace: req.NamespacedName.Namespace,
 					Labels:    labels,
 					Annotations: map[string]string{
-						"opendatahub.io/notebook-image-url":  meteor.Spec.Url,
-						"opendatahub.io/notebook-image-name": meteor.GetName(),
+						"opendatahub.io/notebook-image-url":  r.Meteor.Spec.Url,
+						"opendatahub.io/notebook-image-name": r.Meteor.GetName(),
 						"opendatahub.io/notebook-image-desc": fmt.Sprintf("JupyterHub image for Meteor %s", resourceName),
 					},
 				},
 				Spec: *newSpec,
 			}
-			controllerutil.SetControllerReference(meteor, res, r.Scheme)
+			controllerutil.SetControllerReference(r.Meteor, res, r.Scheme)
 
 			if err := r.Create(*ctx, res); err != nil {
 				logger.Error(err, "Unable to create ImageStream")
-				updateImageStreamStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to create ImageStream. %s", err))
+				updateStatus(metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to create ImageStream. %s", err))
 				return err
 			}
-			updateImageStreamStatus(meteor, name, metav1.ConditionTrue, "Created", "ImageStream was created.")
+			updateStatus(metav1.ConditionTrue, "Created", "ImageStream was created.")
 			return nil
 		}
 		logger.Error(err, "Error fetching ImageStream")
-		updateImageStreamStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
+		updateStatus(metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
 		return err
 	}
 
@@ -85,11 +85,11 @@ func (r *MeteorReconciler) ReconcileImageStream(name string, ctx *context.Contex
 	// 	imagestream.Spec = *newSpec
 	// 	if err := r.Update(*ctx, imagestream); err != nil {
 	// 		logger.Error(err, "Unable to update ImageStream %s")
-	// 		updateImageStreamStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to update imagestream. %s", err))
+	// 		updateStatus(metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to update imagestream. %s", err))
 	// 		return err
 	// 	}
 	// }
 	status.ImageStreamName = resourceName
-	updateImageStreamStatus(meteor, name, metav1.ConditionTrue, "Ready", "Imagestream was reconciled successfully.")
+	updateStatus(metav1.ConditionTrue, "Ready", "Imagestream was reconciled successfully.")
 	return nil
 }

@@ -18,9 +18,10 @@ package controllers
 
 import (
 	"context"
-	"time"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -32,12 +33,15 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // MeteorReconciler reconciles a Meteor object
 type MeteorReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+	Meteor *meteorv1alpha1.Meteor
 }
 
 //+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteors,verbs=get;list;watch;create;update;patch;delete
@@ -70,9 +74,8 @@ type MeteorReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
 func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
-
-	meteor := &meteorv1alpha1.Meteor{}
-	if err := r.Get(ctx, req.NamespacedName, meteor); err != nil {
+	r.Meteor = &meteorv1alpha1.Meteor{}
+	if err := r.Get(ctx, req.NamespacedName, r.Meteor); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Info("Resource deleted")
 			return ctrl.Result{}, nil
@@ -80,53 +83,65 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		logger.Error(err, "Unable to fetch reconciled resource")
 		return ctrl.Result{Requeue: true}, err
 	}
-	meteor.Status.ObservedGeneration = meteor.GetGeneration()
-	meteor.Status.Phase = "Running"
+	r.Meteor.Status.ObservedGeneration = r.Meteor.GetGeneration()
+	r.Meteor.Status.Phase = "Running"
 
-	if meteor.CreationTimestamp.Add(time.Duration(meteor.Spec.TTL) * time.Second).Before(time.Now()) {
+	if r.Meteor.IsTTLReached() {
 		logger.Info("TTL reached")
-		if err := r.Delete(ctx, meteor); err != nil {
+		if err := r.Delete(ctx, r.Meteor); err != nil {
 			logger.Error(err, "Failed to delete")
 			return ctrl.Result{Requeue: true}, err
 		}
 		return ctrl.Result{}, nil
 	}
 
-	if err := r.ReconcilePipelineRun("jupyterbook", &ctx, req, meteor, &meteor.Status.JupyterBook); err != nil {
-		return r.UpdateStatusNow(ctx, meteor, err)
+	if err := r.ReconcilePipelineRun("jupyterbook", &ctx, req, &r.Meteor.Status.JupyterBook); err != nil {
+		return r.UpdateStatusNow(ctx, err)
 	}
-	if err := r.ReconcileImageStream("jupyterbook", &ctx, req, meteor, &meteor.Status.JupyterBook); err != nil {
-		return r.UpdateStatusNow(ctx, meteor, err)
+	if err := r.ReconcileImageStream("jupyterbook", &ctx, req, &r.Meteor.Status.JupyterBook); err != nil {
+		return r.UpdateStatusNow(ctx, err)
 	}
-	if err := r.ReconcilePipelineRun("jupyterhub", &ctx, req, meteor, &meteor.Status.JupyterHub); err != nil {
-		return r.UpdateStatusNow(ctx, meteor, err)
+	if err := r.ReconcilePipelineRun("jupyterhub", &ctx, req, &r.Meteor.Status.JupyterHub); err != nil {
+		return r.UpdateStatusNow(ctx, err)
 	}
-	if err := r.ReconcileImageStream("jupyterhub", &ctx, req, meteor, &meteor.Status.JupyterHub); err != nil {
-		return r.UpdateStatusNow(ctx, meteor, err)
-	}
-
-	if meteor.Status.JupyterBook.Ready == "True" {
-		if err := r.ReconcileDeployment("jupyterbook", &ctx, req, meteor); err != nil {
-			return r.UpdateStatusNow(ctx, meteor, err)
-		}
-		if err := r.ReconcileService("jupyterbook", &ctx, req, meteor); err != nil {
-			return r.UpdateStatusNow(ctx, meteor, err)
-		}
-		if err := r.ReconcileRoute("jupyterbook", &ctx, req, meteor, &meteor.Status.JupyterBook); err != nil {
-			return r.UpdateStatusNow(ctx, meteor, err)
-		}
+	if err := r.ReconcileImageStream("jupyterhub", &ctx, req, &r.Meteor.Status.JupyterHub); err != nil {
+		return r.UpdateStatusNow(ctx, err)
 	}
 
-	return r.UpdateStatusNow(ctx, meteor, nil)
+	if r.Meteor.Status.JupyterBook.Ready == "True" {
+		if err := r.ReconcileDeployment("jupyterbook", &ctx, req); err != nil {
+			return r.UpdateStatusNow(ctx, err)
+		}
+		if err := r.ReconcileService("jupyterbook", &ctx, req); err != nil {
+			return r.UpdateStatusNow(ctx, err)
+		}
+		if err := r.ReconcileRoute("jupyterbook", &ctx, req, &r.Meteor.Status.JupyterBook); err != nil {
+			return r.UpdateStatusNow(ctx, err)
+		}
+	}
+
+	return r.UpdateStatusNow(ctx, nil)
 }
 
-func (r *MeteorReconciler) UpdateStatusNow(ctx context.Context, meteor *meteorv1alpha1.Meteor, originalErr error) (ctrl.Result, error) {
+// Force object status update. Returns a reconcile result
+func (r *MeteorReconciler) UpdateStatusNow(ctx context.Context, originalErr error) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
-	if err := r.Status().Update(ctx, meteor); err != nil {
+	if err := r.Status().Update(ctx, r.Meteor); err != nil {
 		logger.WithValues("reason", err.Error()).Info("Unable to update status, retrying")
 		return ctrl.Result{Requeue: true}, nil
 	}
-	return ctrl.Result{RequeueAfter: requeue}, originalErr
+	return ctrl.Result{RequeueAfter: RequeueAfter}, originalErr
+}
+
+// Set status condition helper
+func (r *MeteorReconciler) UpdateStatus(meteor *meteorv1alpha1.Meteor, kind, name string, status metav1.ConditionStatus, reason, message string) {
+	meta.SetStatusCondition(&meteor.Status.Conditions, metav1.Condition{
+		Type:               kind + strings.Title(name),
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		ObservedGeneration: meteor.GetGeneration(),
+	})
 }
 
 // SetupWithManager sets up the controller with the Manager.
