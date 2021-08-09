@@ -63,6 +63,28 @@ func (r *MeteorReconciler) ReconcilePipelineRun(pipelineName string, ctx *contex
 							},
 						},
 					},
+					Resources: []pipelinev1beta1.PipelineResource{
+						{
+							Name: "git-repo",
+							Value: pipelinev1beta1.PipelineResourceSpec{
+								Type: pipelinev1beta1.PipelineResourceTypeGit,
+								Params: []pipelinev1beta1.ResourceParam{
+									{
+										Name: "url",
+										Value: pipelinev1beta1.ArrayOrString{
+											Type: pipelinev1beta1.ParamTypeString,
+											StringVal: meteor.Spec.Url,
+									},
+									{
+										Name: "revision",
+										Value: pipelinev1beta1.ArrayOrString{
+											Type: pipelinev1beta1.ParamTypeString,
+											StringVal: meteor.Spec.Ref,
+									},
+								}
+							},
+						}
+					},
 				},
 			}
 			controllerutil.SetControllerReference(meteor, pipelineRun, r.Scheme)
