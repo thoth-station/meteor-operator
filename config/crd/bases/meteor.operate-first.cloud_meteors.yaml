@@ -132,34 +132,30 @@ spec:
               jupyterBook:
                 description: JupyterBook deployment of Meteor. Empty if not created.
                 properties:
-                  image:
-                    description: Container image name. Points to a constainer registry.
-                    type: string
                   name:
                     description: ImageStream name. Empty if not yet created.
+                    type: string
+                  ready:
+                    description: True if build completed successfully.
                     type: string
                   url:
                     description: Url to a running deployment. Routable at least within
                       the cluster. Empty if not yet scheduled.
                     type: string
-                required:
-                - image
                 type: object
               jupyterHub:
                 description: JupyterHub image of Meteor. Empty if not created.
                 properties:
-                  image:
-                    description: Container image name. Points to a constainer registry.
-                    type: string
                   name:
                     description: ImageStream name. Empty if not yet created.
+                    type: string
+                  ready:
+                    description: True if build completed successfully.
                     type: string
                   url:
                     description: Url to a running deployment. Routable at least within
                       the cluster. Empty if not yet scheduled.
                     type: string
-                required:
-                - image
                 type: object
               message:
                 description: A human readable message indicating details about why

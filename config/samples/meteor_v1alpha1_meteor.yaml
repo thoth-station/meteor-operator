@@ -5,4 +5,4 @@ metadata:
 spec:
   url: github.com/aicoe-aiops/meteor-demo
   ref: main
-  ttl: 100000
+  ttl: 150

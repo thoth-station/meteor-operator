@@ -19,51 +19,53 @@ func updateRouteStatus(meteor *meteorv1alpha1.Meteor, name string, status metav1
 	updateStatus(meteor, "Route", name, status, reason, message)
 }
 func (r *MeteorReconciler) ReconcileRoute(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor, status *meteorv1alpha1.MeteorImage) error {
-	logger := log.FromContext(*ctx)
-	route := &routev1.Route{}
-	routeName := meteor.InterpolateResourceName(meteorv1alpha1.Route)
-	routeLabels := MeteorLabels(meteor)
+	res := &routev1.Route{}
+	resourceName := meteor.GetName()
+	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
+
+	logger := log.FromContext(*ctx).WithValues("route", namespacedName)
+
+	labels := MeteorLabels(meteor)
 	newSpec := &routev1.RouteSpec{
-		To: routev1.RouteTargetReference{Kind: "Service", Name: meteor.InterpolateResourceName(meteorv1alpha1.Service)},
+		To: routev1.RouteTargetReference{Kind: "Service", Name: meteor.GetName()},
 	}
 
-	if err := r.Get(*ctx, types.NamespacedName{Name: routeName, Namespace: req.NamespacedName.Namespace}, route); err != nil {
+	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if errors.IsNotFound(err) {
-			route = &routev1.Route{
+			logger.Info("Creating Route")
+			res = &routev1.Route{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      routeName,
+					Name:      resourceName,
 					Namespace: req.NamespacedName.Namespace,
-					Labels:    routeLabels,
+					Labels:    labels,
 				},
 				Spec: *newSpec,
 			}
-			controllerutil.SetControllerReference(meteor, route, r.Scheme)
+			controllerutil.SetControllerReference(meteor, res, r.Scheme)
 
-			if err := r.Create(*ctx, route); err != nil {
-				logger.Error(err, fmt.Sprintf("Unable to create route %s", routeName))
+			if err := r.Create(*ctx, res); err != nil {
+				logger.Error(err, "Unable to create Route")
 				updateRouteStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to create route. %s", err))
 				return err
 			}
 
-			logger.Info(fmt.Sprintf("Route '%s' created.", routeName))
 			updateRouteStatus(meteor, name, metav1.ConditionTrue, "Created", "Route was created.")
 			return nil
 		}
-		logger.Error(err, fmt.Sprintf("Error fetching '%s' route.", routeName))
+		logger.Error(err, "Error fetching Route.")
 		updateRouteStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
 		return err
 	}
 
-	if !reflect.DeepEqual(route.Spec, *newSpec) {
-		route.Spec = *newSpec
-		if err := r.Update(*ctx, route); err != nil {
-			logger.Error(err, fmt.Sprintf("Unable to update route %s", routeName))
+	if !reflect.DeepEqual(res.Spec, *newSpec) {
+		res.Spec = *newSpec
+		if err := r.Update(*ctx, res); err != nil {
+			logger.Error(err, "Unable to update Route")
 			updateRouteStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to update route. %s", err))
 			return err
 		}
-		logger.Info(fmt.Sprintf("Route '%s' updated.", routeName))
 	}
-	status.Url = route.Spec.Host
+	status.Url = res.Spec.Host
 	updateRouteStatus(meteor, name, metav1.ConditionTrue, "Ready", "Route was reconciled successfully.")
 	return nil
 }

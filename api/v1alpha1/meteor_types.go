@@ -17,8 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"fmt"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -38,11 +36,12 @@ type MeteorImage struct {
 	// ImageStream name. Empty if not yet created.
 	// +optional
 	ImageStreamName string `json:"name,omitempty"`
-	// Container image name. Points to a constainer registry.
-	Image string `json:"image"`
 	// Url to a running deployment. Routable at least within the cluster. Empty if not yet scheduled.
 	// +optional
 	Url string `json:"url,omitempty"`
+	// True if build completed successfully.
+	// +optional
+	Ready string `json:"ready,omitempty"`
 }
 
 // MeteorStatus defines the observed state of Meteor
@@ -107,23 +106,3 @@ func (m *Meteor) FilterConditions(name string) *metav1.Condition {
 	}
 	return nil
 }
-
-func (m *Meteor) InterpolateResourceName(kind ChildrenKind) string {
-	switch kind {
-	case Route, Service, Deployment, ImageStream:
-		return fmt.Sprintf("meteor-%s", m.GetName())
-	case PipelineRun:
-		return "meteor-%s-" + string(m.GetName())
-	}
-	return string(m.GetName())
-}
-
-type ChildrenKind int
-
-const (
-	Route ChildrenKind = iota
-	Service
-	Deployment
-	ImageStream
-	PipelineRun
-)

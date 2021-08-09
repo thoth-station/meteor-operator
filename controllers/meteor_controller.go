@@ -18,7 +18,7 @@ package controllers
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -74,21 +74,38 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	meteor := &meteorv1alpha1.Meteor{}
 	if err := r.Get(ctx, req.NamespacedName, meteor); err != nil {
 		if errors.IsNotFound(err) {
-			logger.Info("Resource deleted.")
+			logger.Info("Resource deleted")
 			return ctrl.Result{}, nil
 		}
-		logger.Error(err, "Unable to fetch reconciled resource.")
+		logger.Error(err, "Unable to fetch reconciled resource")
 		return ctrl.Result{Requeue: true}, err
+	}
+	meteor.Status.ObservedGeneration = meteor.GetGeneration()
+	meteor.Status.Phase = "Running"
+
+	if meteor.CreationTimestamp.Add(time.Duration(meteor.Spec.TTL) * time.Second).Before(time.Now()) {
+		logger.Info("TTL reached")
+		if err := r.Delete(ctx, meteor); err != nil {
+			logger.Error(err, "Failed to delete")
+			return ctrl.Result{Requeue: true}, err
+		}
+		return ctrl.Result{}, nil
 	}
 
 	if err := r.ReconcilePipelineRun("jupyterbook", &ctx, req, meteor, &meteor.Status.JupyterBook); err != nil {
 		return r.UpdateStatusNow(ctx, meteor, err)
 	}
+	if err := r.ReconcileImageStream("jupyterbook", &ctx, req, meteor, &meteor.Status.JupyterBook); err != nil {
+		return r.UpdateStatusNow(ctx, meteor, err)
+	}
 	if err := r.ReconcilePipelineRun("jupyterhub", &ctx, req, meteor, &meteor.Status.JupyterHub); err != nil {
 		return r.UpdateStatusNow(ctx, meteor, err)
 	}
+	if err := r.ReconcileImageStream("jupyterhub", &ctx, req, meteor, &meteor.Status.JupyterHub); err != nil {
+		return r.UpdateStatusNow(ctx, meteor, err)
+	}
 
-	if meteor.Status.JupyterBook.Image != "" {
+	if meteor.Status.JupyterBook.Ready == "True" {
 		if err := r.ReconcileDeployment("jupyterbook", &ctx, req, meteor); err != nil {
 			return r.UpdateStatusNow(ctx, meteor, err)
 		}
@@ -99,24 +116,17 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			return r.UpdateStatusNow(ctx, meteor, err)
 		}
 	}
-	if meteor.Status.JupyterHub.Image != "" {
-		if err := r.ReconcileImageStream("jupyterhub", &ctx, req, meteor, &meteor.Status.JupyterHub); err != nil {
-			return r.UpdateStatusNow(ctx, meteor, err)
-		}
-	}
 
-	meteor.Status.ObservedGeneration = meteor.GetGeneration()
-	meteor.Status.Phase = "Running"
 	return r.UpdateStatusNow(ctx, meteor, nil)
 }
 
 func (r *MeteorReconciler) UpdateStatusNow(ctx context.Context, meteor *meteorv1alpha1.Meteor, originalErr error) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 	if err := r.Status().Update(ctx, meteor); err != nil {
-		logger.Error(err, fmt.Sprintf("Unable to update meteor status %s", meteor.GetName()))
-		return ctrl.Result{}, err
+		logger.WithValues("reason", err.Error()).Info("Unable to update status, retrying")
+		return ctrl.Result{Requeue: true}, nil
 	}
-	return ctrl.Result{}, originalErr
+	return ctrl.Result{RequeueAfter: requeue}, originalErr
 }
 
 // SetupWithManager sets up the controller with the Manager.
