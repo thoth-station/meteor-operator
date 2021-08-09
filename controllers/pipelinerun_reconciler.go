@@ -11,6 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
+	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -67,27 +68,24 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 							},
 						},
 					},
-					Resources: []pipelinev1beta1.PipelineResource{
+					Resources: []pipelinev1beta1.PipelineResourceBinding{
 						{
 							Name: "git-repo",
-							Value: pipelinev1beta1.PipelineResourceSpec{
+							ResourceSpec: &pipelinev1alpha1.PipelineResourceSpec{
 								Type: pipelinev1beta1.PipelineResourceTypeGit,
 								Params: []pipelinev1beta1.ResourceParam{
 									{
-										Name: "url",
-										Value: pipelinev1beta1.ArrayOrString{
-											Type: pipelinev1beta1.ParamTypeString,
-											StringVal: meteor.Spec.Url,
+										Name:  "url",
+										Value: r.Meteor.Spec.Url,
 									},
+
 									{
-										Name: "revision",
-										Value: pipelinev1beta1.ArrayOrString{
-											Type: pipelinev1beta1.ParamTypeString,
-											StringVal: meteor.Spec.Ref,
+										Name:  "revision",
+										Value: r.Meteor.Spec.Ref,
 									},
-								}
+								},
 							},
-						}
+						},
 					},
 				},
 			}
