@@ -19,13 +19,15 @@ func updateImageStreamStatus(meteor *meteorv1alpha1.Meteor, name string, status 
 	updateStatus(meteor, "ImageStream", name, status, reason, message)
 }
 func (r *MeteorReconciler) ReconcileImageStream(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor, status *meteorv1alpha1.MeteorImage) error {
-	logger := log.FromContext(*ctx)
+	res := &imagev1.ImageStream{}
+	resourceName := fmt.Sprintf("%s-%s", meteor.GetName(), name)
+	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
 
-	imagestream := &imagev1.ImageStream{}
-	imagestreamName := meteor.GetName()
+	logger := log.FromContext(*ctx).WithValues("imagestream", namespacedName)
+
 	imageName := fmt.Sprintf(ImageFormatter, req.Namespace, meteor.GetName(), name)
-	imagestreamLabels := MeteorLabels(meteor)
-	imagestreamLabels["opendatahub.io/notebook-image"] = "true"
+	labels := MeteorLabels(meteor)
+	labels["opendatahub.io/notebook-image"] = "true"
 
 	newSpec := &imagev1.ImageStreamSpec{
 		LookupPolicy: imagev1.ImageLookupPolicy{Local: true},
@@ -46,34 +48,34 @@ func (r *MeteorReconciler) ReconcileImageStream(name string, ctx *context.Contex
 		},
 	}
 
-	if err := r.Get(*ctx, types.NamespacedName{Name: imagestreamName, Namespace: req.NamespacedName.Namespace}, imagestream); err != nil {
+	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if errors.IsNotFound(err) {
-			imagestream = &imagev1.ImageStream{
+			logger.Info("Creating ImageStream")
+
+			res = &imagev1.ImageStream{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      imagestreamName,
+					Name:      resourceName,
 					Namespace: req.NamespacedName.Namespace,
-					Labels:    imagestreamLabels,
+					Labels:    labels,
 					Annotations: map[string]string{
 						"opendatahub.io/notebook-image-url":  meteor.Spec.Url,
 						"opendatahub.io/notebook-image-name": meteor.GetName(),
-						"opendatahub.io/notebook-image-desc": fmt.Sprintf("JupyterHub image for Meteor %s", imagestreamName),
+						"opendatahub.io/notebook-image-desc": fmt.Sprintf("JupyterHub image for Meteor %s", resourceName),
 					},
 				},
 				Spec: *newSpec,
 			}
-			controllerutil.SetControllerReference(meteor, imagestream, r.Scheme)
+			controllerutil.SetControllerReference(meteor, res, r.Scheme)
 
-			if err := r.Create(*ctx, imagestream); err != nil {
-				logger.Error(err, fmt.Sprintf("Unable to create imagestream %s", imagestreamName))
-				updateImageStreamStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to create imagestream. %s", err))
+			if err := r.Create(*ctx, res); err != nil {
+				logger.Error(err, "Unable to create ImageStream")
+				updateImageStreamStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to create ImageStream. %s", err))
 				return err
 			}
-
-			logger.Info(fmt.Sprintf("Imagestream '%s' created.", imagestreamName))
-			updateImageStreamStatus(meteor, name, metav1.ConditionTrue, "Created", "Imagestream was created.")
+			updateImageStreamStatus(meteor, name, metav1.ConditionTrue, "Created", "ImageStream was created.")
 			return nil
 		}
-		logger.Error(err, fmt.Sprintf("Error fetching '%s' imagestream.", imagestreamName))
+		logger.Error(err, "Error fetching ImageStream")
 		updateImageStreamStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
 		return err
 	}
@@ -82,13 +84,12 @@ func (r *MeteorReconciler) ReconcileImageStream(name string, ctx *context.Contex
 	// if !reflect.DeepEqual(imagestream.Spec, *newSpec) {
 	// 	imagestream.Spec = *newSpec
 	// 	if err := r.Update(*ctx, imagestream); err != nil {
-	// 		logger.Error(err, fmt.Sprintf("Unable to update imagestream %s", imagestreamName))
+	// 		logger.Error(err, "Unable to update ImageStream %s")
 	// 		updateImageStreamStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to update imagestream. %s", err))
 	// 		return err
 	// 	}
-	// 	logger.Info(fmt.Sprintf("Imagestream '%s' updated.", imagestreamName))
 	// }
-	status.ImageStreamName = imagestreamName
+	status.ImageStreamName = resourceName
 	updateImageStreamStatus(meteor, name, metav1.ConditionTrue, "Ready", "Imagestream was reconciled successfully.")
 	return nil
 }

@@ -21,49 +21,51 @@ func updateServiceStatus(meteor *meteorv1alpha1.Meteor, name string, status meta
 }
 
 func (r *MeteorReconciler) ReconcileService(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor) error {
-	logger := log.FromContext(*ctx)
-	service := &v1.Service{}
-	serviceName := meteor.GetName()
+	res := &v1.Service{}
+	resourceName := meteor.GetName()
+	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
+
+	logger := log.FromContext(*ctx).WithValues("service", namespacedName)
+
 	newSpec := &v1.ServiceSpec{
 		Ports:    []v1.ServicePort{{Name: "http", Protocol: v1.ProtocolTCP, TargetPort: intstr.FromInt(8080), Port: 8080}},
 		Selector: MeteorLabels(meteor),
 	}
 
-	if err := r.Get(*ctx, types.NamespacedName{Name: serviceName, Namespace: req.NamespacedName.Namespace}, service); err != nil {
+	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if errors.IsNotFound(err) {
-			service = &v1.Service{
+			logger.Info("Creating Service")
+
+			res = &v1.Service{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      serviceName,
+					Name:      resourceName,
 					Namespace: req.NamespacedName.Namespace,
 				},
 				Spec: *newSpec,
 			}
 
-			controllerutil.SetControllerReference(meteor, service, r.Scheme)
-			if err := r.Create(*ctx, service); err != nil {
-				logger.Error(err, fmt.Sprintf("Unable to create service %s", serviceName))
+			controllerutil.SetControllerReference(meteor, res, r.Scheme)
+			if err := r.Create(*ctx, res); err != nil {
+				logger.Error(err, "Unable to create Service")
 				updateServiceStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to create service. %s", err))
 				return err
 			}
 
-			logger.Info(fmt.Sprintf("Service '%s' created.", serviceName))
 			updateServiceStatus(meteor, name, metav1.ConditionTrue, "Created", "Service was created.")
 			return nil
 		}
-		logger.Error(err, fmt.Sprintf("Error fetching '%s' service.", serviceName))
+		logger.Error(err, "Error fetching Service")
 		updateServiceStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
 		return err
 	}
 
-	if !reflect.DeepEqual(service.Spec.Selector, newSpec.Selector) || !reflect.DeepEqual(service.Spec.Ports, newSpec.Ports) {
-		service.Spec = *newSpec
-		if err := r.Update(*ctx, service); err != nil {
-			logger.Error(err, fmt.Sprintf("Unable to update service %s", serviceName))
+	if !reflect.DeepEqual(res.Spec.Selector, newSpec.Selector) || !reflect.DeepEqual(res.Spec.Ports, newSpec.Ports) {
+		res.Spec = *newSpec
+		if err := r.Update(*ctx, res); err != nil {
+			logger.Error(err, "Unable to update Service")
 			updateServiceStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Unable to update service. %s", err))
 			return err
 		}
-		logger.Info(fmt.Sprintf("Service '%s' updated.", serviceName))
-
 	}
 	updateServiceStatus(meteor, name, metav1.ConditionTrue, "Ready", "Service was reconciled successfully.")
 	return nil

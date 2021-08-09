@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -75,19 +74,19 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	meteor := &meteorv1alpha1.Meteor{}
 	if err := r.Get(ctx, req.NamespacedName, meteor); err != nil {
 		if errors.IsNotFound(err) {
-			logger.Info("Resource deleted.")
-			return ctrl.Result{RequeueAfter: requeue}, nil
+			logger.Info("Resource deleted")
+			return ctrl.Result{}, nil
 		}
-		logger.Error(err, "Unable to fetch reconciled resource.")
+		logger.Error(err, "Unable to fetch reconciled resource")
 		return ctrl.Result{Requeue: true}, err
 	}
 	meteor.Status.ObservedGeneration = meteor.GetGeneration()
 	meteor.Status.Phase = "Running"
 
-	if meteor.CreationTimestamp.Add(time.Duration(meteor.Spec.TTL)).Before(time.Now()) {
-		logger.Info(fmt.Sprintf("TTL reached for %s, deleting", meteor.GetName()))
+	if meteor.CreationTimestamp.Add(time.Duration(meteor.Spec.TTL) * time.Second).Before(time.Now()) {
+		logger.Info("TTL reached")
 		if err := r.Delete(ctx, meteor); err != nil {
-			logger.Error(err, fmt.Sprintf("Failed to delete %s", meteor.GetName()))
+			logger.Error(err, "Failed to delete")
 			return ctrl.Result{Requeue: true}, err
 		}
 		return ctrl.Result{}, nil
@@ -124,8 +123,8 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 func (r *MeteorReconciler) UpdateStatusNow(ctx context.Context, meteor *meteorv1alpha1.Meteor, originalErr error) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 	if err := r.Status().Update(ctx, meteor); err != nil {
-		logger.Error(err, fmt.Sprintf("Unable to update meteor status %s", meteor.GetName()))
-		return ctrl.Result{RequeueAfter: requeue}, err
+		logger.WithValues("reason", err.Error()).Info("Unable to update status, retrying")
+		return ctrl.Result{Requeue: true}, nil
 	}
 	return ctrl.Result{RequeueAfter: requeue}, originalErr
 }

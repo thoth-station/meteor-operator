@@ -20,25 +20,28 @@ func updatePipelineRunStatus(meteor *meteorv1alpha1.Meteor, name string, status 
 }
 
 // Submit a Tekton PipelineRun from a collection
-func (r *MeteorReconciler) ReconcilePipelineRun(pipelineName string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor, status *meteorv1alpha1.MeteorImage) error {
-	logger := log.FromContext(*ctx)
-	pipelineRunName := fmt.Sprintf("%s-%s", meteor.GetName(), pipelineName)
-	pipelineRun := &pipelinev1beta1.PipelineRun{}
+func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor, status *meteorv1alpha1.MeteorImage) error {
+	res := &pipelinev1beta1.PipelineRun{}
+	resourceName := fmt.Sprintf("%s-%s", meteor.GetName(), name)
+	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
 
-	if err := r.Get(*ctx, types.NamespacedName{Name: pipelineRunName, Namespace: req.NamespacedName.Namespace}, pipelineRun); err != nil {
+	logger := log.FromContext(*ctx).WithValues("pipelinerun", namespacedName)
+
+	labels := MeteorLabels(meteor)
+	labels[MeteorPipelineLabel] = name
+	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if errors.IsNotFound(err) {
-			pipelineRun = &pipelinev1beta1.PipelineRun{
+			logger.Info("Creating PipelineRun")
+
+			res = &pipelinev1beta1.PipelineRun{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      pipelineRunName,
+					Name:      resourceName,
 					Namespace: req.NamespacedName.Namespace,
-					Labels: map[string]string{
-						MeteorPipelineLabel: pipelineName,
-						MeteorLabel:         string(meteor.GetUID()),
-					},
+					Labels:    labels,
 				},
 				Spec: pipelinev1beta1.PipelineRunSpec{
 					PipelineRef: &pipelinev1beta1.PipelineRef{
-						Name: pipelineName,
+						Name: name,
 					},
 					Params: []pipelinev1beta1.Param{
 						{
@@ -65,29 +68,30 @@ func (r *MeteorReconciler) ReconcilePipelineRun(pipelineName string, ctx *contex
 					},
 				},
 			}
-			controllerutil.SetControllerReference(meteor, pipelineRun, r.Scheme)
+			controllerutil.SetControllerReference(meteor, res, r.Scheme)
 
-			if err := r.Create(*ctx, pipelineRun); err != nil {
-				logger.Error(err, fmt.Sprintf("Unable to instantiate %s pipelinerun", pipelineName))
-				updatePipelineRunStatus(meteor, pipelineName, metav1.ConditionTrue, "CreateError", fmt.Sprintf("Unable to create pipelinerun. %s", err))
+			if err := r.Create(*ctx, res); err != nil {
+				logger.Error(err, "Unable to create PipelineRun")
+				updatePipelineRunStatus(meteor, name, metav1.ConditionTrue, "CreateError", fmt.Sprintf("Unable to create pipelinerun. %s", err))
 				return err
 			}
-			updatePipelineRunStatus(meteor, pipelineName, metav1.ConditionTrue, "BuildStated", "Tekton pipeline was submitted.")
+			updatePipelineRunStatus(meteor, name, metav1.ConditionTrue, "BuildStated", "Tekton pipeline was submitted.")
 			return nil
 		}
+		logger.Error(err, "Error fetching PipelineRun")
 
-		updatePipelineRunStatus(meteor, pipelineName, metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
+		updatePipelineRunStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
 		return err
 	}
 
-	if len(pipelineRun.Status.Conditions) > 0 {
-		if len(pipelineRun.Status.Conditions) != 1 {
-			logger.Error(nil, "Tekton should not report more than one condition, using the first one only")
+	if len(res.Status.Conditions) > 0 {
+		if len(res.Status.Conditions) != 1 {
+			logger.Error(nil, "Tekton reported multiple conditions")
 		}
-		condition := pipelineRun.Status.Conditions[0]
-		updatePipelineRunStatus(meteor, pipelineName, metav1.ConditionStatus(condition.Status), condition.Reason, condition.Message)
+		condition := res.Status.Conditions[0]
+		updatePipelineRunStatus(meteor, name, metav1.ConditionStatus(condition.Status), condition.Reason, condition.Message)
 	}
-	if pipelineRun.Status.CompletionTime != nil && pipelineRun.Status.Conditions[0].Reason == "Succeeded" {
+	if res.Status.CompletionTime != nil && res.Status.Conditions[0].Reason == "Succeeded" {
 		status.Ready = "True"
 	}
 	return nil
