@@ -11,24 +11,26 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
+	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func updatePipelineRunStatus(meteor *meteorv1alpha1.Meteor, name string, status metav1.ConditionStatus, reason, message string) {
-	updateStatus(meteor, "PipelineRun", name, status, reason, message)
-}
-
 // Submit a Tekton PipelineRun from a collection
-func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Context, req ctrl.Request, meteor *meteorv1alpha1.Meteor, status *meteorv1alpha1.MeteorImage) error {
+func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Context, req ctrl.Request, status *meteorv1alpha1.MeteorImage) error {
 	res := &pipelinev1beta1.PipelineRun{}
-	resourceName := fmt.Sprintf("%s-%s", meteor.GetName(), name)
+	resourceName := fmt.Sprintf("%s-%s", r.Meteor.GetName(), name)
 	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
 
 	logger := log.FromContext(*ctx).WithValues("pipelinerun", namespacedName)
 
-	labels := MeteorLabels(meteor)
-	labels[MeteorPipelineLabel] = name
+	labels := r.Meteor.SeedLabels()
+	labels[meteorv1alpha1.MeteorPipelineLabel] = name
+
+	updateStatus := func(status metav1.ConditionStatus, reason, message string) {
+		r.UpdateStatus(r.Meteor, "PipelineRun", name, status, reason, message)
+	}
+
 	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Info("Creating PipelineRun")
@@ -48,61 +50,58 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 							Name: "url",
 							Value: pipelinev1beta1.ArrayOrString{
 								Type:      pipelinev1beta1.ParamTypeString,
-								StringVal: meteor.Spec.Url,
+								StringVal: r.Meteor.Spec.Url,
 							},
 						},
 						{
 							Name: "ref",
 							Value: pipelinev1beta1.ArrayOrString{
 								Type:      pipelinev1beta1.ParamTypeString,
-								StringVal: meteor.Spec.Ref,
+								StringVal: r.Meteor.Spec.Ref,
 							},
 						},
 						{
 							Name: "uid",
 							Value: pipelinev1beta1.ArrayOrString{
 								Type:      pipelinev1beta1.ParamTypeString,
-								StringVal: string(meteor.GetUID()),
+								StringVal: string(r.Meteor.GetUID()),
 							},
 						},
 					},
-					Resources: []pipelinev1beta1.PipelineResource{
+					Resources: []pipelinev1beta1.PipelineResourceBinding{
 						{
 							Name: "git-repo",
-							Value: pipelinev1beta1.PipelineResourceSpec{
+							ResourceSpec: &pipelinev1alpha1.PipelineResourceSpec{
 								Type: pipelinev1beta1.PipelineResourceTypeGit,
 								Params: []pipelinev1beta1.ResourceParam{
 									{
-										Name: "url",
-										Value: pipelinev1beta1.ArrayOrString{
-											Type: pipelinev1beta1.ParamTypeString,
-											StringVal: meteor.Spec.Url,
+										Name:  "url",
+										Value: r.Meteor.Spec.Url,
 									},
+
 									{
-										Name: "revision",
-										Value: pipelinev1beta1.ArrayOrString{
-											Type: pipelinev1beta1.ParamTypeString,
-											StringVal: meteor.Spec.Ref,
+										Name:  "revision",
+										Value: r.Meteor.Spec.Ref,
 									},
-								}
+								},
 							},
-						}
+						},
 					},
 				},
 			}
-			controllerutil.SetControllerReference(meteor, res, r.Scheme)
+			controllerutil.SetControllerReference(r.Meteor, res, r.Scheme)
 
 			if err := r.Create(*ctx, res); err != nil {
 				logger.Error(err, "Unable to create PipelineRun")
-				updatePipelineRunStatus(meteor, name, metav1.ConditionTrue, "CreateError", fmt.Sprintf("Unable to create pipelinerun. %s", err))
+				updateStatus(metav1.ConditionTrue, "CreateError", fmt.Sprintf("Unable to create pipelinerun. %s", err))
 				return err
 			}
-			updatePipelineRunStatus(meteor, name, metav1.ConditionTrue, "BuildStated", "Tekton pipeline was submitted.")
+			updateStatus(metav1.ConditionTrue, "BuildStated", "Tekton pipeline was submitted.")
 			return nil
 		}
 		logger.Error(err, "Error fetching PipelineRun")
 
-		updatePipelineRunStatus(meteor, name, metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
+		updateStatus(metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
 		return err
 	}
 
@@ -111,7 +110,7 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 			logger.Error(nil, "Tekton reported multiple conditions")
 		}
 		condition := res.Status.Conditions[0]
-		updatePipelineRunStatus(meteor, name, metav1.ConditionStatus(condition.Status), condition.Reason, condition.Message)
+		updateStatus(metav1.ConditionStatus(condition.Status), condition.Reason, condition.Message)
 	}
 	if res.Status.CompletionTime != nil && res.Status.Conditions[0].Reason == "Succeeded" {
 		status.Ready = "True"
