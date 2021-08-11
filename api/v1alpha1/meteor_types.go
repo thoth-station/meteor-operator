@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"strings"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -122,4 +123,37 @@ const (
 // Pre-populate labels for children resources
 func (m *Meteor) SeedLabels() map[string]string {
 	return map[string]string{MeteorLabel: string(m.GetUID())}
+}
+
+const (
+	PhaseFailed  = "Failed"
+	PhaseRunning = "Building"
+	PhaseOk      = "Ready"
+)
+
+// Aggregate phase from conditions
+func (m *Meteor) AggregatePhase() string {
+	if len(m.Status.Conditions) == 0 {
+		return PhaseRunning
+	}
+
+	for _, c := range m.Status.Conditions {
+		if c.Status == "False" {
+			return PhaseFailed
+		}
+
+		// Claim ready only if pipelineruns have completed
+		if strings.HasPrefix(c.Type, "PipelineRun") {
+			switch c.Reason {
+			case "Succeeded", "Completed":
+				continue
+			}
+			return PhaseRunning
+		}
+
+		if c.Reason != "Ready" {
+			return PhaseRunning
+		}
+	}
+	return PhaseOk
 }
