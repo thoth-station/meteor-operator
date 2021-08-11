@@ -27,56 +27,62 @@ import (
 // MeteorSpec defines the desired state of Meteor
 type MeteorSpec struct {
 	// Url points to the source repository.
+	//+kubebuilder:validation:Pattern=`^https?:\/\/.+$`
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Repository URL",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	Url string `json:"url"`
 	// Branch or tag or commit reference within the repository.
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Branch Reference",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	Ref string `json:"ref"`
 	// Time to live after the resource was created. If empty default ttl will be enforced.
+	//+kubebuilder:default=86400
 	TTL int64 `json:"ttl"`
 }
 
 type MeteorImage struct {
 	// ImageStream name. Empty if not yet created.
-	// +optional
+	//+optional
 	ImageStreamName string `json:"name,omitempty"`
 	// Url to a running deployment. Routable at least within the cluster. Empty if not yet scheduled.
-	// +optional
+	//+optional
 	Url string `json:"url,omitempty"`
 	// True if build completed successfully.
-	// +optional
+	//+optional
 	Ready string `json:"ready,omitempty"`
 }
 
 // MeteorStatus defines the observed state of Meteor
 type MeteorStatus struct {
 	// Current condition of the Meteor.
-	// +optional
+	//+optional
 	Phase string `json:"phase,omitempty"`
 	// Current service state of Meteor.
-	// +optional
+	//+optional
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 	// A human readable message indicating details about why the Meteor is in this condition.
-	// +optional
+	//+optional
 	Message string `json:"message,omitempty"`
 	// A brief CamelCase message indicating details about why the Meteor is in this state.
 	// e.g. 'DiskPressure'
-	// +optional
+	//+optional
 	Reason string `json:"reason,omitempty"`
 	// JupyterBook deployment of Meteor. Empty if not created.
-	// +optional
+	//+optional
 	JupyterBook MeteorImage `json:"jupyterBook,omitempty"`
 	// JupyterHub image of Meteor. Empty if not created.
-	// +optional
+	//+optional
 	JupyterHub MeteorImage `json:"jupyterHub,omitempty"`
 	// Once created the expiration clock starts ticking.
-	// +optional
+	//+optional
 	ExpireAt metav1.Time `json:"expireAt,omitempty"`
 	// Most recent observed generation of Meteor. Sanity check.
-	// +optional
+	//+optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Url",type="string",JSONPath=".spec.url",description="Repository URL"
+//+operator-sdk:csv:customresourcedefinitions:resources={{PipelineRun,tekton.dev},{Deployment,apps},{Service,v1},{Route,route.openshift.io},{ImageStream,image.openshift.io}}
 
 // Meteor is the Schema for the meteors API
 type Meteor struct {

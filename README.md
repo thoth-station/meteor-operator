@@ -42,7 +42,7 @@ Install `dlv` via `go get -u github.com/go-delve/delve/cmd/dlv`
 ### Run from local machine without debugging
 
 1. Log in to your cluster via `oc login`
-2. Run `make install run ENABLE_WEBHOOKS=false`
+2. Run `make install run`
 
 ## Quick deploy via operator-sdk
 

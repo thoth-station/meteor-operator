@@ -10,9 +10,6 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
-            "env": {
-                "ENABLE_WEBHOOKS": "false"
-            },
             "args": []
         }
     ]

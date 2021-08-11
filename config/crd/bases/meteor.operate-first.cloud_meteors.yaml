@@ -16,7 +16,12 @@ spec:
     singular: meteor
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Repository URL
+      jsonPath: .spec.url
+      name: Url
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Meteor is the Schema for the meteors API
@@ -40,12 +45,14 @@ spec:
                 description: Branch or tag or commit reference within the repository.
                 type: string
               ttl:
+                default: 86400
                 description: Time to live after the resource was created. If empty
                   default ttl will be enforced.
                 format: int64
                 type: integer
               url:
                 description: Url points to the source repository.
+                pattern: ^https?:\/\/.+$
                 type: string
             required:
             - ref
