@@ -84,7 +84,7 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{Requeue: true}, err
 	}
 	r.Meteor.Status.ObservedGeneration = r.Meteor.GetGeneration()
-	r.Meteor.Status.Phase = "Running"
+	r.Meteor.Status.Phase = r.Meteor.AggregatePhase()
 
 	if r.Meteor.IsTTLReached() {
 		logger.Info("TTL reached")
