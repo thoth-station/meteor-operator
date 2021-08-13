@@ -1,0 +1,29 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: generate-jupyterbook
+spec:
+  workspaces:
+    - name: source
+
+  steps:
+    - name: jupyter-book-build
+      image: quay.io/thoth-station/s2i-jupyterbook:latest
+      workingDir: $(workspaces.source.path)
+      script: |
+        start=`date +%s`
+        jupyter-book build .
+        end=`date +%s`
+        echo "$((end-start))" > jbuild_exe_time
+
+    - name: generate
+      image: quay.io/openshift-pipeline/s2i:nightly
+      workingDir: $(workspaces.source.path)
+      command:
+        - /usr/local/bin/s2i
+        - --loglevel=0
+        - build
+        - ./_build/html
+        - quay.io/centos7/httpd-24-centos7:latest
+        - --as-dockerfile
+        - ./Dockerfile

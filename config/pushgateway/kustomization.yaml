@@ -1,3 +1,2 @@
 resources:
 - pushgateway.yaml
-- configmap.yaml

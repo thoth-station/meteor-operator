@@ -1,0 +1,58 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: metrics-end
+spec:
+  params:
+    - name: pipeline
+    - name: pipelineRun
+  workspaces:
+    - name: source
+  steps:
+    - name: metrics-end
+      image: quay.io/thoth-station/s2i-thoth-dev:latest
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: PIPELINE_NAME
+          value: $(params.pipeline)
+        - name: PIPELINERUN_NAME
+          value: $(params.pipelineRun)
+      script: |
+        #!/opt/app-root/bin/python
+        import os
+        import time
+        from prometheus_client import CollectorRegistry, Counter, Gauge, push_to_gateway
+
+        PROMETHEUS_REGISTRY = CollectorRegistry()
+
+        LABEL_KEYS = ["pipeline", "pipelinerun"]
+        LABEL_VALUES = [os.getenv('PIPELINE_NAME'), os.getenv('PIPELINERUN_NAME')]
+
+        IMAGE_PUSHED = Counter(
+            "meteor_image_pushed",
+            "Meteor image pushed.",
+            LABEL_KEYS,
+            registry=PROMETHEUS_REGISTRY,
+        )
+        BUILD_TIME = Gauge(
+            "meteor_build_time",
+            "Meteor build time.",
+            LABEL_KEYS,
+            registry=PROMETHEUS_REGISTRY,
+        )
+
+        IMAGE_PUSHED.labels(*LABEL_VALUES).inc()
+        if os.path.isfile("jbuild_exe_time"):
+            BUILD_TIME.labels(*LABEL_VALUES).inc(
+                float(open("jbuild_exe_time", "r").read().strip())
+            )
+
+        try:
+            print("Submitting metrics to Prometheus pushgateway")
+            push_to_gateway(
+                f"http://pushgateway:9091",
+                job=os.getenv('PIPELINERUN_NAME'),
+                registry=PROMETHEUS_REGISTRY,
+            )
+        except Exception as e:
+            print(f"An error occurred pushing the metrics: {str(e)}")

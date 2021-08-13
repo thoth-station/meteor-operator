@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
-	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -60,28 +61,17 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 								StringVal: r.Meteor.Spec.Ref,
 							},
 						},
-						{
-							Name: "uid",
-							Value: pipelinev1beta1.ArrayOrString{
-								Type:      pipelinev1beta1.ParamTypeString,
-								StringVal: string(r.Meteor.GetUID()),
-							},
-						},
 					},
-					Resources: []pipelinev1beta1.PipelineResourceBinding{
+					Workspaces: []pipelinev1beta1.WorkspaceBinding{
 						{
-							Name: "git-repo",
-							ResourceSpec: &pipelinev1alpha1.PipelineResourceSpec{
-								Type: pipelinev1beta1.PipelineResourceTypeGit,
-								Params: []pipelinev1beta1.ResourceParam{
-									{
-										Name:  "url",
-										Value: r.Meteor.Spec.Url,
-									},
-
-									{
-										Name:  "revision",
-										Value: r.Meteor.Spec.Ref,
+							Name: "data",
+							VolumeClaimTemplate: &v1.PersistentVolumeClaim{
+								Spec: v1.PersistentVolumeClaimSpec{
+									AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+									Resources: v1.ResourceRequirements{
+										Requests: v1.ResourceList{
+											v1.ResourceStorage: resource.MustParse("500Mi"),
+										},
 									},
 								},
 							},

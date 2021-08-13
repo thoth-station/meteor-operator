@@ -23,3 +23,6 @@ testbin/*
 *.swp
 *.swo
 *~
+
+# Debug run runtime binary
+__debug_bin

@@ -19,3 +19,5 @@ resources:
 # Deploy meteor cluster roles
 - meteor_editor_role.yaml
 - meteor_viewer_role.yaml
+# Make namespace available to public use
+- public_view_rolebinding.yaml
