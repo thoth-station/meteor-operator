@@ -85,6 +85,7 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 	r.Meteor.Status.ObservedGeneration = r.Meteor.GetGeneration()
 	r.Meteor.Status.Phase = r.Meteor.AggregatePhase()
+	r.Meteor.Status.ExpirationTimestamp = metav1.NewTime(r.Meteor.GetExpirationTimestamp())
 
 	if r.Meteor.IsTTLReached() {
 		logger.Info("TTL reached")

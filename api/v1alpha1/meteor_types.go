@@ -59,13 +59,6 @@ type MeteorStatus struct {
 	// Current service state of Meteor.
 	//+optional
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
-	// A human readable message indicating details about why the Meteor is in this condition.
-	//+optional
-	Message string `json:"message,omitempty"`
-	// A brief CamelCase message indicating details about why the Meteor is in this state.
-	// e.g. 'DiskPressure'
-	//+optional
-	Reason string `json:"reason,omitempty"`
 	// JupyterBook deployment of Meteor. Empty if not created.
 	//+optional
 	JupyterBook MeteorImage `json:"jupyterBook,omitempty"`
@@ -74,7 +67,7 @@ type MeteorStatus struct {
 	JupyterHub MeteorImage `json:"jupyterHub,omitempty"`
 	// Once created the expiration clock starts ticking.
 	//+optional
-	ExpireAt metav1.Time `json:"expireAt,omitempty"`
+	ExpirationTimestamp metav1.Time `json:"expirationTimestamp,omitempty"`
 	// Most recent observed generation of Meteor. Sanity check.
 	//+optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
@@ -110,7 +103,11 @@ func init() {
 
 // Return true if TTL is reached
 func (m *Meteor) IsTTLReached() bool {
-	return m.GetCreationTimestamp().Add(time.Duration(m.Spec.TTL) * time.Second).Before(time.Now())
+	return m.GetExpirationTimestamp().Before(time.Now())
+}
+
+func (m *Meteor) GetExpirationTimestamp() time.Time {
+	return m.GetCreationTimestamp().Add(time.Duration(m.Spec.TTL) * time.Second)
 }
 
 const (

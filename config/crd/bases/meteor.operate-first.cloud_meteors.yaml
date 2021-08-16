@@ -132,7 +132,7 @@ spec:
                   - type
                   type: object
                 type: array
-              expireAt:
+              expirationTimestamp:
                 description: Once created the expiration clock starts ticking.
                 format: date-time
                 type: string
@@ -164,20 +164,12 @@ spec:
                       the cluster. Empty if not yet scheduled.
                     type: string
                 type: object
-              message:
-                description: A human readable message indicating details about why
-                  the Meteor is in this condition.
-                type: string
               observedGeneration:
                 description: Most recent observed generation of Meteor. Sanity check.
                 format: int64
                 type: integer
               phase:
                 description: Current condition of the Meteor.
-                type: string
-              reason:
-                description: A brief CamelCase message indicating details about why
-                  the Meteor is in this state. e.g. 'DiskPressure'
                 type: string
             type: object
         type: object
