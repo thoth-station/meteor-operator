@@ -1,6 +1,0 @@
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: meteor
-data:
-  pushgateway: 'http://pushgateway-aicoe-meteor.apps.zero.massopen.cloud'

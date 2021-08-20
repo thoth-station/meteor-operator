@@ -1,0 +1,79 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: jupyterhub
+spec:
+  params:
+    - name: url
+      type: string
+    - name: ref
+      type: string
+      default: ""
+
+  workspaces:
+    - name: data
+
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      workspaces:
+        - name: output
+          workspace: data
+      params:
+        - name: url
+          value: $(params.url)
+        - name: revision
+          value: $(params.ref)
+        - name: subdirectory
+          value: repo
+
+    - name: metrics-start
+      taskRef:
+        name: metrics-start
+      params:
+        - name: pipeline
+          value: $(context.pipeline.name)
+        - name: pipelineRun
+          value: $(context.pipelineRun.name)
+
+    - name: generate
+      taskRef:
+        name: generate-jupyterhub
+      runAfter:
+        - git-clone
+      workspaces:
+        - name: source
+          workspace: data
+      params:
+        - name: url
+          value: $(params.url)
+
+    - name: buildah
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      runAfter:
+        - generate
+      workspaces:
+        - name: source
+          workspace: data
+      params:
+        - name: IMAGE
+          value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+
+    - name: metrics-end
+      taskRef:
+        name: metrics-end
+      runAfter:
+        - buildah
+      workspaces:
+        - name: source
+          workspace: data
+      params:
+        - name: pipeline
+          value: $(context.pipeline.name)
+        - name: pipelineRun
+          value: $(context.pipelineRun.name)

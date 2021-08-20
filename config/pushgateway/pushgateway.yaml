@@ -24,29 +24,26 @@ spec:
       targetPort: 9091
   selector:
     app: pushgateway
-    deploymentconfig: pushgateway
 ---
-kind: DeploymentConfig
-apiVersion: apps.openshift.io/v1
+kind: Deployment
+apiVersion: apps/v1
 metadata:
   name: pushgateway
 spec:
   strategy:
-    type: Rolling
+    type: Recreate
   replicas: 1
   selector:
-    app: pushgateway
-    deploymentconfig: pushgateway
+    matchLabels:
+      app: pushgateway
   template:
     metadata:
       labels:
         app: pushgateway
-        deploymentconfig: pushgateway
     spec:
       containers:
         - name: pushgateway
-          image: >-
-            prom/pushgateway@sha256:b561435cb17ee816c5d90c2408bcc1ffe25304f1608e18db16a3969f6cc44626
+          image: quay.io/prometheus/pushgateway:latest
           ports:
             - containerPort: 9091
               protocol: TCP
