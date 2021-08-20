@@ -10,6 +10,8 @@ spec:
     - name: ref
       type: string
       default: ""
+    - name: googleAnalyticsToken
+      default: ""
 
   workspaces:
     - name: data
@@ -42,6 +44,7 @@ spec:
         name: generate-jupyterbook
       runAfter:
         - git-clone
+        - metrics-start
       workspaces:
         - name: source
           workspace: data
@@ -58,6 +61,91 @@ spec:
       params:
         - name: IMAGE
           value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+
+    - name: deploy
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      runAfter:
+        - buildah
+      params:
+        - name: SCRIPT
+          value: |
+            cat <<EOM | oc apply -f -
+            ---
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: $(context.pipelineRun.name)
+              labels:
+                app: $(context.pipelineRun.name)
+              ownerReferences:
+                - apiVersion: tekton.dev/v1beta1
+                  blockOwnerDeletion: true
+                  controller: true
+                  kind: PipelineRun
+                  name: $(context.pipelineRun.name)
+                  uid: $(context.pipelineRun.uid)
+            spec:
+              selector:
+                matchLabels:
+                  app: $(context.pipelineRun.name)
+              replicas: 1
+              template:
+                metadata:
+                  labels:
+                    app: $(context.pipelineRun.name)
+                spec:
+                  containers:
+                    - name: $(context.pipelineRun.name)
+                      image: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+                      resources:
+                        limits:
+                          cpu: 100m
+                          memory: 100Mi
+                      env:
+                        - name: GA_TRACKING_ID
+                          value: $(params.googleAnalyticsToken)
+            ---
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: $(context.pipelineRun.name)
+              ownerReferences:
+                - apiVersion: tekton.dev/v1beta1
+                  blockOwnerDeletion: true
+                  controller: true
+                  kind: PipelineRun
+                  name: $(context.pipelineRun.name)
+                  uid: $(context.pipelineRun.uid)
+            spec:
+              selector:
+                app: $(context.pipelineRun.name)
+              ports:
+                - name: http
+                  protocol: TCP
+                  port: 8080
+                  targetPort: 8080
+            ---
+            apiVersion: route.openshift.io/v1
+            kind: Route
+            metadata:
+              name: $(context.pipelineRun.name)
+              ownerReferences:
+                - apiVersion: tekton.dev/v1beta1
+                  blockOwnerDeletion: true
+                  controller: true
+                  kind: PipelineRun
+                  name: $(context.pipelineRun.name)
+                  uid: $(context.pipelineRun.uid)
+            spec:
+              to:
+                kind: Service
+                name: $(context.pipelineRun.name)
+              port:
+                targetPort: http
+            EOM
+            oc wait --for=condition=available --timeout=600s deployment/$(context.pipelineRun.name)
 
     - name: metrics-end
       taskRef:

@@ -96,27 +96,8 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{}, nil
 	}
 
-	if err := r.ReconcilePipelineRun("jupyterbook", &ctx, req, &r.Meteor.Status.JupyterBook); err != nil {
-		return r.UpdateStatusNow(ctx, err)
-	}
-	if err := r.ReconcileImageStream("jupyterbook", &ctx, req, &r.Meteor.Status.JupyterBook); err != nil {
-		return r.UpdateStatusNow(ctx, err)
-	}
-	if err := r.ReconcilePipelineRun("jupyterhub", &ctx, req, &r.Meteor.Status.JupyterHub); err != nil {
-		return r.UpdateStatusNow(ctx, err)
-	}
-	if err := r.ReconcileImageStream("jupyterhub", &ctx, req, &r.Meteor.Status.JupyterHub); err != nil {
-		return r.UpdateStatusNow(ctx, err)
-	}
-
-	if r.Meteor.Status.JupyterBook.Ready == "True" {
-		if err := r.ReconcileDeployment("jupyterbook", &ctx, req); err != nil {
-			return r.UpdateStatusNow(ctx, err)
-		}
-		if err := r.ReconcileService("jupyterbook", &ctx, req); err != nil {
-			return r.UpdateStatusNow(ctx, err)
-		}
-		if err := r.ReconcileRoute("jupyterbook", &ctx, req, &r.Meteor.Status.JupyterBook); err != nil {
+	for _, pipeline := range []string{"jupyterbook", "jupyterhub"} {
+		if err := r.ReconcilePipelineRun(pipeline, &ctx, req, &r.Meteor.Status.JupyterBook); err != nil {
 			return r.UpdateStatusNow(ctx, err)
 		}
 	}
