@@ -10,6 +10,10 @@ spec:
     - name: ref
       type: string
       default: ""
+    - name: jupyterHubNamespace
+      type: string
+      # default: "$(context.pipelineRun.namespace)"
+      default: opf-jupyterhub
 
   workspaces:
     - name: data
@@ -44,6 +48,7 @@ spec:
         name: generate-jupyterhub
       runAfter:
         - git-clone
+        - metrics-start
       workspaces:
         - name: source
           workspace: data
@@ -62,7 +67,35 @@ spec:
           workspace: data
       params:
         - name: IMAGE
-          value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+          value: image-registry.openshift-image-registry.svc:5000/$(params.jupyterHubNamespace)/$(context.pipelineRun.name)
+
+    - name: create-image-stream
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      runAfter:
+        - buildah
+      params:
+        - name: SCRIPT
+          value: |
+            cat <<EOM | oc apply -f -
+            ---
+            kind: ImageStream
+            apiVersion: image.openshift.io/v1
+            metadata:
+              annotations:
+                opendatahub.io/notebook-image-name: $(context.pipelineRun.name)
+                opendatahub.io/notebook-image-url: $(params.url)
+              name: $(context.pipelineRun.name)
+              namespace: $(params.jupyterHubNamespace)
+              labels:
+                opendatahub.io/notebook-image: 'true'
+            spec:
+              lookupPolicy:
+                local: true
+              tags:
+                - name: latest
+            EOM
 
     - name: metrics-end
       taskRef:
