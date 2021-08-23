@@ -18,7 +18,7 @@ import (
 )
 
 // Submit a Tekton PipelineRun from a collection
-func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Context, req ctrl.Request, status *meteorv1alpha1.MeteorImage) error {
+func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Context, req ctrl.Request) error {
 	res := &pipelinev1beta1.PipelineRun{}
 	resourceName := fmt.Sprintf("%s-%s", r.Meteor.GetName(), name)
 	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
@@ -31,6 +31,20 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 	updateStatus := func(status metav1.ConditionStatus, reason, message string) {
 		r.UpdateStatus(r.Meteor, "PipelineRun", name, status, reason, message)
 	}
+
+	statusIndex := func() int {
+		for i, pr := range r.Meteor.Status.Pipelines {
+			if pr.Name == name {
+				return i
+			}
+		}
+		result := meteorv1alpha1.PipelineResult{
+			Name:  name,
+			Ready: "False",
+		}
+		r.Meteor.Status.Pipelines = append(r.Meteor.Status.Pipelines, result)
+		return len(r.Meteor.Status.Pipelines) - 1
+	}()
 
 	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if errors.IsNotFound(err) {
@@ -103,7 +117,10 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 		updateStatus(metav1.ConditionStatus(condition.Status), condition.Reason, condition.Message)
 	}
 	if res.Status.CompletionTime != nil && res.Status.Conditions[0].Reason == "Succeeded" {
-		status.Ready = "True"
+		r.Meteor.Status.Pipelines[statusIndex].Ready = "True"
+		if len(res.Status.PipelineResults) > 0 {
+			r.Meteor.Status.Pipelines[statusIndex].Url = res.Status.PipelineResults[0].Value
+		}
 	}
 	return nil
 }
