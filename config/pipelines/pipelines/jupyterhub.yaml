@@ -15,6 +15,10 @@ spec:
       # default: "$(context.pipelineRun.namespace)"
       default: opf-jupyterhub
 
+  results:
+    - name: url
+      value: "$(tasks.url-to-results.results.output-result)"
+
   workspaces:
     - name: data
 
@@ -96,6 +100,16 @@ spec:
               tags:
                 - name: latest
             EOM
+
+    - name: url-to-results
+      taskRef:
+        name: oc-actions
+      runAfter:
+        - buildah
+      params:
+        - name: SCRIPT
+          value: |
+            echo "http://$(oc get route jupyterhub -n $(params.jupyterHubNamespace) --template='{{ .spec.host }}')/hub/spawn?$(context.pipelineRun.name):latest" > $(results.output-result.path)
 
     - name: metrics-end
       taskRef:

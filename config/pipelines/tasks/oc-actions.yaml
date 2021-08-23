@@ -1,0 +1,52 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: oc-actions
+spec:
+  description: >-
+    This task runs commands against the cluster where the task run is being
+    executed.
+
+    OpenShift is a Kubernetes distribution from Red Hat which provides oc, the
+    OpenShift CLI that complements kubectl for simplifying deployment and
+    configuration applications on OpenShift.
+  workspaces:
+    - name: manifest-dir
+      optional: true
+    - name: kubeconfig-dir
+      optional: true
+  results:
+    - name: output-result
+      description: some result can be emitted if someone wants to.
+  params:
+    - default: oc $@
+      description: The OpenShift CLI arguments to run
+      name: SCRIPT
+      type: string
+    - default:
+        - help
+      description: The OpenShift CLI arguments to run
+      name: ARGS
+      type: array
+  resources:
+    inputs:
+      - name: source
+        optional: true
+        type: git
+  steps:
+    - args:
+        - $(params.ARGS)
+      image: "image-registry.openshift-image-registry.svc:5000/openshift/cli:latest"
+      name: oc
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+        [[ "$(workspaces.manifest-dir.bound)" == "true" ]] && \
+        cd $(workspaces.manifest-dir.path)
+
+        [[ "$(workspaces.kubeconfig-dir.bound)" == "true" ]] && \
+        [[ -f $(workspaces.kubeconfig-dir.path)/kubeconfig ]] && \
+
+        export KUBECONFIG=$(workspaces.kubeconfig-dir.path)/kubeconfig
+
+        $(params.SCRIPT)

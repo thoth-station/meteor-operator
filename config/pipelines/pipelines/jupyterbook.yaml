@@ -13,6 +13,10 @@ spec:
     - name: googleAnalyticsToken
       default: ""
 
+  results:
+    - name: url
+      value: "$(tasks.url-to-results.results.output-result)"
+
   workspaces:
     - name: data
 
@@ -144,8 +148,30 @@ spec:
                 name: $(context.pipelineRun.name)
               port:
                 targetPort: http
+            ---
+            kind: ImageStream
+            apiVersion: image.openshift.io/v1
+            metadata:
+              name: $(context.pipelineRun.name)
+              ownerReferences:
+                - apiVersion: tekton.dev/v1beta1
+                  blockOwnerDeletion: true
+                  controller: true
+                  kind: PipelineRun
+                  name: $(context.pipelineRun.name)
+                  uid: $(context.pipelineRun.uid)
             EOM
             oc wait --for=condition=available --timeout=600s deployment/$(context.pipelineRun.name)
+
+    - name: url-to-results
+      taskRef:
+        name: oc-actions
+      runAfter:
+        - deploy
+      params:
+        - name: SCRIPT
+          value: |
+            echo "http://$(oc get route $(context.pipelineRun.name) --template='{{ .spec.host }}')" > $(results.output-result.path)
 
     - name: metrics-end
       taskRef:

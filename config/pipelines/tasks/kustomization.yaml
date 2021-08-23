@@ -7,3 +7,4 @@ resources:
     - metrics-end.yaml
     - generate-jupyterbook.yaml
     - generate-jupyterhub.yaml
+    - oc-actions.yaml

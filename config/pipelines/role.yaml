@@ -25,7 +25,7 @@ roleRef:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-    name: meteor-pusher
+    name: meteor-external
     namespace: opf-jupyterhub
 subjects:
     - kind: ServiceAccount
@@ -34,12 +34,12 @@ subjects:
 roleRef:
     apiGroup: rbac.authorization.k8s.io
     kind: Role
-    name: meteor-pusher
+    name: meteor-external
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-    name: meteor-pusher
+    name: meteor-external
     namespace: opf-jupyterhub
 rules:
     - apiGroups:
@@ -49,3 +49,12 @@ rules:
           - imagestreams
       verbs:
           - "*"
+    - apiGroups:
+          - route.openshift.io
+      resources:
+          - routes
+          - routes/status
+      verbs:
+          - get
+          - list
+          - watch

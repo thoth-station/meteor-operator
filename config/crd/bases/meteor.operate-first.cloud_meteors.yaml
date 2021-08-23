@@ -136,34 +136,6 @@ spec:
                 description: Once created the expiration clock starts ticking.
                 format: date-time
                 type: string
-              jupyterBook:
-                description: JupyterBook deployment of Meteor. Empty if not created.
-                properties:
-                  name:
-                    description: ImageStream name. Empty if not yet created.
-                    type: string
-                  ready:
-                    description: True if build completed successfully.
-                    type: string
-                  url:
-                    description: Url to a running deployment. Routable at least within
-                      the cluster. Empty if not yet scheduled.
-                    type: string
-                type: object
-              jupyterHub:
-                description: JupyterHub image of Meteor. Empty if not created.
-                properties:
-                  name:
-                    description: ImageStream name. Empty if not yet created.
-                    type: string
-                  ready:
-                    description: True if build completed successfully.
-                    type: string
-                  url:
-                    description: Url to a running deployment. Routable at least within
-                      the cluster. Empty if not yet scheduled.
-                    type: string
-                type: object
               observedGeneration:
                 description: Most recent observed generation of Meteor. Sanity check.
                 format: int64
@@ -171,6 +143,24 @@ spec:
               phase:
                 description: Current condition of the Meteor.
                 type: string
+              pipelines:
+                description: Stores results from pipelines. Empty if neither pipeline
+                  has completed.
+                items:
+                  properties:
+                    name:
+                      type: string
+                    ready:
+                      description: True if build completed successfully.
+                      type: string
+                    url:
+                      description: Url to a running deployment. Routable at least
+                        within the cluster. Empty if not yet scheduled.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                type: array
             type: object
         type: object
     served: true

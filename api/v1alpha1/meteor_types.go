@@ -39,10 +39,8 @@ type MeteorSpec struct {
 	TTL int64 `json:"ttl"`
 }
 
-type MeteorImage struct {
-	// ImageStream name. Empty if not yet created.
-	//+optional
-	ImageStreamName string `json:"name,omitempty"`
+type PipelineResult struct {
+	Name string `json:"name"`
 	// Url to a running deployment. Routable at least within the cluster. Empty if not yet scheduled.
 	//+optional
 	Url string `json:"url,omitempty"`
@@ -59,12 +57,9 @@ type MeteorStatus struct {
 	// Current service state of Meteor.
 	//+optional
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
-	// JupyterBook deployment of Meteor. Empty if not created.
+	// Stores results from pipelines. Empty if neither pipeline has completed.
 	//+optional
-	JupyterBook MeteorImage `json:"jupyterBook,omitempty"`
-	// JupyterHub image of Meteor. Empty if not created.
-	//+optional
-	JupyterHub MeteorImage `json:"jupyterHub,omitempty"`
+	Pipelines []PipelineResult `json:"pipelines,omitempty"`
 	// Once created the expiration clock starts ticking.
 	//+optional
 	ExpirationTimestamp metav1.Time `json:"expirationTimestamp,omitempty"`
