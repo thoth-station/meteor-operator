@@ -17,7 +17,7 @@ spec:
 
   results:
     - name: url
-      value: "$(tasks.url-to-results.results.output-result)"
+      value: "$(tasks.url-to-results.results.results)"
 
   workspaces:
     - name: data
@@ -38,23 +38,13 @@ spec:
         - name: subdirectory
           value: repo
 
-    - name: metrics-start
-      taskRef:
-        name: metrics-start
-      params:
-        - name: pipeline
-          value: $(context.pipeline.name)
-        - name: pipelineRun
-          value: $(context.pipelineRun.name)
-
     - name: generate
       taskRef:
         name: generate-jupyterhub
       runAfter:
         - git-clone
-        - metrics-start
       workspaces:
-        - name: source
+        - name: data
           workspace: data
       params:
         - name: url
@@ -63,15 +53,16 @@ spec:
     - name: buildah
       taskRef:
         name: buildah
-        kind: ClusterTask
       runAfter:
         - generate
       workspaces:
-        - name: source
+        - name: data
           workspace: data
       params:
         - name: IMAGE
           value: image-registry.openshift-image-registry.svc:5000/$(params.jupyterHubNamespace)/$(context.pipelineRun.name)
+        - name: BASE_IMAGE
+          value: $(tasks.generate.results.baseImage)
 
     - name: create-image-stream
       taskRef:
@@ -107,17 +98,16 @@ spec:
       runAfter:
         - buildah
       params:
-        - name: SCRIPT
+        - name: script
           value: |
-            echo "http://$(oc get route jupyterhub -n $(params.jupyterHubNamespace) --template='{{ .spec.host }}')/hub/spawn?$(context.pipelineRun.name):latest" > $(results.output-result.path)
+            echo "http://$(oc get route jupyterhub -n $(params.jupyterHubNamespace) --template='{{ .spec.host }}')/hub/spawn?$(context.pipelineRun.name):latest" > $(results.results.path)
 
-    - name: metrics-end
+  finally:
+    - name: push-metrics
       taskRef:
-        name: metrics-end
-      runAfter:
-        - buildah
+        name: send-metrics
       workspaces:
-        - name: source
+        - name: data
           workspace: data
       params:
         - name: pipeline
