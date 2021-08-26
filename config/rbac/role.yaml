@@ -9,6 +9,26 @@ rules:
 - apiGroups:
   - meteor.operate-first.cloud
   resources:
+  - meteorcomas
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - meteor.operate-first.cloud
+  resources:
+  - meteorcomas/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - meteor.operate-first.cloud
+  resources:
   - meteors
   verbs:
   - create

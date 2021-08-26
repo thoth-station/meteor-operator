@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
@@ -43,6 +44,8 @@ type MeteorReconciler struct {
 //+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteors,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteors/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteors/finalizers,verbs=update
+//+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteorcomas,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteorcomas/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/finalizers,verbs=update
@@ -80,6 +83,16 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{}, nil
 	}
 
+	if err := r.EnsureFinalizers(ctx); err != nil {
+		logger.Error(err, "Failed to ensure finalizers")
+		return ctrl.Result{}, err
+	}
+	if r.Meteor.ObjectMeta.DeletionTimestamp.IsZero() {
+		if err := r.ReconcileComas(ctx); err != nil {
+			return r.UpdateStatusNow(ctx, err)
+		}
+	}
+
 	for _, pipeline := range r.Meteor.Spec.Pipelines {
 		if err := r.ReconcilePipelineRun(pipeline, &ctx, req); err != nil {
 			return r.UpdateStatusNow(ctx, err)
@@ -108,6 +121,46 @@ func (r *MeteorReconciler) UpdateStatus(meteor *meteorv1alpha1.Meteor, kind, nam
 		Message:            message,
 		ObservedGeneration: meteor.GetGeneration(),
 	})
+}
+
+func (r *MeteorReconciler) EnsureFinalizers(ctx context.Context) error {
+	logger := log.FromContext(ctx)
+
+	finalizer := Group + "/finalizer"
+	if r.Meteor.ObjectMeta.DeletionTimestamp.IsZero() {
+		// The object is not being deleted, register our finalizer
+		if !containsString(r.Meteor.GetFinalizers(), finalizer) {
+			controllerutil.AddFinalizer(r.Meteor, finalizer)
+			if err := r.Update(ctx, r.Meteor); err != nil {
+				logger.Error(err, "Unable to add finalizer")
+				return err
+			}
+		}
+	} else {
+		// The object is being deleted
+		if containsString(r.Meteor.GetFinalizers(), finalizer) {
+			if err := r.DeleteComas(ctx); err != nil {
+				logger.Error(err, "Unable to delete Comas")
+				return err
+			}
+
+			controllerutil.RemoveFinalizer(r.Meteor, finalizer)
+			if err := r.Update(ctx, r.Meteor); err != nil {
+				logger.Error(err, "Unable to remove finalizer")
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func containsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
 }
 
 // SetupWithManager sets up the controller with the Manager.
