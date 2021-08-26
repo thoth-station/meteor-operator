@@ -247,16 +247,20 @@ spec:
             "environment_type": "runtime",
             "verify_tls": True,
         }
-        response = requests.post(
-            URL, headers={"Content-type": "application/json"}, params=params,
-        )
-        if response.status_code == 202:
-            Path(".tekton_metrics/image_analysis_success").touch()
-            print("Successfully submitted for image analysis.")
-        else:
+
+        try:
+            response = requests.post(
+                URL, headers={"Content-type": "application/json"}, params=params,
+            )
+            if response.status_code == 202:
+                Path(".tekton_metrics/image_analysis_success").touch()
+                print("Successfully submitted for image analysis.")
+            else:
+                raise ValueError(response.text)
+        except Exception as e:
             Path(".tekton_metrics/image_analysis_failure").touch()
             print("Submit attempt for image analysis has Failed.")
-            print("Reason: {}".format(response.text))
+            print("Reason: {}".format(e))
 
       volumeMounts:
         - name: varlibcontainers
