@@ -100,7 +100,7 @@ spec:
       params:
         - name: script
           value: |
-            echo "http://$(oc get route jupyterhub -n $(params.jupyterHubNamespace) --template='{{ .spec.host }}')/hub/spawn?$(context.pipelineRun.name):latest" > $(results.results.path)
+            echo "http://$(oc get route jupyterhub -n $(params.jupyterHubNamespace) --template='{{ .spec.host }}')/hub/spawn#:~:text=$(context.pipelineRun.name)" > $(results.results.path)
 
   finally:
     - name: push-metrics
