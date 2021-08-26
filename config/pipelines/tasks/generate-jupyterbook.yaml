@@ -4,21 +4,22 @@ metadata:
   name: generate-jupyterbook
 spec:
   workspaces:
-    - name: source
+    - name: data
 
   steps:
     - name: jupyter-book-build
       image: quay.io/thoth-station/s2i-jupyterbook:latest
-      workingDir: $(workspaces.source.path)
+      workingDir: $(workspaces.data.path)
       script: |
         start=`date +%s`
         jupyter-book build .
         end=`date +%s`
-        echo "$((end-start))" > jbuild_exe_time
+        mkdir -p .tekton_metrics
+        echo "$((end-start))" > .tekton_metrics/content_build_duration
 
     - name: generate
       image: quay.io/openshift-pipeline/s2i:nightly
-      workingDir: $(workspaces.source.path)
+      workingDir: $(workspaces.data.path)
       command:
         - /usr/local/bin/s2i
         - --loglevel=0

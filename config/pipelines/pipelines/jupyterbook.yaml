@@ -15,7 +15,7 @@ spec:
 
   results:
     - name: url
-      value: "$(tasks.url-to-results.results.output-result)"
+      value: "$(tasks.url-to-results.results.results)"
 
   workspaces:
     - name: data
@@ -34,37 +34,28 @@ spec:
         - name: revision
           value: $(params.ref)
 
-    - name: metrics-start
-      taskRef:
-        name: metrics-start
-      params:
-        - name: pipeline
-          value: $(context.pipeline.name)
-        - name: pipelineRun
-          value: $(context.pipelineRun.name)
-
     - name: generate
       taskRef:
         name: generate-jupyterbook
       runAfter:
         - git-clone
-        - metrics-start
       workspaces:
-        - name: source
+        - name: data
           workspace: data
 
     - name: buildah
       taskRef:
         name: buildah
-        kind: ClusterTask
       runAfter:
         - generate
       workspaces:
-        - name: source
+        - name: data
           workspace: data
       params:
         - name: IMAGE
           value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+        - name: BASE_IMAGE
+          value: quay.io/centos7/httpd-24-centos7:latest
 
     - name: deploy
       taskRef:
@@ -169,17 +160,16 @@ spec:
       runAfter:
         - deploy
       params:
-        - name: SCRIPT
+        - name: script
           value: |
-            echo "http://$(oc get route $(context.pipelineRun.name) --template='{{ .spec.host }}')" > $(results.output-result.path)
+            echo "http://$(oc get route $(context.pipelineRun.name) --template='{{ .spec.host }}')" > $(results.results.path)
 
-    - name: metrics-end
+  finally:
+    - name: push-metrics
       taskRef:
-        name: metrics-end
-      runAfter:
-        - buildah
+        name: send-metrics
       workspaces:
-        - name: source
+        - name: data
           workspace: data
       params:
         - name: pipeline
