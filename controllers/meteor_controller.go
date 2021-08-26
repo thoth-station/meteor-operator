@@ -96,7 +96,7 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{}, nil
 	}
 
-	for _, pipeline := range []string{"jupyterbook", "jupyterhub"} {
+	for _, pipeline := range r.Meteor.Spec.Pipelines {
 		if err := r.ReconcilePipelineRun(pipeline, &ctx, req); err != nil {
 			return r.UpdateStatusNow(ctx, err)
 		}
