@@ -41,6 +41,14 @@ spec:
           spec:
             description: MeteorSpec defines the desired state of Meteor
             properties:
+              pipelines:
+                default:
+                - jupyterhub
+                - jupyterbook
+                description: List of pipelines to initiate for this meteor
+                items:
+                  type: string
+                type: array
               ref:
                 description: Branch or tag or commit reference within the repository.
                 type: string
@@ -55,6 +63,7 @@ spec:
                 pattern: ^https?:\/\/.+$
                 type: string
             required:
+            - pipelines
             - ref
             - ttl
             - url

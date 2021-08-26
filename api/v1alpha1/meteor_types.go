@@ -37,6 +37,9 @@ type MeteorSpec struct {
 	// Time to live after the resource was created. If empty default ttl will be enforced.
 	//+kubebuilder:default=86400
 	TTL int64 `json:"ttl"`
+	// List of pipelines to initiate for this meteor
+	//+kubebuilder:default={jupyterhub,jupyterbook}
+	Pipelines []string `json:"pipelines"`
 }
 
 type PipelineResult struct {
