@@ -8,3 +8,4 @@ resources:
     - generate-jupyterhub.yaml
     - oc-actions.yaml
     - buildah.yaml
+    - resolve-owner-reference.yaml

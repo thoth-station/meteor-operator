@@ -12,6 +12,8 @@ spec:
       default: ""
     - name: googleAnalyticsToken
       default: ""
+    - name: ownerReferences
+      default: "[]"
 
   results:
     - name: url
@@ -57,12 +59,22 @@ spec:
         - name: BASE_IMAGE
           value: quay.io/centos7/httpd-24-centos7:latest
 
+    - name: resolve-owner-reference
+      taskRef:
+        name: resolve-owner-reference
+      params:
+        - name: ownerReferences
+          value: $(params.ownerReferences)
+        - name: namespace
+          value: $(context.pipelineRun.namespace)
+
     - name: deploy
       taskRef:
         name: openshift-client
         kind: ClusterTask
       runAfter:
         - buildah
+        - resolve-owner-reference
       params:
         - name: SCRIPT
           value: |
@@ -74,13 +86,6 @@ spec:
               name: $(context.pipelineRun.name)
               labels:
                 app: $(context.pipelineRun.name)
-              ownerReferences:
-                - apiVersion: tekton.dev/v1beta1
-                  blockOwnerDeletion: true
-                  controller: true
-                  kind: PipelineRun
-                  name: $(context.pipelineRun.name)
-                  uid: $(context.pipelineRun.uid)
             spec:
               selector:
                 matchLabels:
@@ -106,13 +111,6 @@ spec:
             kind: Service
             metadata:
               name: $(context.pipelineRun.name)
-              ownerReferences:
-                - apiVersion: tekton.dev/v1beta1
-                  blockOwnerDeletion: true
-                  controller: true
-                  kind: PipelineRun
-                  name: $(context.pipelineRun.name)
-                  uid: $(context.pipelineRun.uid)
             spec:
               selector:
                 app: $(context.pipelineRun.name)
@@ -126,13 +124,6 @@ spec:
             kind: Route
             metadata:
               name: $(context.pipelineRun.name)
-              ownerReferences:
-                - apiVersion: tekton.dev/v1beta1
-                  blockOwnerDeletion: true
-                  controller: true
-                  kind: PipelineRun
-                  name: $(context.pipelineRun.name)
-                  uid: $(context.pipelineRun.uid)
             spec:
               to:
                 kind: Service
@@ -144,14 +135,12 @@ spec:
             apiVersion: image.openshift.io/v1
             metadata:
               name: $(context.pipelineRun.name)
-              ownerReferences:
-                - apiVersion: tekton.dev/v1beta1
-                  blockOwnerDeletion: true
-                  controller: true
-                  kind: PipelineRun
-                  name: $(context.pipelineRun.name)
-                  uid: $(context.pipelineRun.uid)
             EOM
+
+            oc patch deployment/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'
+            oc patch service/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'
+            oc patch route/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'
+            oc patch imagestream/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'
             oc wait --for=condition=available --timeout=600s deployment/$(context.pipelineRun.name)
 
     - name: url-to-results

@@ -14,6 +14,8 @@ spec:
       type: string
       # default: "$(context.pipelineRun.namespace)"
       default: opf-jupyterhub
+    - name: ownerReferences
+      default: "[]"
 
   results:
     - name: url
@@ -64,12 +66,22 @@ spec:
         - name: BASE_IMAGE
           value: $(tasks.generate.results.baseImage)
 
+    - name: resolve-owner-reference
+      taskRef:
+        name: resolve-owner-reference
+      params:
+        - name: ownerReferences
+          value: $(params.ownerReferences)
+        - name: namespace
+          value: $(params.jupyterHubNamespace)
+
     - name: create-image-stream
       taskRef:
         name: openshift-client
         kind: ClusterTask
       runAfter:
         - buildah
+        - resolve-owner-reference
       params:
         - name: SCRIPT
           value: |
@@ -91,6 +103,8 @@ spec:
               tags:
                 - name: latest
             EOM
+
+            oc patch -n $(params.jupyterHubNamespace) imagestream/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'
 
     - name: url-to-results
       taskRef:
