@@ -52,6 +52,12 @@ type PipelineResult struct {
 	Ready string `json:"ready,omitempty"`
 }
 
+type NamespacedOwnerReference struct {
+	metav1.OwnerReference `json:",inline"`
+	// Namespace of the resource
+	Namespace string `json:"namespace"`
+}
+
 // MeteorStatus defines the observed state of Meteor
 type MeteorStatus struct {
 	// Current condition of the Meteor.
@@ -69,6 +75,9 @@ type MeteorStatus struct {
 	// Most recent observed generation of Meteor. Sanity check.
 	//+optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+	// List of comas owned in different namespaces
+	//+optional
+	Comas []NamespacedOwnerReference `json:"comas,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -151,4 +160,19 @@ func (m *Meteor) AggregatePhase() string {
 		}
 	}
 	return PhaseOk
+}
+
+func (m *Meteor) GetReference(isController bool) NamespacedOwnerReference {
+	blockOwnerDeletion := true
+	return NamespacedOwnerReference{
+		OwnerReference: metav1.OwnerReference{
+			APIVersion:         m.APIVersion,
+			Kind:               m.Kind,
+			Name:               m.GetName(),
+			UID:                m.GetUID(),
+			Controller:         &isController,
+			BlockOwnerDeletion: &blockOwnerDeletion,
+		},
+		Namespace: m.GetNamespace(),
+	}
 }

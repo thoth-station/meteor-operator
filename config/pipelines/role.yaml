@@ -9,6 +9,12 @@ rules:
           - pipelineruns/finalizers
       verbs:
           - "*"
+    - apiGroups:
+          - meteor.operate-first.cloud
+      resources:
+          - meteors/finalizers
+      verbs:
+          - update
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -58,3 +64,9 @@ rules:
           - get
           - list
           - watch
+    - apiGroups:
+          - meteor.operate-first.cloud
+      resources:
+          - meteorcomas/finalizers
+      verbs:
+          - update

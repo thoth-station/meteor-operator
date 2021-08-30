@@ -2,11 +2,13 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -47,7 +49,14 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 	}()
 
 	if err := r.Get(*ctx, namespacedName, res); err != nil {
-		if errors.IsNotFound(err) {
+		if k8serrors.IsNotFound(err) {
+			ownerReferences, err := r.ownerReferences()
+			if err != nil {
+				logger.Error(err, "Unable to serialize ownerReferences")
+				return nil
+			}
+			logger.WithValues("ref", ownerReferences).Info("")
+
 			logger.Info("Creating PipelineRun")
 
 			res = &pipelinev1beta1.PipelineRun{
@@ -73,6 +82,13 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 							Value: pipelinev1beta1.ArrayOrString{
 								Type:      pipelinev1beta1.ParamTypeString,
 								StringVal: r.Meteor.Spec.Ref,
+							},
+						},
+						{
+							Name: "ownerReferences",
+							Value: pipelinev1beta1.ArrayOrString{
+								Type:      pipelinev1beta1.ParamTypeString,
+								StringVal: string(ownerReferences),
 							},
 						},
 					},
@@ -123,4 +139,13 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 		}
 	}
 	return nil
+}
+
+func (r *MeteorReconciler) ownerReferences() (string, error) {
+	if len(r.Meteor.Status.Comas) == 0 {
+		return "", errors.New("no Comas found")
+	}
+	allRefs := append(r.Meteor.Status.Comas, r.Meteor.GetReference(false))
+	ownerReferences, err := json.CaseSensitiveJSONIterator().Marshal(allRefs)
+	return string(ownerReferences), err
 }

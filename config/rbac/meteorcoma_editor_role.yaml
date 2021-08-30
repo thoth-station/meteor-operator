@@ -1,0 +1,24 @@
+# permissions for end users to edit meteorcomas.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: meteorcoma-editor-role
+rules:
+- apiGroups:
+  - meteor.operate-first.cloud
+  resources:
+  - meteorcomas
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - meteor.operate-first.cloud
+  resources:
+  - meteorcomas/status
+  verbs:
+  - get
