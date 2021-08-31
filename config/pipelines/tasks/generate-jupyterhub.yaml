@@ -74,10 +74,11 @@ spec:
         def guess_best_match(analyzed_overlays):
             for version, base, tag in IMAGE_LIST:
                 match = f"{base}:{tag}"
+                for o in analyzed_overlays:
+                    if base in o[1].split(":")[0]:
+                        return o[1]
+                        break
                 if version in [o[0] for o in analyzed_overlays]:
-                    return match
-                    break
-                if base in [o[1].split(":")[0] for o in analyzed_overlays]:
                     return match
                     break
 
