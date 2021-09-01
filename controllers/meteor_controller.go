@@ -20,6 +20,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/aicoe/meteor-operator/metrics"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -70,11 +71,14 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		logger.Error(err, "Unable to fetch reconciled resource")
 		return ctrl.Result{Requeue: true}, err
 	}
+
+	metrics.BeforeReconcile(r.Meteor)
 	r.Meteor.Status.ObservedGeneration = r.Meteor.GetGeneration()
 	r.Meteor.Status.Phase = r.Meteor.AggregatePhase()
 	r.Meteor.Status.ExpirationTimestamp = metav1.NewTime(r.Meteor.GetExpirationTimestamp())
+	metrics.AfterReconcile(r.Meteor)
 
-	if r.Meteor.IsTTLReached() {
+	if r.Meteor.IsTTLReached() && r.Meteor.ObjectMeta.DeletionTimestamp.IsZero() {
 		logger.Info("TTL reached")
 		if err := r.Delete(ctx, r.Meteor); err != nil {
 			logger.Error(err, "Failed to delete")
