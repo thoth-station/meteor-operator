@@ -90,10 +90,13 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		logger.Error(err, "Failed to ensure finalizers")
 		return ctrl.Result{}, err
 	}
-	if r.Meteor.ObjectMeta.DeletionTimestamp.IsZero() {
-		if err := r.ReconcileComas(ctx); err != nil {
-			return r.UpdateStatusNow(ctx, err)
-		}
+	if !r.Meteor.ObjectMeta.DeletionTimestamp.IsZero() {
+		logger.Info("Resource being delete, skipping further reconcile.")
+		return ctrl.Result{}, nil
+	}
+
+	if err := r.ReconcileComas(ctx); err != nil {
+		return r.UpdateStatusNow(ctx, err)
 	}
 
 	for _, pipeline := range r.Meteor.Spec.Pipelines {
