@@ -33,7 +33,6 @@ import (
 
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
 	"github.com/aicoe/meteor-operator/controllers"
-	"github.com/aicoe/meteor-operator/metrics"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
@@ -48,7 +47,7 @@ func init() {
 	utilruntime.Must(meteorv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(pipelinev1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
-	metrics.Init()
+	controllers.InitMetrics()
 }
 
 func main() {
