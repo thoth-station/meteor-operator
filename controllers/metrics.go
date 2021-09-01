@@ -1,4 +1,4 @@
-package metrics
+package controllers
 
 import (
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
@@ -36,11 +36,11 @@ var (
 	)
 )
 
-func Init() {
+func InitMetrics() {
 	metrics.Registry.MustRegister(MeteorCreated, MeteorDeleted, MeteorPhase, MeteorRemainingTime)
 }
 
-func BeforeReconcile(m *meteorv1alpha1.Meteor) {
+func MetricsBeforeReconcile(m *meteorv1alpha1.Meteor) {
 	if m.Status.ExpirationTimestamp.IsZero() {
 		// First time reconciling this meteor
 		MeteorCreated.WithLabelValues(m.GetName(), m.Spec.Url, m.Spec.Ref).Inc()
@@ -53,7 +53,7 @@ func BeforeReconcile(m *meteorv1alpha1.Meteor) {
 	}
 }
 
-func AfterReconcile(m *meteorv1alpha1.Meteor) {
+func MetricsAfterReconcile(m *meteorv1alpha1.Meteor) {
 	MeteorRemainingTime.Observe(m.GetRemainingTTL())
 	MeteorPhase.WithLabelValues(m.GetName(), m.Status.Phase).Set(1)
 }
