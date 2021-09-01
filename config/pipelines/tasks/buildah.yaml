@@ -86,7 +86,7 @@ spec:
 
         buildah --storage-driver=$(params.STORAGE_DRIVER) bud \
           $(params.BUILD_EXTRA_ARGS) --format=$(params.FORMAT) \
-          --tls-verify=$(params.TLSVERIFY) --no-cache \
+          --tls-verify=$(params.TLSVERIFY) --layers \
           -f $(params.DOCKERFILE) -t $(params.IMAGE) $(params.CONTEXT)
 
         end=`date +%s`
@@ -273,4 +273,5 @@ spec:
 
   volumes:
     - name: varlibcontainers
-      emptyDir: {}
+      persistentVolumeClaim:
+        claimName: build-cache

@@ -4,3 +4,4 @@ resources:
     - pipelines
     - tasks
     - role.yaml
+    - build-cache.yaml
