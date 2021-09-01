@@ -28,91 +28,99 @@ spec:
         LABEL_KEYS = ["pipeline", "pipelinerun"]
         LABEL_VALUES = [os.getenv("PIPELINE_NAME"), os.getenv("PIPELINERUN_NAME")]
 
+        SUBSYTEM_PREFIX = "meteor_pipelines_"
+
         METRICS = [
             Counter(
-                "images_total",
+                f"{SUBSYTEM_PREFIX}images_total",
                 "OCI images submitted for build.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Counter(
-                "image_build_success_total",
+                f"{SUBSYTEM_PREFIX}image_build_success_total",
                 "OCI image build was successfull.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Gauge(
-                "image_build_duration",
+                f"{SUBSYTEM_PREFIX}image_build_duration",
                 "OCI images build time.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Gauge(
-                "image_push_duration",
+                f"{SUBSYTEM_PREFIX}image_push_duration",
                 "OCI image push time.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Gauge(
-                "content_build_duration",
+                f"{SUBSYTEM_PREFIX}content_build_duration",
                 "Content build time.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Counter(
-                "image_analysis_total",
+                f"{SUBSYTEM_PREFIX}image_analysis_total",
                 "OCI image analysis attempted.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Counter(
-                "image_analysis_success_total",
+                f"{SUBSYTEM_PREFIX}image_analysis_success_total",
                 "OCI image successfully submitted for analysis.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Counter(
-                "image_analysis_failure_total",
+                f"{SUBSYTEM_PREFIX}image_analysis_failure_total",
                 "OCI image failed to submit for analysis.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Counter(
-                "image_build_log_analysis_total",
+                f"{SUBSYTEM_PREFIX}image_build_log_analysis_total",
                 "OCI image build log analysis attempted.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Counter(
-                "image_build_log_analysis_success_total",
+                f"{SUBSYTEM_PREFIX}image_build_log_analysis_success_total",
                 "OCI image build log analysis submitted successfully.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Counter(
-                "image_build_log_analysis_failure_total",
+                f"{SUBSYTEM_PREFIX}image_build_log_analysis_failure_total",
                 "OCI image build log analysis failed to submit.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
             Counter(
-                "image_build_log_analysis_skipped_total",
+                f"{SUBSYTEM_PREFIX}image_build_log_analysis_skipped_total",
                 "OCI image build log analysis skipped.",
                 LABEL_KEYS,
                 registry=PROMETHEUS_REGISTRY,
             ),
         ]
 
+        # Python 3.8 workaround
+        def removeprefix(text, prefix):
+            return text[text.startswith(prefix) and len(prefix) :]
+
+
         for metric in METRICS:
             try:
-                with open(f".tekton_metrics/{metric._name}", "r") as f:
-                    value = (
-                        1 if isinstance(metric, Counter) else float(f.read().strip())
-                    )
+                with open(
+                    f".tekton_metrics/{removeprefix(metric._name, SUBSYTEM_PREFIX)}", "r"
+                ) as f:
+                    value = 1 if isinstance(metric, Counter) else float(f.read().strip())
                 metric.labels(*LABEL_VALUES).inc(value)
                 print(f"Found value for metric: {metric._name}")
             except Exception as e:
                 print(f"Skipping metric (value not set): {metric._name} : {e}")
+
 
         try:
             print("Submitting metrics to Prometheus pushgateway")
