@@ -16,6 +16,8 @@ kind: Service
 apiVersion: v1
 metadata:
   name: pushgateway
+  labels:
+    app: pushgateway
 spec:
   ports:
     - name: http

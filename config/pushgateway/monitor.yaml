@@ -1,0 +1,13 @@
+# Prometheus Monitor Service (Metrics)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: pushgateway-monitor
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      app: pushgateway
