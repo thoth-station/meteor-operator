@@ -6,33 +6,41 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
+const MeteorSubsystem = "meteor_operator"
+
 var (
 	MeteorCreated = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "meteor_total",
-			Help: "Number of Meteors",
+			Subsystem: MeteorSubsystem,
+			Name:      "meteor_total",
+			Help:      "Number of Meteors",
 		},
 		[]string{"meteor", "url", "ref"},
 	)
 	MeteorDeleted = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "meteor_deleted_total",
-			Help: "Number of Meteors deleted",
+			Subsystem: MeteorSubsystem,
+			Name:      "meteor_deleted_total",
+			Help:      "Number of Meteors deleted",
 		},
 		[]string{"meteor", "url", "ref"},
 	)
 	MeteorPhase = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: "meteor_phase_total",
-			Help: "Gauge of current meteor phase",
+			Subsystem: MeteorSubsystem,
+			Name:      "meteor_phase_total",
+			Help:      "Gauge of current meteor phase",
 		},
 		[]string{"meteor", "phase"},
 	)
-	MeteorRemainingTime = prometheus.NewHistogram(
+	MeteorRemainingTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name: "meteor_remaining_ttl_bucket",
-			Help: "Remaining TTL for a Meteor",
+			Subsystem: MeteorSubsystem,
+			Name:      "meteor_remaining_ttl_bucket",
+			Help:      "Remaining TTL for a Meteor",
+			Buckets:   prometheus.LinearBuckets(0, 3600, 48),
 		},
+		[]string{"meteor"},
 	)
 )
 
@@ -54,6 +62,6 @@ func MetricsBeforeReconcile(m *meteorv1alpha1.Meteor) {
 }
 
 func MetricsAfterReconcile(m *meteorv1alpha1.Meteor) {
-	MeteorRemainingTime.Observe(m.GetRemainingTTL())
+	MeteorRemainingTime.WithLabelValues(m.GetName()).Observe(m.GetRemainingTTL())
 	MeteorPhase.WithLabelValues(m.GetName(), m.Status.Phase).Set(1)
 }
