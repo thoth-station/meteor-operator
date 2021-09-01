@@ -6,7 +6,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.13.0
-	github.com/openshift/api v3.9.0+incompatible
+	github.com/prometheus/client_golang v1.11.0
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/tektoncd/pipeline v0.26.0
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect

@@ -113,6 +113,10 @@ func (m *Meteor) IsTTLReached() bool {
 	return m.GetExpirationTimestamp().Before(time.Now())
 }
 
+func (m *Meteor) GetRemainingTTL() float64 {
+	return m.GetExpirationTimestamp().Sub(time.Now()).Seconds()
+}
+
 func (m *Meteor) GetExpirationTimestamp() time.Time {
 	return m.GetCreationTimestamp().Add(time.Duration(m.Spec.TTL) * time.Second)
 }
