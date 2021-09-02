@@ -82,6 +82,7 @@ type MeteorStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase"
 //+kubebuilder:printcolumn:name="Url",type="string",JSONPath=".spec.url",description="Repository URL"
 //+operator-sdk:csv:customresourcedefinitions:resources={{PipelineRun,tekton.dev},{Deployment,apps},{Service,v1},{Route,route.openshift.io},{ImageStream,image.openshift.io}}
 
