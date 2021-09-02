@@ -17,6 +17,10 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - description: Phase
+      jsonPath: .status.phase
+      name: Phase
+      type: string
     - description: Repository URL
       jsonPath: .spec.url
       name: Url
