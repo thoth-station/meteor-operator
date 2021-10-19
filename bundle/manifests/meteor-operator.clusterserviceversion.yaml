@@ -1,0 +1,257 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "meteor.operate-first.cloud/v1alpha1",
+          "kind": "Meteor",
+          "metadata": {
+            "name": "demo"
+          },
+          "spec": {
+            "ref": "main",
+            "ttl": 5000,
+            "url": "https://github.com/aicoe-aiops/meteor-demo"
+          }
+        }
+      ]
+    alm-examples-metadata: '{"example-meteor":{"description":"Example Meteor"}}'
+    capabilities: Basic Install
+    operators.operatorframework.io/builder: operator-sdk-unknown
+    operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
+  name: meteor-operator.v0.0.1
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: MeteorComa is the Schema for the meteorcomas API
+      displayName: Meteor Coma
+      kind: MeteorComa
+      name: meteorcomas.meteor.operate-first.cloud
+      version: v1alpha1
+    - description: Meteor is the Schema for the meteors API
+      displayName: Meteor
+      kind: Meteor
+      name: meteors.meteor.operate-first.cloud
+      resources:
+      - kind: Deployment
+        name: ""
+        version: apps
+      - kind: ImageStream
+        name: ""
+        version: image.openshift.io
+      - kind: PipelineRun
+        name: ""
+        version: tekton.dev
+      - kind: Route
+        name: ""
+        version: route.openshift.io
+      - kind: Service
+        name: ""
+        version: v1
+      specDescriptors:
+      - description: Branch or tag or commit reference within the repository.
+        displayName: Branch Reference
+        path: ref
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
+      - description: Url points to the source repository.
+        displayName: Repository URL
+        path: url
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
+      version: v1alpha1
+  description: Project Meteor provides a single click deployment model for data science
+    projects
+  displayName: Meteor
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      clusterPermissions:
+      - rules:
+        - apiGroups:
+          - meteor.operate-first.cloud
+          resources:
+          - meteorcomas
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - meteor.operate-first.cloud
+          resources:
+          - meteorcomas/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - meteor.operate-first.cloud
+          resources:
+          - meteors
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - meteor.operate-first.cloud
+          resources:
+          - meteors/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - meteor.operate-first.cloud
+          resources:
+          - meteors/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - tekton.dev
+          resources:
+          - pipelineruns
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - tekton.dev
+          resources:
+          - pipelineruns/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - tekton.dev
+          resources:
+          - pipelineruns/status
+          verbs:
+          - get
+          - patch
+          - update
+        serviceAccountName: meteor-operator-controller-manager
+      deployments:
+      - name: meteor-operator-controller-manager
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              control-plane: controller-manager
+          strategy: {}
+          template:
+            metadata:
+              labels:
+                control-plane: controller-manager
+            spec:
+              containers:
+              - args:
+                - --health-probe-bind-address=:8081
+                - --metrics-bind-address=:8080
+                - --leader-elect
+                command:
+                - /manager
+                env:
+                - name: ENABLE_WEBHOOKS
+                  value: "false"
+                image: quay.io/aicoe/meteor-operator:v0.0.1
+                livenessProbe:
+                  httpGet:
+                    path: /healthz
+                    port: 8081
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
+                name: manager
+                ports:
+                - containerPort: 8080
+                  name: http
+                readinessProbe:
+                  httpGet:
+                    path: /readyz
+                    port: 8081
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                resources:
+                  limits:
+                    cpu: 100m
+                    memory: 150Mi
+                  requests:
+                    cpu: 100m
+                    memory: 100Mi
+                securityContext:
+                  allowPrivilegeEscalation: false
+              securityContext:
+                runAsNonRoot: true
+              serviceAccountName: meteor-operator-controller-manager
+              terminationGracePeriodSeconds: 10
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+        serviceAccountName: meteor-operator-controller-manager
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - data science
+  - jupyterhub
+  links:
+  - name: Meteor Operator
+    url: https://github.com/aicoe/meteor
+  maturity: alpha
+  provider:
+    name: Red Hat
+    url: https://next.redhat.com
+  version: 0.0.1

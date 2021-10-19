@@ -1,7 +1,0 @@
-apiVersion: meteor.operate-first.cloud/v1alpha1
-kind: MeteorComa
-metadata:
-  name: meteorcoma-sample
-spec:
-  # Add fields here
-  foo: bar
