@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+  name: meteor-operator-meteor-viewer-role
+rules:
+- apiGroups:
+  - meteor.operate-first.cloud
+  resources:
+  - meteors
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - meteor.operate-first.cloud
+  resources:
+  - meteors/status
+  verbs:
+  - get

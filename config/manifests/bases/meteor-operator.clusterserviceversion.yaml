@@ -1,0 +1,80 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[{"apiVersion":"meteor.operate-first.cloud/v1alpha","kind":"Meteor","metadata":{"name":"example-meteor"},"spec":{"url":"https://github.com/aicoe-aiops/meteor-demo","ref":"main","ttl":5000}}]'
+    alm-examples-metadata: '{"example-meteor":{"description":"Example Meteor"}}'
+    capabilities: Basic Install
+  name: meteor-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: MeteorComa is the Schema for the meteorcomas API
+      displayName: Meteor Coma
+      kind: MeteorComa
+      name: meteorcomas.meteor.operate-first.cloud
+      version: v1alpha1
+    - description: Meteor is the Schema for the meteors API
+      displayName: Meteor
+      kind: Meteor
+      name: meteors.meteor.operate-first.cloud
+      resources:
+      - kind: Deployment
+        name: ""
+        version: apps
+      - kind: ImageStream
+        name: ""
+        version: image.openshift.io
+      - kind: PipelineRun
+        name: ""
+        version: tekton.dev
+      - kind: Route
+        name: ""
+        version: route.openshift.io
+      - kind: Service
+        name: ""
+        version: v1
+      specDescriptors:
+      - description: Branch or tag or commit reference within the repository.
+        displayName: Branch Reference
+        path: ref
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
+      - description: Url points to the source repository.
+        displayName: Repository URL
+        path: url
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
+      version: v1alpha1
+  description: Project Meteor provides a single click deployment model for data science
+    projects
+  displayName: Meteor
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - data science
+  - jupyterhub
+  links:
+  - name: Meteor Operator
+    url: https://github.com/aicoe/meteor
+  maturity: alpha
+  provider:
+    name: Red Hat
+    url: https://next.redhat.com
+  version: 0.0.0

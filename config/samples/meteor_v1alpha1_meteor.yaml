@@ -3,6 +3,6 @@ kind: Meteor
 metadata:
   name: demo
 spec:
-  url: github.com/aicoe-aiops/meteor-demo
+  url: https://github.com/aicoe-aiops/meteor-demo
   ref: main
-  ttl: 150
+  ttl: 5000
