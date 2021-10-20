@@ -132,7 +132,7 @@ spec:
         "$BASE_IMAGE" \
         --as-dockerfile \
         ./Dockerfile \
-        --script-url="image:///opt/app-root/builder" \
+        --scripts-url="image:///opt/app-root/builder" \
         --env=UPGRADE_PIP_TO_LATEST=1 \
         --env=THAMOS_RUNTIME_ENVIRONMENT="" \
         --env=THOTH_ADVISE=0 \
