@@ -1,0 +1,20 @@
+apiVersion: meteor.zone/v1alpha1
+kind: Shower
+metadata:
+  name: default
+spec:
+  replicas: 1
+  workspace:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500Mi
+  ingress:
+    host: shower.meteor.zone
+  env:
+    - name: GA_TRACKING_ID
+      value: G-QXLQRGTYL2
+  externalServices:
+    - name: jupyterHub
+      namespace: opf-jupyterhub

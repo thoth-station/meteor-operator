@@ -1,4 +1,4 @@
-package controllers
+package common
 
 import (
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"

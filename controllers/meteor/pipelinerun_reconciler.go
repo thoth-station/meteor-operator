@@ -1,4 +1,4 @@
-package controllers
+package meteor
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
+	"github.com/aicoe/meteor-operator/api/v1alpha1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,7 +28,7 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 	logger := log.FromContext(*ctx).WithValues("pipelinerun", namespacedName)
 
 	labels := r.Meteor.SeedLabels()
-	labels[meteorv1alpha1.MeteorPipelineLabel] = name
+	labels[v1alpha1.MeteorPipelineLabel] = name
 
 	updateStatus := func(status metav1.ConditionStatus, reason, message string) {
 		r.UpdateStatus(r.Meteor, "PipelineRun", name, status, reason, message)
@@ -40,7 +40,7 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 				return i
 			}
 		}
-		result := meteorv1alpha1.PipelineResult{
+		result := v1alpha1.PipelineResult{
 			Name:  name,
 			Ready: "False",
 		}

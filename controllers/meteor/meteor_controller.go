@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package meteor
 
 import (
 	"context"
 	"strings"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -27,18 +28,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
+	"github.com/aicoe/meteor-operator/api/v1alpha1"
+	common "github.com/aicoe/meteor-operator/controllers/common"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const RequeueAfter = 10 * time.Second
+
 // MeteorReconciler reconciles a Meteor object
 type MeteorReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
-	Meteor *meteorv1alpha1.Meteor
+	Meteor *v1alpha1.Meteor
 }
 
 //+kubebuilder:rbac:groups=meteor.zone,resources=meteors,verbs=get;list;watch;create;update;patch;delete
@@ -61,7 +65,7 @@ type MeteorReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
 func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
-	r.Meteor = &meteorv1alpha1.Meteor{}
+	r.Meteor = &v1alpha1.Meteor{}
 	if err := r.Get(ctx, req.NamespacedName, r.Meteor); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Info("Resource deleted")
@@ -71,13 +75,13 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{Requeue: true}, err
 	}
 
-	MetricsBeforeReconcile(r.Meteor)
+	common.MetricsBeforeReconcile(r.Meteor)
 	r.Meteor.Status.ObservedGeneration = r.Meteor.GetGeneration()
 	r.Meteor.Status.Phase = r.Meteor.AggregatePhase()
 	if r.Meteor.Spec.TTL != 0 {
 		r.Meteor.Status.ExpirationTimestamp = metav1.NewTime(r.Meteor.GetExpirationTimestamp())
 	}
-	MetricsAfterReconcile(r.Meteor)
+	common.MetricsAfterReconcile(r.Meteor)
 
 	if r.Meteor.IsTTLReached() && r.Meteor.ObjectMeta.DeletionTimestamp.IsZero() {
 		logger.Info("TTL reached")
@@ -121,7 +125,7 @@ func (r *MeteorReconciler) UpdateStatusNow(ctx context.Context, originalErr erro
 }
 
 // Set status condition helper
-func (r *MeteorReconciler) UpdateStatus(meteor *meteorv1alpha1.Meteor, kind, name string, status metav1.ConditionStatus, reason, message string) {
+func (r *MeteorReconciler) UpdateStatus(meteor *v1alpha1.Meteor, kind, name string, status metav1.ConditionStatus, reason, message string) {
 	meta.SetStatusCondition(&meteor.Status.Conditions, metav1.Condition{
 		Type:               kind + strings.Title(name),
 		Status:             status,
@@ -134,7 +138,7 @@ func (r *MeteorReconciler) UpdateStatus(meteor *meteorv1alpha1.Meteor, kind, nam
 func (r *MeteorReconciler) EnsureFinalizers(ctx context.Context) error {
 	logger := log.FromContext(ctx)
 
-	finalizer := Group + "/finalizer"
+	finalizer := v1alpha1.GroupVersion.Group + "/finalizer"
 	if r.Meteor.ObjectMeta.DeletionTimestamp.IsZero() {
 		// The object is not being deleted, register our finalizer
 		if !containsString(r.Meteor.GetFinalizers(), finalizer) {
@@ -174,7 +178,7 @@ func containsString(slice []string, s string) bool {
 // SetupWithManager sets up the controller with the Manager.
 func (r *MeteorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&meteorv1alpha1.Meteor{}).
+		For(&v1alpha1.Meteor{}).
 		Owns(&pipelinev1beta1.PipelineRun{}).
 		Complete(r)
 }
