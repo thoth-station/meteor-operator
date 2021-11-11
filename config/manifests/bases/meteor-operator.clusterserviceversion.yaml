@@ -23,16 +23,16 @@ spec:
       resources:
       - kind: Deployment
         name: ""
-        version: apps
+        version: apps/v1
       - kind: ImageStream
         name: ""
-        version: image.openshift.io
+        version: v1
       - kind: PipelineRun
         name: ""
-        version: tekton.dev
+        version: tekton.dev/v1beta1
       - kind: Route
         name: ""
-        version: route.openshift.io
+        version: v1
       - kind: Service
         name: ""
         version: v1
