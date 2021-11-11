@@ -74,7 +74,9 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	MetricsBeforeReconcile(r.Meteor)
 	r.Meteor.Status.ObservedGeneration = r.Meteor.GetGeneration()
 	r.Meteor.Status.Phase = r.Meteor.AggregatePhase()
-	r.Meteor.Status.ExpirationTimestamp = metav1.NewTime(r.Meteor.GetExpirationTimestamp())
+	if r.Meteor.Spec.TTL != 0 {
+		r.Meteor.Status.ExpirationTimestamp = metav1.NewTime(r.Meteor.GetExpirationTimestamp())
+	}
 	MetricsAfterReconcile(r.Meteor)
 
 	if r.Meteor.IsTTLReached() && r.Meteor.ObjectMeta.DeletionTimestamp.IsZero() {

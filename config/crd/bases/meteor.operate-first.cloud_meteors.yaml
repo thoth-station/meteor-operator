@@ -57,9 +57,7 @@ spec:
                 description: Branch or tag or commit reference within the repository.
                 type: string
               ttl:
-                default: 86400
-                description: Time to live after the resource was created. If empty
-                  default ttl will be enforced.
+                description: Time to live after the resource was created.
                 format: int64
                 type: integer
               url:
@@ -69,7 +67,6 @@ spec:
             required:
             - pipelines
             - ref
-            - ttl
             - url
             type: object
           status:
