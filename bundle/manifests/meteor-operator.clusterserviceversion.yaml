@@ -5,7 +5,7 @@ metadata:
     alm-examples: |-
       [
         {
-          "apiVersion": "meteor.operate-first.cloud/v1alpha1",
+          "apiVersion": "meteor.zone/v1alpha1",
           "kind": "Meteor",
           "metadata": {
             "name": "demo"
@@ -30,12 +30,12 @@ spec:
     - description: MeteorComa is the Schema for the meteorcomas API
       displayName: Meteor Coma
       kind: MeteorComa
-      name: meteorcomas.meteor.operate-first.cloud
+      name: meteorcomas.meteor.zone
       version: v1alpha1
     - description: Meteor is the Schema for the meteors API
       displayName: Meteor
       kind: Meteor
-      name: meteors.meteor.operate-first.cloud
+      name: meteors.meteor.zone
       resources:
       - kind: Deployment
         name: ""
@@ -75,7 +75,7 @@ spec:
       clusterPermissions:
       - rules:
         - apiGroups:
-          - meteor.operate-first.cloud
+          - meteor.zone
           resources:
           - meteorcomas
           verbs:
@@ -87,7 +87,7 @@ spec:
           - update
           - watch
         - apiGroups:
-          - meteor.operate-first.cloud
+          - meteor.zone
           resources:
           - meteorcomas/status
           verbs:
@@ -95,7 +95,7 @@ spec:
           - patch
           - update
         - apiGroups:
-          - meteor.operate-first.cloud
+          - meteor.zone
           resources:
           - meteors
           verbs:
@@ -107,13 +107,13 @@ spec:
           - update
           - watch
         - apiGroups:
-          - meteor.operate-first.cloud
+          - meteor.zone
           resources:
           - meteors/finalizers
           verbs:
           - update
         - apiGroups:
-          - meteor.operate-first.cloud
+          - meteor.zone
           resources:
           - meteors/status
           verbs:
@@ -170,7 +170,7 @@ spec:
                 env:
                 - name: ENABLE_WEBHOOKS
                   value: "false"
-                image: quay.io/aicoe/meteor-operator:v0.0.1
+                image: quay.io/tcoufal/meteor-operator:v0.0.1
                 livenessProbe:
                   httpGet:
                     path: /healthz

@@ -4,21 +4,21 @@ kind: ClusterRole
 metadata:
   name: meteorcoma-editor-role
 rules:
-- apiGroups:
-  - meteor.operate-first.cloud
-  resources:
-  - meteorcomas
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - meteor.operate-first.cloud
-  resources:
-  - meteorcomas/status
-  verbs:
-  - get
+  - apiGroups:
+      - meteor.zone
+    resources:
+      - meteorcomas
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - meteor.zone
+    resources:
+      - meteorcomas/status
+    verbs:
+      - get

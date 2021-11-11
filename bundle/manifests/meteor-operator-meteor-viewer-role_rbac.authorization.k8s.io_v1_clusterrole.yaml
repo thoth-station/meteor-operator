@@ -7,7 +7,7 @@ metadata:
   name: meteor-operator-meteor-viewer-role
 rules:
 - apiGroups:
-  - meteor.operate-first.cloud
+  - meteor.zone
   resources:
   - meteors
   verbs:
@@ -15,7 +15,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - meteor.operate-first.cloud
+  - meteor.zone
   resources:
   - meteors/status
   verbs:

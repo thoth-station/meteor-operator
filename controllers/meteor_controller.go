@@ -41,11 +41,11 @@ type MeteorReconciler struct {
 	Meteor *meteorv1alpha1.Meteor
 }
 
-//+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteors,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteors/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteors/finalizers,verbs=update
-//+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteorcomas,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=meteor.operate-first.cloud,resources=meteorcomas/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=meteor.zone,resources=meteors,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=meteor.zone,resources=meteors/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=meteor.zone,resources=meteors/finalizers,verbs=update
+//+kubebuilder:rbac:groups=meteor.zone,resources=meteorcomas,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=meteor.zone,resources=meteorcomas/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/finalizers,verbs=update

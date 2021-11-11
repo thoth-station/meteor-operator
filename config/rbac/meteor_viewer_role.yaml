@@ -6,17 +6,17 @@ metadata:
   labels:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
 rules:
-- apiGroups:
-  - meteor.operate-first.cloud
-  resources:
-  - meteors
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - meteor.operate-first.cloud
-  resources:
-  - meteors/status
-  verbs:
-  - get
+  - apiGroups:
+      - meteor.zone
+    resources:
+      - meteors
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - meteor.zone
+    resources:
+      - meteors/status
+    verbs:
+      - get

@@ -126,9 +126,9 @@ func (m *Meteor) GetExpirationTimestamp() time.Time {
 }
 
 const (
-	MeteorPipelineLabel   = "meteor.operate-first.cloud/pipeline"
-	MeteorDeploymentLabel = "meteor.operate-first.cloud/deployment"
-	MeteorLabel           = "meteor.operate-first.cloud/meteor"
+	MeteorPipelineLabel   = "meteor.zone/pipeline"
+	MeteorDeploymentLabel = "meteor.zone/deployment"
+	MeteorLabel           = "meteor.zone/meteor"
 	ODHJupyterHubLabel    = "opendatahub.io/notebook-image"
 )
 
