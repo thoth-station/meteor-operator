@@ -67,6 +67,8 @@ spec:
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.
+    - name: IMAGE_URL
+      description: URL  of the built Image.
 
   steps:
     - image: $(params.BUILDER_IMAGE)
@@ -269,7 +271,9 @@ spec:
     - name: digest-to-results
       image: $(params.BUILDER_IMAGE)
       workingDir: $(workspaces.data.path)
-      script: cat image-digest | tee /tekton/results/IMAGE_DIGEST
+      script: |
+        cat image-digest | tee /tekton/results/IMAGE_DIGEST
+        cat $(params.IMAGE) | tee /tekton/results/IMAGE_URL
 
   volumes:
     - name: varlibcontainers
