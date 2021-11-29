@@ -34,6 +34,23 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 		r.UpdateStatus(r.Meteor, "PipelineRun", name, status, reason, message)
 	}
 
+	workspace := &v1.PersistentVolumeClaim{
+		Spec: v1.PersistentVolumeClaimSpec{
+			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+			Resources: v1.ResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceStorage: resource.MustParse("500Mi"),
+				},
+			},
+		},
+	}
+	if len(r.Shower.Spec.Workspace.AccessModes) != 0 {
+		workspace.Spec.AccessModes = r.Shower.Spec.Workspace.AccessModes
+	}
+	if r.Shower.Spec.Workspace.Resources.Requests.Storage() != nil {
+		workspace.Spec.Resources = r.Shower.Spec.Workspace.Resources
+	}
+
 	statusIndex := func() int {
 		for i, pr := range r.Meteor.Status.Pipelines {
 			if pr.Name == name {
@@ -94,17 +111,8 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 					},
 					Workspaces: []pipelinev1beta1.WorkspaceBinding{
 						{
-							Name: "data",
-							VolumeClaimTemplate: &v1.PersistentVolumeClaim{
-								Spec: v1.PersistentVolumeClaimSpec{
-									AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
-									Resources: v1.ResourceRequirements{
-										Requests: v1.ResourceList{
-											v1.ResourceStorage: resource.MustParse("500Mi"),
-										},
-									},
-								},
-							},
+							Name:                "data",
+							VolumeClaimTemplate: workspace,
 						},
 					},
 				},

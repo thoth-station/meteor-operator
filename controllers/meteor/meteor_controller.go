@@ -18,12 +18,14 @@ package meteor
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -43,6 +45,7 @@ type MeteorReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	Meteor *v1alpha1.Meteor
+	Shower *v1alpha1.Shower
 }
 
 //+kubebuilder:rbac:groups=meteor.zone,resources=meteors,verbs=get;list;watch;create;update;patch;delete
@@ -81,6 +84,11 @@ func (r *MeteorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	if r.Meteor.Spec.TTL != 0 {
 		r.Meteor.Status.ExpirationTimestamp = metav1.NewTime(r.Meteor.GetExpirationTimestamp())
 	}
+
+	if err := r.findOwnerShower(ctx); err != nil {
+		r.UpdateStatusNow(ctx, err)
+	}
+
 	common.MetricsAfterReconcile(r.Meteor)
 
 	if r.Meteor.IsTTLReached() && r.Meteor.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -181,4 +189,43 @@ func (r *MeteorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&v1alpha1.Meteor{}).
 		Owns(&pipelinev1beta1.PipelineRun{}).
 		Complete(r)
+}
+
+func (r *MeteorReconciler) findOwnerShower(ctx context.Context) error {
+	logger := log.FromContext(ctx)
+	showerList := &v1alpha1.ShowerList{}
+	if err := r.List(ctx, showerList); err != nil {
+		if errors.IsNotFound(err) {
+			logger.Error(err, "No Showers in the namespace")
+			return err
+		}
+		logger.Error(err, "Unable to fetch Showers")
+		return err
+	}
+	if len(showerList.Items) == 0 {
+		err := errors.NewNotFound(schema.GroupResource{Group: v1alpha1.GroupVersion.Group, Resource: showerList.Kind}, "no showers found")
+		logger.Error(err, "No Showers in the namespace")
+		return err
+	}
+	if len(showerList.Items) == 1 {
+		r.Shower = &showerList.Items[0]
+	} else {
+		for k, v := range r.Meteor.ObjectMeta.Labels {
+			if k == "shower.meteor.zone" {
+				for _, s := range showerList.Items {
+					if s.ObjectMeta.Name == v {
+						r.Shower = &s
+					}
+				}
+			}
+		}
+	}
+	if r.Shower == nil {
+		err := errors.NewConflict(schema.GroupResource{Group: v1alpha1.GroupVersion.Group, Resource: showerList.Kind}, "", fmt.Errorf("shower conflict"))
+		logger.Error(err, "Unable to identify a single parent Shower")
+		return err
+	}
+	controllerutil.SetControllerReference(r.Shower, r.Meteor, r.Scheme)
+
+	return nil
 }
