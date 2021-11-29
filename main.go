@@ -31,9 +31,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
-	"github.com/aicoe/meteor-operator/controllers"
+	routev1 "github.com/openshift/api/route/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+
+	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
+	common "github.com/aicoe/meteor-operator/controllers/common"
+	meteor "github.com/aicoe/meteor-operator/controllers/meteor"
+	shower "github.com/aicoe/meteor-operator/controllers/shower"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -46,8 +51,10 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(meteorv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(pipelinev1beta1.AddToScheme(scheme))
+	utilruntime.Must(routev1.AddToScheme(scheme))
+	utilruntime.Must(monitoringv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
-	controllers.InitMetrics()
+	common.InitMetrics()
 }
 
 func main() {
@@ -80,11 +87,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.MeteorReconciler{
+	if err = (&meteor.MeteorReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Meteor")
+		os.Exit(1)
+	}
+	if err = (&shower.ShowerReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Shower")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

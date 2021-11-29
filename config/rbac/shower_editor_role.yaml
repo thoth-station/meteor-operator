@@ -1,0 +1,24 @@
+# permissions for end users to edit showers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: shower-editor-role
+rules:
+- apiGroups:
+  - meteor.zone
+  resources:
+  - showers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - meteor.zone
+  resources:
+  - showers/status
+  verbs:
+  - get

@@ -1,9 +1,9 @@
-package controllers
+package meteor
 
 import (
 	"context"
 
-	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
+	"github.com/aicoe/meteor-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -16,12 +16,12 @@ func (r *MeteorReconciler) ReconcileComas(ctx context.Context) error {
 	name := r.Meteor.GetName()
 
 	for _, namespace := range namespaces {
-		coma := &meteorv1alpha1.MeteorComa{}
+		coma := &v1alpha1.MeteorComa{}
 		namespacedName := types.NamespacedName{Name: r.Meteor.GetName(), Namespace: namespace}
 
 		if err := r.Get(ctx, namespacedName, coma); err != nil {
 			if errors.IsNotFound(err) {
-				coma = &meteorv1alpha1.MeteorComa{
+				coma = &v1alpha1.MeteorComa{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      name,
 						Namespace: namespace,
@@ -39,7 +39,7 @@ func (r *MeteorReconciler) ReconcileComas(ctx context.Context) error {
 			return nil
 		}
 
-		ref := meteorv1alpha1.NamespacedOwnerReference{
+		ref := v1alpha1.NamespacedOwnerReference{
 			OwnerReference: *metav1.NewControllerRef(coma, coma.GroupVersionKind()),
 			Namespace:      namespace,
 		}
@@ -61,7 +61,7 @@ func (r *MeteorReconciler) ReconcileComas(ctx context.Context) error {
 func (r *MeteorReconciler) DeleteComas(ctx context.Context) error {
 	logger := log.FromContext(ctx)
 	for _, coma := range r.Meteor.Status.Comas {
-		comaMeta := &meteorv1alpha1.MeteorComa{
+		comaMeta := &v1alpha1.MeteorComa{
 			ObjectMeta: metav1.ObjectMeta{Name: coma.Name, Namespace: coma.Namespace},
 		}
 		logger.WithValues("coma", comaMeta).Info("Deleting coma")
@@ -73,7 +73,7 @@ func (r *MeteorReconciler) DeleteComas(ctx context.Context) error {
 	return nil
 }
 
-func containsComa(slice []meteorv1alpha1.NamespacedOwnerReference, ref meteorv1alpha1.NamespacedOwnerReference) bool {
+func containsComa(slice []v1alpha1.NamespacedOwnerReference, ref v1alpha1.NamespacedOwnerReference) bool {
 	for _, item := range slice {
 		if item.Namespace == ref.Namespace && item.Name == ref.Name && item.UID == ref.UID {
 			return true
