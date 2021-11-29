@@ -44,6 +44,9 @@ type ShowerSpec struct {
 	// External services dependencies which can be used by individual pipelines as configurable intergrations e.g. ODH Jupyterhub namespace
 	//+optional
 	ExternalServices []ExternalServiceSpec `json:"externalServices,omitempty"`
+	// Custom host for persistent meteors.
+	//+optional
+	PersistentMeteorsHost string `json:"persistentMeteorHost,omitempty"`
 }
 
 // ShowerStatus defines the observed state of Shower
