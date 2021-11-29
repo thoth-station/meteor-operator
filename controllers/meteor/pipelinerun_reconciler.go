@@ -51,7 +51,7 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if k8serrors.IsNotFound(err) {
 			ownerReferences, err := r.ownerReferences()
-			if err != nil {
+			if err != nil || ownerReferences == "[]" {
 				logger.Error(err, "Unable to serialize ownerReferences")
 				return nil
 			}
