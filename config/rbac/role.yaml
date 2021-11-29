@@ -7,7 +7,7 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - meteor.operate-first.cloud
+  - meteor.zone
   resources:
   - meteorcomas
   verbs:
@@ -19,7 +19,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - meteor.operate-first.cloud
+  - meteor.zone
   resources:
   - meteorcomas/status
   verbs:
@@ -27,7 +27,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - meteor.operate-first.cloud
+  - meteor.zone
   resources:
   - meteors
   verbs:
@@ -39,13 +39,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - meteor.operate-first.cloud
+  - meteor.zone
   resources:
   - meteors/finalizers
   verbs:
   - update
 - apiGroups:
-  - meteor.operate-first.cloud
+  - meteor.zone
   resources:
   - meteors/status
   verbs:

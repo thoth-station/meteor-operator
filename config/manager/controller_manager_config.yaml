@@ -8,4 +8,4 @@ webhook:
   port: 9443
 leaderElection:
   leaderElect: true
-  resourceName: 05b1bff9.operate-first.cloud
+  resourceName: 05b1bff9.meteor.zone

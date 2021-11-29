@@ -2,7 +2,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
   annotations:
-    alm-examples: '[{"apiVersion":"meteor.operate-first.cloud/v1alpha","kind":"Meteor","metadata":{"name":"example-meteor"},"spec":{"url":"https://github.com/aicoe-aiops/meteor-demo","ref":"main","ttl":5000}}]'
+    alm-examples: '[{"apiVersion":"meteor.zone/v1alpha","kind":"Meteor","metadata":{"name":"example-meteor"},"spec":{"url":"https://github.com/aicoe-aiops/meteor-demo","ref":"main","ttl":5000}}]'
     alm-examples-metadata: '{"example-meteor":{"description":"Example Meteor"}}'
     capabilities: Basic Install
   name: meteor-operator.v0.0.0
@@ -14,12 +14,12 @@ spec:
     - description: MeteorComa is the Schema for the meteorcomas API
       displayName: Meteor Coma
       kind: MeteorComa
-      name: meteorcomas.meteor.operate-first.cloud
+      name: meteorcomas.meteor.zone
       version: v1alpha1
     - description: Meteor is the Schema for the meteors API
       displayName: Meteor
       kind: Meteor
-      name: meteors.meteor.operate-first.cloud
+      name: meteors.meteor.zone
       resources:
       - kind: Deployment
         name: ""

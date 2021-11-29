@@ -4,17 +4,17 @@ kind: ClusterRole
 metadata:
   name: meteorcoma-viewer-role
 rules:
-- apiGroups:
-  - meteor.operate-first.cloud
-  resources:
-  - meteorcomas
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - meteor.operate-first.cloud
-  resources:
-  - meteorcomas/status
-  verbs:
-  - get
+  - apiGroups:
+      - meteor.zone
+    resources:
+      - meteorcomas
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - meteor.zone
+    resources:
+      - meteorcomas/status
+    verbs:
+      - get

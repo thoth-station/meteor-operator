@@ -10,7 +10,7 @@ rules:
       verbs:
           - "*"
     - apiGroups:
-          - meteor.operate-first.cloud
+          - meteor.zone
       resources:
           - meteors/finalizers
       verbs:
@@ -65,7 +65,7 @@ rules:
           - list
           - watch
     - apiGroups:
-          - meteor.operate-first.cloud
+          - meteor.zone
       resources:
           - meteorcomas/finalizers
       verbs:

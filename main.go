@@ -73,7 +73,7 @@ func main() {
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "05b1bff9.operate-first.cloud",
+		LeaderElectionID:       "05b1bff9.meteor.zone",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

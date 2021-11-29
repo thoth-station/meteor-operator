@@ -34,9 +34,9 @@ type MeteorSpec struct {
 	// Branch or tag or commit reference within the repository.
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Branch Reference",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	Ref string `json:"ref"`
-	// Time to live after the resource was created. If empty default ttl will be enforced.
-	//+kubebuilder:default=86400
-	TTL int64 `json:"ttl"`
+	// Time to live after the resource was created.
+	//+optional
+	TTL int64 `json:"ttl,omitempty"`
 	// List of pipelines to initiate for this meteor
 	//+kubebuilder:default={jupyterhub,jupyterbook}
 	Pipelines []string `json:"pipelines"`
@@ -111,11 +111,14 @@ func init() {
 
 // Return true if TTL is reached
 func (m *Meteor) IsTTLReached() bool {
+	if m.Spec.TTL == 0 { // TTL not set
+		return false
+	}
 	return m.GetExpirationTimestamp().Before(time.Now())
 }
 
 func (m *Meteor) GetRemainingTTL() float64 {
-	return m.GetExpirationTimestamp().Sub(time.Now()).Seconds()
+	return time.Until(m.GetExpirationTimestamp()).Seconds()
 }
 
 func (m *Meteor) GetExpirationTimestamp() time.Time {
@@ -123,9 +126,9 @@ func (m *Meteor) GetExpirationTimestamp() time.Time {
 }
 
 const (
-	MeteorPipelineLabel   = "meteor.operate-first.cloud/pipeline"
-	MeteorDeploymentLabel = "meteor.operate-first.cloud/deployment"
-	MeteorLabel           = "meteor.operate-first.cloud/meteor"
+	MeteorPipelineLabel   = "meteor.zone/pipeline"
+	MeteorDeploymentLabel = "meteor.zone/deployment"
+	MeteorLabel           = "meteor.zone/meteor"
 	ODHJupyterHubLabel    = "opendatahub.io/notebook-image"
 )
 

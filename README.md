@@ -11,7 +11,7 @@
 Meteor represents a repository that is built and deployed by this Operator.
 
 ```yaml
-apiVersion: meteor.operate-first.cloud/v1alpha1
+apiVersion: meteor.zone/v1alpha1
 kind: Meteor
 metadata:
   name: demo
