@@ -16,12 +16,12 @@ func (r *MeteorReconciler) ReconcileComas(ctx context.Context) error {
 	name := r.Meteor.GetName()
 
 	for _, namespace := range namespaces {
-		coma := &v1alpha1.MeteorComa{}
+		coma := &v1alpha1.Coma{}
 		namespacedName := types.NamespacedName{Name: r.Meteor.GetName(), Namespace: namespace}
 
 		if err := r.Get(ctx, namespacedName, coma); err != nil {
 			if errors.IsNotFound(err) {
-				coma = &v1alpha1.MeteorComa{
+				coma = &v1alpha1.Coma{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      name,
 						Namespace: namespace,
@@ -61,7 +61,7 @@ func (r *MeteorReconciler) ReconcileComas(ctx context.Context) error {
 func (r *MeteorReconciler) DeleteComas(ctx context.Context) error {
 	logger := log.FromContext(ctx)
 	for _, coma := range r.Meteor.Status.Comas {
-		comaMeta := &v1alpha1.MeteorComa{
+		comaMeta := &v1alpha1.Coma{
 			ObjectMeta: metav1.ObjectMeta{Name: coma.Name, Namespace: coma.Namespace},
 		}
 		logger.WithValues("coma", comaMeta).Info("Deleting coma")

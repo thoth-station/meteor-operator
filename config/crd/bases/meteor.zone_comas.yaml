@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: meteorcomas.meteor.zone
+  name: comas.meteor.zone
 spec:
   group: meteor.zone
   names:
-    kind: MeteorComa
-    listKind: MeteorComaList
-    plural: meteorcomas
-    singular: meteorcoma
+    kind: Coma
+    listKind: ComaList
+    plural: comas
+    singular: coma
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: MeteorComa is the Schema for the meteorcomas API
+        description: Coma is the Schema for the comas API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,10 +34,10 @@ spec:
           metadata:
             type: object
           spec:
-            description: MeteorComaSpec defines the desired state of MeteorComa
+            description: ComaSpec defines the desired state of Coma
             type: object
           status:
-            description: MeteorComaStatus defines the observed state of MeteorComa
+            description: ComaStatus defines the observed state of Coma
             properties:
               owner:
                 description: Meteor owning this coma in a different namespace

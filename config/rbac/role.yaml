@@ -41,7 +41,7 @@ rules:
 - apiGroups:
   - meteor.zone
   resources:
-  - meteorcomas
+  - comas
   verbs:
   - create
   - delete
@@ -53,7 +53,7 @@ rules:
 - apiGroups:
   - meteor.zone
   resources:
-  - meteorcomas/status
+  - comas/status
   verbs:
   - get
   - patch

@@ -15,6 +15,41 @@ metadata:
             "ttl": 5000,
             "url": "https://github.com/aicoe-aiops/meteor-demo"
           }
+        },
+        {
+          "apiVersion": "meteor.zone/v1alpha1",
+          "kind": "Shower",
+          "metadata": {
+            "name": "default"
+          },
+          "spec": {
+            "env": [
+              {
+                "name": "GA_TRACKING_ID",
+                "value": "G-QXLQRGTYL2"
+              }
+            ],
+            "externalServices": [
+              {
+                "name": "jupyterHub",
+                "namespace": "opf-jupyterhub"
+              }
+            ],
+            "ingress": {
+              "host": "shower.meteor.zone"
+            },
+            "replicas": 1,
+            "workspace": {
+              "accessModes": [
+                "ReadWriteOnce"
+              ],
+              "resources": {
+                "requests": {
+                  "storage": "500Mi"
+                }
+              }
+            }
+          }
         }
       ]
     alm-examples-metadata: '{"example-meteor":{"description":"Example Meteor"}}'
@@ -27,10 +62,10 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: MeteorComa is the Schema for the meteorcomas API
-      displayName: Meteor Coma
-      kind: MeteorComa
-      name: meteorcomas.meteor.zone
+    - description: Coma is the Schema for the comas API
+      displayName: Coma
+      kind: Coma
+      name: comas.meteor.zone
       version: v1alpha1
     - description: Meteor is the Schema for the meteors API
       displayName: Meteor
@@ -64,6 +99,11 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
       version: v1alpha1
+    - description: Shower is the Schema for the showers API
+      displayName: Shower
+      kind: Shower
+      name: showers.meteor.zone
+      version: v1alpha1
   description: Project Meteor provides a single click deployment model for data science
     projects
   displayName: Meteor
@@ -74,10 +114,30 @@ spec:
     spec:
       clusterPermissions:
       - rules:
+        - resources:
+          - serviceaccounts
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - resources:
+          - services
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
-          - meteor.zone
+          - apps
           resources:
-          - meteorcomas
+          - deployments
           verbs:
           - create
           - delete
@@ -89,7 +149,19 @@ spec:
         - apiGroups:
           - meteor.zone
           resources:
-          - meteorcomas/status
+          - comas
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - meteor.zone
+          resources:
+          - comas/status
           verbs:
           - get
           - patch
@@ -120,6 +192,80 @@ spec:
           - get
           - patch
           - update
+        - apiGroups:
+          - meteor.zone
+          resources:
+          - showers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - meteor.zone
+          resources:
+          - showers/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - meteor.zone
+          resources:
+          - showers/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - rolebindings
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - roles
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - tekton.dev
           resources:
@@ -170,7 +316,7 @@ spec:
                 env:
                 - name: ENABLE_WEBHOOKS
                   value: "false"
-                image: quay.io/tcoufal/meteor-operator:v0.0.1
+                image: quay.io/aicoe/meteor-operator:v0.0.1
                 livenessProbe:
                   httpGet:
                     path: /healthz

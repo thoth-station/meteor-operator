@@ -21,7 +21,7 @@ resources:
     namespaced: true
   domain: zone
   group: meteor
-  kind: MeteorComa
+  kind: Coma
   path: github.com/aicoe/meteor-operator/api/v1alpha1
   version: v1alpha1
 - api:

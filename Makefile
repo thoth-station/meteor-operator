@@ -110,8 +110,6 @@ docker-push: ## Push docker image with the manager.
 install: manifests kustomize ## Install CRDs and other dependancies into the K8s cluster specified in ~/.kube/config.
 	oc new-project aicoe-meteor || oc project aicoe-meteor
 	$(KUSTOMIZE) build config/crd | kubectl apply -f -
-	$(KUSTOMIZE) build config/pushgateway | kubectl apply -f -
-	$(KUSTOMIZE) build config/pipelines | kubectl apply -f -
 
 uninstall: manifests kustomize ## Uninstall CRDs and other dependancies from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/crd | kubectl delete -f -
