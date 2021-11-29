@@ -73,6 +73,9 @@ spec:
                   path:
                     type: string
                 type: object
+              persistentMeteorHost:
+                description: Custom host for persistent meteors.
+                type: string
               replicas:
                 default: 1
                 description: Shower UI replicas count

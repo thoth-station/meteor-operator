@@ -51,7 +51,7 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if k8serrors.IsNotFound(err) {
 			ownerReferences, err := r.ownerReferences()
-			if err != nil {
+			if err != nil || ownerReferences == "[]" {
 				logger.Error(err, "Unable to serialize ownerReferences")
 				return nil
 			}
@@ -111,6 +111,35 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 			}
 			controllerutil.SetControllerReference(r.Meteor, res, r.Scheme)
 
+			if len(r.Shower.Spec.Workspace.AccessModes) != 0 {
+				res.Spec.Workspaces[0].VolumeClaimTemplate.Spec.AccessModes = r.Shower.Spec.Workspace.AccessModes
+			}
+			if r.Shower.Spec.Workspace.Resources.Requests.Storage() != nil {
+				res.Spec.Workspaces[0].VolumeClaimTemplate.Spec.Resources = r.Shower.Spec.Workspace.Resources
+			}
+			if r.Meteor.Spec.TTL == 0 && r.Shower.Spec.PersistentMeteorsHost != "" {
+				res.Spec.Params = append(res.Spec.Params, pipelinev1beta1.Param{
+					Name: "host",
+					Value: pipelinev1beta1.ArrayOrString{
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: r.Shower.Spec.PersistentMeteorsHost,
+					},
+				})
+			}
+			externalServices, err := r.externalServices()
+			if err != nil {
+				logger.Error(err, "Unable to serialize ownerReferences")
+				return err
+			} else {
+				res.Spec.Params = append(res.Spec.Params, pipelinev1beta1.Param{
+					Name: "externalServices",
+					Value: pipelinev1beta1.ArrayOrString{
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: string(externalServices),
+					},
+				})
+			}
+
 			if err := r.Create(*ctx, res); err != nil {
 				logger.Error(err, "Unable to create PipelineRun")
 				updateStatus(metav1.ConditionTrue, "CreateError", fmt.Sprintf("Unable to create pipelinerun. %s", err))
@@ -147,5 +176,10 @@ func (r *MeteorReconciler) ownerReferences() (string, error) {
 	}
 	allRefs := append(r.Meteor.Status.Comas, r.Meteor.GetReference(false))
 	ownerReferences, err := json.CaseSensitiveJSONIterator().Marshal(allRefs)
+	return string(ownerReferences), err
+}
+
+func (r *MeteorReconciler) externalServices() (string, error) {
+	ownerReferences, err := json.CaseSensitiveJSONIterator().Marshal(r.Shower.Spec.ExternalServices)
 	return string(ownerReferences), err
 }

@@ -142,5 +142,6 @@ func (r *ShowerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.ServiceAccount{}).
 		Owns(&rbacv1.Role{}).
 		Owns(&rbacv1.RoleBinding{}).
+		Owns(&v1alpha1.Meteor{}).
 		Complete(r)
 }
