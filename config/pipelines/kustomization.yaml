@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
     - pipelines
     - tasks
-    - role.yaml
