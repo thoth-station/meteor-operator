@@ -58,14 +58,14 @@ func (r *ShowerReconciler) ReconcileService(ctx *context.Context, req ctrl.Reque
 		return err
 	}
 
-	if !reflect.DeepEqual(res.Spec, desiredSpec) {
-		res.Spec = desiredSpec
+	if !reflect.DeepEqual(res.Spec.Selector, desiredSpec.Selector) || res.Spec.Type != desiredSpec.Type || !reflect.DeepEqual(res.Spec.Ports, desiredSpec.Ports) {
+		res.Spec.Selector = desiredSpec.Selector
+		res.Spec.Type = desiredSpec.Type
+		res.Spec.Ports = desiredSpec.Ports
 		if err := r.Update(*ctx, res); err != nil {
 			logger.Error(err, "Unable to update")
 			return err
 		}
 	}
-
-	logger.Info("Reconciled")
 	return nil
 }

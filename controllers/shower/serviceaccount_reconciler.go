@@ -42,6 +42,5 @@ func (r *ShowerReconciler) ReconcileServiceAccount(ctx *context.Context, req ctr
 		logger.Error(err, "Error fetching resource")
 		return err
 	}
-	logger.Info("Reconciled")
 	return nil
 }

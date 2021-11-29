@@ -44,7 +44,7 @@ type ShowerReconciler struct {
 
 const (
 	RequeueAfter     = 10 * time.Second
-	DefaultImageBase = "quay.io/aicoe/meteor-shower"
+	DefaultImageBase = "quay.io/aicoe/meteor-shower:v"
 )
 
 //+kubebuilder:rbac:groups=meteor.zone,resources=showers,verbs=get;list;watch;create;update;patch;delete
@@ -89,7 +89,7 @@ func (r *ShowerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	if r.Shower.Spec.Image != "" {
 		r.Shower.Status.Image = r.Shower.Spec.Image
 	} else {
-		r.Shower.Status.Image = DefaultImageBase + ":" + version.Version
+		r.Shower.Status.Image = DefaultImageBase + version.Version
 	}
 
 	actions := []func(*context.Context, reconcile.Request) error{

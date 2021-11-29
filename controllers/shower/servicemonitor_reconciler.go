@@ -64,7 +64,5 @@ func (r *ShowerReconciler) ReconcileServiceMonitor(ctx *context.Context, req ctr
 			return err
 		}
 	}
-
-	logger.Info("Reconciled")
 	return nil
 }

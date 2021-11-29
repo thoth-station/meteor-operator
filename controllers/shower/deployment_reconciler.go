@@ -36,16 +36,17 @@ func (r *ShowerReconciler) ReconcileDeployment(ctx *context.Context, req ctrl.Re
 				ServiceAccountName: resourceName,
 				Containers: []corev1.Container{
 					{
-						Name:  "shower",
-						Image: r.Shower.Status.Image,
+						Name:            "shower",
+						Image:           r.Shower.Status.Image,
+						ImagePullPolicy: corev1.PullAlways,
 						Resources: corev1.ResourceRequirements{
 							Limits: corev1.ResourceList{
 								corev1.ResourceCPU:    resource.MustParse("100m"),
-								corev1.ResourceMemory: resource.MustParse("100Mi"),
+								corev1.ResourceMemory: resource.MustParse("300Mi"),
 							},
 							Requests: corev1.ResourceList{
 								corev1.ResourceCPU:    resource.MustParse("100m"),
-								corev1.ResourceMemory: resource.MustParse("100Mi"),
+								corev1.ResourceMemory: resource.MustParse("300Mi"),
 							},
 						},
 						Ports: []corev1.ContainerPort{
@@ -84,13 +85,14 @@ func (r *ShowerReconciler) ReconcileDeployment(ctx *context.Context, req ctrl.Re
 		return err
 	}
 
-	if !reflect.DeepEqual(res.Spec, desiredSpec) {
-		res.Spec = desiredSpec
+	if res.Spec.Replicas != desiredSpec.Replicas || !reflect.DeepEqual(res.Spec.Selector, desiredSpec.Selector) || !reflect.DeepEqual(res.Spec.Template, desiredSpec.Template) {
+		res.Spec.Replicas = desiredSpec.Replicas
+		res.Spec.Selector = desiredSpec.Selector
+		res.Spec.Template = desiredSpec.Template
 		if err := r.Update(*ctx, res); err != nil {
 			logger.Error(err, "Error reconciling")
 			return err
 		}
 	}
-
 	return nil
 }

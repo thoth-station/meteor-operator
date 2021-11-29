@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +27,7 @@ func (r *ShowerReconciler) reconcileRolebinding(resourceName, namespace string, 
 			res = &rbacv1.RoleBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      resourceName,
-					Namespace: req.NamespacedName.Namespace,
+					Namespace: namespace,
 				},
 				Subjects: desiredSubjects,
 				RoleRef:  desiredRoleRef,
@@ -55,8 +54,6 @@ func (r *ShowerReconciler) reconcileRolebinding(resourceName, namespace string, 
 			return err
 		}
 	}
-
-	logger.Info("Reconciled")
 	return nil
 }
 
@@ -64,14 +61,14 @@ func (r *ShowerReconciler) ReconcileShowerRolebinding(ctx *context.Context, req 
 	resourceName := fmt.Sprintf("meteor-shower-%s", r.Shower.GetName())
 	desiredSubjects := []rbacv1.Subject{
 		{
-			Kind:      corev1.ServiceAccount{}.Kind,
+			Kind:      "ServiceAccount",
 			Name:      resourceName,
 			Namespace: req.Namespace,
 		},
 	}
 	desiredRoleRef := rbacv1.RoleRef{
 		APIGroup: rbacv1.SchemeGroupVersion.Group,
-		Kind:     rbacv1.Role{}.Kind,
+		Kind:     "Role",
 		Name:     resourceName,
 	}
 	return r.reconcileRolebinding(resourceName, req.Namespace, desiredSubjects, desiredRoleRef, ctx, req)
@@ -81,14 +78,14 @@ func (r *ShowerReconciler) ReconcilePipelineRolebinding(ctx *context.Context, re
 	resourceName := fmt.Sprintf("meteor-pipeline-%s", r.Shower.GetName())
 	desiredSubjects := []rbacv1.Subject{
 		{
-			Kind:      corev1.ServiceAccount{}.Kind,
+			Kind:      "ServiceAccount",
 			Name:      "pipeline",
 			Namespace: req.Namespace,
 		},
 	}
 	desiredRoleRef := rbacv1.RoleRef{
 		APIGroup: rbacv1.SchemeGroupVersion.Group,
-		Kind:     rbacv1.Role{}.Kind,
+		Kind:     "Role",
 		Name:     resourceName,
 	}
 	return r.reconcileRolebinding(resourceName, req.Namespace, desiredSubjects, desiredRoleRef, ctx, req)
@@ -99,14 +96,14 @@ func (r *ShowerReconciler) ReconcileExternalRolebinding(namespace string) func(*
 		resourceName := fmt.Sprintf("meteor-external-%s-%s", req.Namespace, r.Shower.GetName())
 		desiredSubjects := []rbacv1.Subject{
 			{
-				Kind:      corev1.ServiceAccount{}.Kind,
+				Kind:      "ServiceAccount",
 				Name:      "pipeline",
 				Namespace: req.Namespace,
 			},
 		}
 		desiredRoleRef := rbacv1.RoleRef{
 			APIGroup: rbacv1.SchemeGroupVersion.Group,
-			Kind:     rbacv1.Role{}.Kind,
+			Kind:     "Role",
 			Name:     resourceName,
 		}
 		return r.reconcileRolebinding(resourceName, namespace, desiredSubjects, desiredRoleRef, ctx, req)

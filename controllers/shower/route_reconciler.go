@@ -78,8 +78,6 @@ func (r *ShowerReconciler) ReconcileRoute(ctx *context.Context, req ctrl.Request
 			return err
 		}
 	}
-
-	logger.Info("Reconciled")
 	return nil
 }
 

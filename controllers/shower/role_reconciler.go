@@ -31,7 +31,7 @@ func (r *ShowerReconciler) reconcileRole(resourceName, namespace string, desired
 			res = &rbacv1.Role{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      resourceName,
-					Namespace: req.NamespacedName.Namespace,
+					Namespace: namespace,
 				},
 				Rules: desiredRules,
 			}
@@ -55,8 +55,6 @@ func (r *ShowerReconciler) reconcileRole(resourceName, namespace string, desired
 			return err
 		}
 	}
-
-	logger.Info("Reconciled")
 	return nil
 }
 
@@ -84,6 +82,11 @@ func (r *ShowerReconciler) ReconcilePipelineRole(ctx *context.Context, req ctrl.
 			APIGroups: []string{pipelinev1beta1.SchemeGroupVersion.Group},
 			Resources: []string{"pipelineruns/finalizers"},
 			Verbs:     []string{"*"},
+		},
+		{
+			APIGroups: []string{routev1.SchemeGroupVersion.Group},
+			Resources: []string{"routes"},
+			Verbs:     []string{"get", "list"},
 		},
 		{
 			APIGroups: []string{v1alpha1.GroupVersion.Group},
