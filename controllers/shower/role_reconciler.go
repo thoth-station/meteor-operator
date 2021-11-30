@@ -114,7 +114,7 @@ func (r *ShowerReconciler) ReconcileExternalRole(namespace string) func(*context
 			},
 			{
 				APIGroups: []string{v1alpha1.GroupVersion.Group},
-				Resources: []string{"meteorcomas/finalizers"},
+				Resources: []string{"comas/finalizers"},
 				Verbs:     []string{"update"},
 			},
 		}

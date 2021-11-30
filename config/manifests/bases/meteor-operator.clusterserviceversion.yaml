@@ -11,10 +11,10 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: MeteorComa is the Schema for the meteorcomas API
-      displayName: Meteor Coma
-      kind: MeteorComa
-      name: meteorcomas.meteor.zone
+    - description: Coma is the Schema for the comas API
+      displayName: Coma
+      kind: Coma
+      name: comas.meteor.zone
       version: v1alpha1
     - description: Meteor is the Schema for the meteors API
       displayName: Meteor
@@ -47,6 +47,11 @@ spec:
         path: url
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
+      version: v1alpha1
+    - description: Shower is the Schema for the showers API
+      displayName: Shower
+      kind: Shower
+      name: showers.meteor.zone
       version: v1alpha1
   description: Project Meteor provides a single click deployment model for data science
     projects

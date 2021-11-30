@@ -1,20 +1,24 @@
-# permissions for end users to view meteorcomas.
+# permissions for end users to edit comas.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: meteorcoma-viewer-role
+  name: coma-editor-role
 rules:
   - apiGroups:
       - meteor.zone
     resources:
-      - meteorcomas
+      - comas
     verbs:
+      - create
+      - delete
       - get
       - list
+      - patch
+      - update
       - watch
   - apiGroups:
       - meteor.zone
     resources:
-      - meteorcomas/status
+      - comas/status
     verbs:
       - get

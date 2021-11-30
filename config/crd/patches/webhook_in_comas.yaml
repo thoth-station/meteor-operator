@@ -2,7 +2,7 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: meteorcomas.meteor.zone
+  name: comas.meteor.zone
 spec:
   conversion:
     strategy: Webhook

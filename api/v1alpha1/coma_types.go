@@ -20,12 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// MeteorComaSpec defines the desired state of MeteorComa
-type MeteorComaSpec struct {
+// ComaSpec defines the desired state of Coma
+type ComaSpec struct {
 }
 
-// MeteorComaStatus defines the observed state of MeteorComa
-type MeteorComaStatus struct {
+// ComaStatus defines the observed state of Coma
+type ComaStatus struct {
 	// Meteor owning this coma in a different namespace
 	Owner NamespacedOwnerReference `json:"owner"`
 }
@@ -33,24 +33,24 @@ type MeteorComaStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// MeteorComa is the Schema for the meteorcomas API
-type MeteorComa struct {
+// Coma is the Schema for the comas API
+type Coma struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MeteorComaSpec   `json:"spec,omitempty"`
-	Status MeteorComaStatus `json:"status,omitempty"`
+	Spec   ComaSpec   `json:"spec,omitempty"`
+	Status ComaStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// MeteorComaList contains a list of MeteorComa
-type MeteorComaList struct {
+// ComaList contains a list of Coma
+type ComaList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []MeteorComa `json:"items"`
+	Items           []Coma `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&MeteorComa{}, &MeteorComaList{})
+	SchemeBuilder.Register(&Coma{}, &ComaList{})
 }
