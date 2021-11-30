@@ -114,7 +114,9 @@ spec:
     spec:
       clusterPermissions:
       - rules:
-        - resources:
+        - apiGroups:
+          - ""
+          resources:
           - serviceaccounts
           verbs:
           - create
@@ -124,7 +126,9 @@ spec:
           - patch
           - update
           - watch
-        - resources:
+        - apiGroups:
+          - ""
+          resources:
           - services
           verbs:
           - create
@@ -147,6 +151,30 @@ spec:
           - update
           - watch
         - apiGroups:
+          - image.openshift.io
+          resources:
+          - imagestreams
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - image.openshift.io
+          resources:
+          - imagestreams/layers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
           - meteor.zone
           resources:
           - comas
@@ -158,6 +186,12 @@ spec:
           - patch
           - update
           - watch
+        - apiGroups:
+          - meteor.zone
+          resources:
+          - comas/finalizers
+          verbs:
+          - update
         - apiGroups:
           - meteor.zone
           resources:
@@ -258,6 +292,30 @@ spec:
           - route.openshift.io
           resources:
           - routes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes/custom-host
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes/status
           verbs:
           - create
           - delete

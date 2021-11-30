@@ -53,6 +53,7 @@ type MeteorReconciler struct {
 //+kubebuilder:rbac:groups=meteor.zone,resources=meteors/finalizers,verbs=update
 //+kubebuilder:rbac:groups=meteor.zone,resources=comas,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=meteor.zone,resources=comas/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=meteor.zone,resources=comas/finalizers,verbs=update
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/finalizers,verbs=update

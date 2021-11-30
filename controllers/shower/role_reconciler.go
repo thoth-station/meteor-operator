@@ -9,6 +9,7 @@ import (
 	imagev1 "github.com/openshift/api/image/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	appsv1 "k8s.io/api/apps/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -64,7 +65,7 @@ func (r *ShowerReconciler) ReconcileShowerRole(ctx *context.Context, req ctrl.Re
 		{
 			APIGroups: []string{v1alpha1.GroupVersion.Group},
 			Resources: []string{"meteors"},
-			Verbs:     []string{"*"},
+			Verbs:     []string{"get", "list", "watch", "create", "update", "patch", "delete"},
 		},
 		{
 			APIGroups: []string{v1alpha1.GroupVersion.Group},
@@ -81,12 +82,27 @@ func (r *ShowerReconciler) ReconcilePipelineRole(ctx *context.Context, req ctrl.
 		{
 			APIGroups: []string{pipelinev1beta1.SchemeGroupVersion.Group},
 			Resources: []string{"pipelineruns/finalizers"},
-			Verbs:     []string{"*"},
+			Verbs:     []string{"update"},
+		},
+		{
+			APIGroups: []string{imagev1.SchemeGroupVersion.Group},
+			Resources: []string{"imagestreams", "imagestreams/layers"},
+			Verbs:     []string{"get", "list", "watch", "create", "update", "patch", "delete"},
 		},
 		{
 			APIGroups: []string{routev1.SchemeGroupVersion.Group},
-			Resources: []string{"routes"},
-			Verbs:     []string{"get", "list"},
+			Resources: []string{"routes", "routes/custom-host"},
+			Verbs:     []string{"get", "list", "watch", "create", "update", "patch", "delete"},
+		},
+		{
+			APIGroups: []string{appsv1.SchemeGroupVersion.Group},
+			Resources: []string{"deployments"},
+			Verbs:     []string{"get", "list", "watch", "create", "update", "patch", "delete"},
+		},
+		{
+			APIGroups: []string{""},
+			Resources: []string{"services"},
+			Verbs:     []string{"get", "list", "watch", "create", "update", "patch", "delete"},
 		},
 		{
 			APIGroups: []string{v1alpha1.GroupVersion.Group},
@@ -105,7 +121,7 @@ func (r *ShowerReconciler) ReconcileExternalRole(namespace string) func(*context
 			{
 				APIGroups: []string{imagev1.SchemeGroupVersion.Group},
 				Resources: []string{"imagestreams", "imagestreams/layers"},
-				Verbs:     []string{"*"},
+				Verbs:     []string{"get", "list", "watch", "create", "update", "patch", "delete"},
 			},
 			{
 				APIGroups: []string{routev1.SchemeGroupVersion.Group},
