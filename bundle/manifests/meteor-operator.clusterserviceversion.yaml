@@ -661,6 +661,7 @@ spec:
                 - name: ENABLE_WEBHOOKS
                   value: "false"
                 image: quay.io/aicoe/meteor-operator:v0.0.1
+                imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
                     path: /healthz
