@@ -54,33 +54,39 @@ metadata:
       ]
     alm-examples-metadata: '{"example-meteor":{"description":"Example Meteor"}}'
     capabilities: Basic Install
+    categories: AI/Machine Learning
+    description: Project Meteor provides a single click deployment for data science
+      projects
     operators.operatorframework.io/builder: operator-sdk-unknown
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
+    repository: https://github.com/AICoE/meteor-operator
   name: meteor-operator.v0.0.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: Coma is the Schema for the comas API
+    - description: Coma is a complementary resource to Meteor in namespaces defined
+        by Shower's externalServices property. This resource is generated automatically.
       displayName: Coma
       kind: Coma
       name: comas.meteor.zone
       version: v1alpha1
-    - description: Meteor is the Schema for the meteors API
+    - description: Meteor resource represents a repository build. It defines which
+        pipelines are executed and what is the livespan of the produced resources
       displayName: Meteor
       kind: Meteor
       name: meteors.meteor.zone
       resources:
       - kind: Deployment
         name: ""
-        version: apps/v1
+        version: v1
       - kind: ImageStream
         name: ""
         version: v1
       - kind: PipelineRun
         name: ""
-        version: tekton.dev/v1beta1
+        version: v1beta1
       - kind: Route
         name: ""
         version: v1
@@ -99,17 +105,297 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
       version: v1alpha1
-    - description: Shower is the Schema for the showers API
+    - description: Shower represents a Shower UI and runtime configuration associated
+        with Meteors produced from this instance.
       displayName: Shower
       kind: Shower
       name: showers.meteor.zone
+      resources:
+      - kind: Deployment
+        name: ""
+        version: v1
+      - kind: Role
+        name: ""
+        version: v1
+      - kind: RoleBinding
+        name: ""
+        version: v1
+      - kind: Route
+        name: ""
+        version: v1
+      - kind: Service
+        name: ""
+        version: v1
+      - kind: ServiceAccount
+        name: ""
+        version: v1
+      - kind: ServiceMonitor
+        name: ""
+        version: v1
       version: v1alpha1
-  description: Project Meteor provides a single click deployment model for data science
+  description: |
+    Project Meteor provides a single click deployment model for data science
     projects
-  displayName: Meteor
+
+    Public instance available at: https://shower.meteor.zone
+
+    ### About
+
+    Similar to how a *meteoroid* enters the atmosphere, becomes visible as a *meteor* and finally hits the Earth's surface as a *meteorite*, with this initiative we aim to create better visibility and impact of the tools, processes and expertise developed by the AICoE through project *Meteor*.
+
+    This project is being driven by members of the Artificial Intelligence Center of Excellence (AICoE), part of Red Hat's Office of the CTO. This team is focused on applying AI to Red Hat's core business and services through open source development that enables user's needs and fosters open collaboration in the data science and machine learning space.
+
+    Project Meteor is a combined effort across the AICoE to provide a single tool for data scientists and other users where they can interact with, explore and leverage all of our services, tools and technologies for developing intelligent applications.
+
+    ### Prerequisites
+
+    * OpenShift Pipelines
+    * OpenShift 4.7+
+
+    ### Community
+
+    To keep up with this project's progress, check out [Meteor](https://youtube.com/playlist?list=PL8VBRDTElCWp5i9bU486ewQDAQ0wYT0U4) on the Operate First YouTube channel.
+
+    ### Licence
+
+    Project Meteor is licensed under the [GNU General Public Licence, Version 3](https://github.com/AICoE/meteor/blob/main/LICENSE).
+  displayName: Project Meteor
   icon:
-  - base64data: ""
-    mediatype: ""
+  - base64data: |
+      PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0
+      b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZl
+      cnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEi
+      IHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93
+      d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KICAgICB2aWV3Qm94PSIwIDAg
+      NTExLjk2OSA1MTEuOTY5IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA1MTEuOTY5
+      IDUxMS45Njk7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnPg0KICAgIDxwYXRoIHN0eWxlPSJm
+      aWxsOiNGRkYyOTQ7IiBkPSJNNDAzLjI3LDIwNi41ODFsLTg0LjEwOS04NC4xMDljLTIuMzYsNC4z
+      MjgtMy41MDUsOS4xMzktMy40MzYsMTMuOTM5bDg0LjEwOSw4NC4xMDkNCiAgICAgICAgQzM5OS43
+      NjUsMjE1LjcyLDQwMC45MSwyMTAuOTA5LDQwMy4yNywyMDYuNTgxeiIvPg0KICAgIDxwYXRoIHN0
+      eWxlPSJmaWxsOiNGRkYyOTQ7IiBkPSJNNDI4LjUyMiwxOTEuODMzbC04NC4xMDktODQuMTA5Yy00
+      LjgtMC4wNjktOS42MTEsMS4wNzYtMTMuOTM5LDMuNDM2bDg0LjEwOSw4NC4xMDkNCiAgICAgICAg
+      QzQxOC45MTEsMTkyLjkwOSw0MjMuNzIyLDE5MS43NjMsNDI4LjUyMiwxOTEuODMzeiIvPg0KICAg
+      IDxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNMzk5LjgzNSwyMjAuNTJsMzIuNDI3LDMy
+      LjQyN2MtMC4zMzQtOS40MSwxLjgxLTE4LjMyOSw3LjYzMS0yNC4xNQ0KICAgICAgICBjNC44Nzkt
+      NC44NzksMTEuNTA1LTYuOTAxLDE4LjY1Ni02LjkzOGwtMzAuMDI2LTMwLjAyNmMtNC44LTAuMDY5
+      LTkuNjExLDEuMDc2LTEzLjkzOSwzLjQzNmwxMS4wNzUsMTEuMDc1DQogICAgICAgIGMzLjEyNSwz
+      LjEyNSwzLjEyNSw4LjE4OCwwLDExLjMxM2MtMS41NjMsMS41NjMtMy42MDksMi4zNDQtNS42NTYs
+      Mi4zNDRzLTQuMDk0LTAuNzgxLTUuNjU2LTIuMzQ0bC0xMS4wNzUtMTEuMDc1DQogICAgICAgIEM0
+      MDAuOTEsMjEwLjkwOSwzOTkuNzY1LDIxNS43MiwzOTkuODM1LDIyMC41MnoiLz4NCiAgICA8cGF0
+      aCBzdHlsZT0iZmlsbDojRkZGMjk0OyIgZD0iTTIyMC41MjIsMzk5LjgzM2wtODQuMTA5LTg0LjEw
+      OWMtNC44LTAuMDY5LTkuNjExLDEuMDc2LTEzLjkzOSwzLjQzNmw4NC4xMDksODQuMTA5DQogICAg
+      ICAgIEMyMTAuOTExLDQwMC45MDksMjE1LjcyMiwzOTkuNzYzLDIyMC41MjIsMzk5LjgzM3oiLz4N
+      CiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRkZGMjk0OyIgZD0iTTE5NS4yNyw0MTQuNTgxbC04NC4x
+      MDktODQuMTA5Yy0yLjM2LDQuMzI4LTMuNTA1LDkuMTM5LTMuNDM2LDEzLjkzOWw4NC4xMDksODQu
+      MTA5DQogICAgICAgIEMxOTEuNzY1LDQyMy43MiwxOTIuOTEsNDE4LjkwOSwxOTUuMjcsNDE0LjU4
+      MXoiLz4NCiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRkZGRkZGOyIgZD0iTTIwNi41ODMsNDAzLjI2
+      OGwxMS4wNzUsMTEuMDc1YzMuMTI1LDMuMTI1LDMuMTI1LDguMTg4LDAsMTEuMzEyDQogICAgICAg
+      IGMtMS41NjMsMS41NjMtMy42MDksMi4zNDQtNS42NTYsMi4zNDRzLTQuMDk0LTAuNzgxLTUuNjU2
+      LTIuMzQ0bC0xMS4wNzUtMTEuMDc1Yy0yLjM2LDQuMzI4LTMuNTA1LDkuMTM5LTMuNDM2LDEzLjkz
+      OQ0KICAgICAgICBsMzIuNDI3LDMyLjQyN2MtMC4zMzMtOS40MDksMS44MS0xOC4zMjgsNy42MzEt
+      MjQuMTQ5YzQuODgtNC44OCwxMS41MDYtNi45MDIsMTguNjU3LTYuOTM4bC0zMC4wMjctMzAuMDI3
+      DQogICAgICAgIEMyMTUuNzIyLDM5OS43NjMsMjEwLjkxMSw0MDAuOTA5LDIwNi41ODMsNDAzLjI2
+      OHoiLz4NCiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRkZGMjk0OyIgZD0iTTIyOS42ODEsMjk4LjM2
+      N2wxNDcuMzQ5LDE0Ny4zNDljLTIuODAyLTEwLjY3My00LjAwMS0yMS41ODgtMi45MTgtMzEuNjA1
+      bC04LjQ1NS04LjQ1NQ0KICAgICAgICBjLTEuNTYzLDEuNTYzLTMuNjA5LDIuMzQ0LTUuNjU2LDIu
+      MzQ0cy00LjA5NC0wLjc4MS01LjY1Ni0yLjM0NEwyMzAuOTQ4LDI4Mi4yNTlsLTguOTkyLDguOTky
+      Yy0xLjYwNSwxLjYwNS0yLjI2LDMuNzk0LTEuOTgsNS44ODINCiAgICAgICAgQzIyMy4wNDIsMjk1
+      LjMyOSwyMjcuMDQ4LDI5NS43MzQsMjI5LjY4MSwyOTguMzY3eiIvPg0KICAgIDxwYXRoIHN0eWxl
+      PSJmaWxsOiNGRkYyOTQ7IiBkPSJNNDA1LjY1OCwzNjUuNjU2bDguNDU3LDguNDU3YzEwLjAxNi0x
+      LjA4MywyMC45MzEsMC4xMTUsMzEuNjAzLDIuOTE1TDI5OC4zNjksMjI5LjY4DQogICAgICAgIGMt
+      Mi42MzMtMi42MzMtMy4wMzktNi42MzktMS4yMzQtOS43MDVjLTIuMDg4LTAuMjc5LTQuMjc4LDAu
+      Mzc2LTUuODgyLDEuOThsLTguOTkyLDguOTkybDEyMy4zOTcsMTIzLjM5Nw0KICAgICAgICBDNDA4
+      Ljc4MywzNTcuNDY5LDQwOC43ODMsMzYyLjUzMSw0MDUuNjU4LDM2NS42NTZ6Ii8+DQogICAgPHBh
+      dGggc3R5bGU9ImZpbGw6I0ZGRjI5NDsiIGQ9Ik0zNDYuNjkyLDMzNS4zNzhjNC4zMjgtMi4zNiw5
+      LjEzOS0zLjUwNSwxMy45MzktMy40MzZMMjE4LjMzOCwxODkuNjQ4DQogICAgICAgIGMtMy4xMjUt
+      My4xMjUtMy4xMjUtOC4xODgsMC0xMS4zMTNoMGwtMTIuNjY0LTEyLjY2NHYwYy0xLjU2MywxLjU2
+      My0zLjYwOSwyLjM0NC01LjY1NiwyLjM0NHMtNC4wOTQtMC43ODEtNS42NTYtMi4zNDQNCiAgICAg
+      ICAgbC0xMy45NDgtMTMuOTQ4Yy00LjgtMC4wNjktOS42MTEsMS4wNzYtMTMuOTM5LDMuNDM2TDM0
+      Ni42OTIsMzM1LjM3OHoiLz4NCiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRkZGMjk0OyIgZD0iTTMz
+      MS45NDQsMzYwLjYyOWMtMC4wNjktNC44LDEuMDc2LTkuNjExLDMuNDM2LTEzLjkzOUwxNTUuMTYx
+      LDE2Ni40NzINCiAgICAgICAgYy0yLjM2LDQuMzI4LTMuNTA1LDkuMTM5LTMuNDM2LDEzLjkzOUwz
+      MzEuOTQ0LDM2MC42Mjl6Ii8+DQogICAgPHBhdGggc3R5bGU9ImZpbGw6I0ZGRkZGRjsiIGQ9Ik00
+      MTQuMTE1LDM3NC4xMTNsLTguNDU3LTguNDU3Yy0xLjU2MywxLjU2My0zLjYwOSwyLjM0NC01LjY1
+      NiwyLjM0NHMtNC4wOTQtMC43ODEtNS42NTYtMi4zNDQNCiAgICAgICAgbC0zMy43MTQtMzMuNzE0
+      Yy00LjgtMC4wNjktOS42MTEsMS4wNzYtMTMuOTM5LDMuNDM2bDI2Ljk2NiwyNi45NjZjMy4xMjUs
+      My4xMjUsMy4xMjUsOC4xODgsMCwxMS4zMTMNCiAgICAgICAgYy0xLjU2MiwxLjU2My0zLjYwOSwy
+      LjM0NC01LjY1NiwyLjM0NHMtNC4wOTQtMC43ODEtNS42NTYtMi4zNDRsLTI2Ljk2Ni0yNi45NjZj
+      LTIuMzYsNC4zMjgtMy41MDUsOS4xMzktMy40MzYsMTMuOTM5DQogICAgICAgIGwzMy43MTQsMzMu
+      NzE0YzMuMTI1LDMuMTI1LDMuMTI1LDguMTg4LDAsMTEuMzEzbDguNDU1LDguNDU1YzEuMTY0LTEw
+      Ljc2OCw0Ljk2Mi0yMC40OTcsMTIuMjMyLTI3Ljc2OA0KICAgICAgICBDMzkzLjYxNiwzNzkuMDc1
+      LDQwMy4zNDYsMzc1LjI3OCw0MTQuMTE1LDM3NC4xMTN6Ii8+DQogICAgPHBhdGggc3R5bGU9ImZp
+      bGw6I0ZGOTMwMDsiIGQ9Ik01OC4zNDYsNjkuNjU2QzU5LjkwOCw3MS4yMTksNjEuOTU1LDcyLDY0
+      LjAwMiw3MnM0LjA5NC0wLjc4MSw1LjY1Ni0yLjM0NA0KICAgICAgICBjMy4xMjUtMy4xMjUsMy4x
+      MjUtOC4xODgsMC0xMS4zMTNsLTU2LTU2Yy0zLjEyNS0zLjEyNS04LjE4OC0zLjEyNS0xMS4zMTMs
+      MHMtMy4xMjUsOC4xODgsMCwxMS4zMTNMNTguMzQ2LDY5LjY1NnoiLz4NCiAgICA8cGF0aCBzdHls
+      ZT0iZmlsbDojRkZDRjAwOyIgZD0iTTMzNS4zNzksMzQ2LjY5bDI2Ljk2NiwyNi45NjZjMS41NjMs
+      MS41NjMsMy42MDksMi4zNDQsNS42NTYsMi4zNDRzNC4wOTQtMC43ODEsNS42NTYtMi4zNDQNCiAg
+      ICAgICAgYzMuMTI1LTMuMTI1LDMuMTI1LTguMTg4LDAtMTEuMzEzbC0yNi45NjYtMjYuOTY2TDE2
+      Ni40NzQsMTU1LjE1OUw5My42NDIsODIuMzI4Yy0zLjEyNS0zLjEyNS04LjE4OC0zLjEyNS0xMS4z
+      MTMsMA0KICAgICAgICBzLTMuMTI1LDguMTg4LDAsMTEuMzEzbDcyLjgzMSw3Mi44MzFMMzM1LjM3
+      OSwzNDYuNjl6Ii8+DQogICAgPHBhdGggc3R5bGU9ImZpbGw6I0ZGOTMwMDsiIGQ9Ik0yMDAuMDE3
+      LDE2OC4wMTZjMi4wNDcsMCw0LjA5NC0wLjc4MSw1LjY1Ni0yLjM0NHYwYzMuMTI1LTMuMTI1LDMu
+      MTI1LTguMTg3LDAtMTEuMzEyDQogICAgICAgIGwtMTYuMDE2LTE2LjAxNmMtMy4xMjUtMy4xMjUt
+      OC4xODgtMy4xMjUtMTEuMzEzLDBzLTMuMTI1LDguMTg4LDAsMTEuMzEzbDIuMDY4LDIuMDY4bDEz
+      Ljk0OCwxMy45NDgNCiAgICAgICAgQzE5NS45MjQsMTY3LjIzNCwxOTcuOTcsMTY4LjAxNiwyMDAu
+      MDE3LDE2OC4wMTZ6Ii8+DQogICAgPHBhdGggc3R5bGU9ImZpbGw6I0ZGQ0YwMDsiIGQ9Ik0yMTgu
+      MzM4LDE4OS42NDhsMTQyLjI5NCwxNDIuMjk0bDMzLjcxNCwzMy43MTRjMS41NjMsMS41NjMsMy42
+      MDksMi4zNDQsNS42NTYsMi4zNDQNCiAgICAgICAgczQuMDk0LTAuNzgxLDUuNjU2LTIuMzQ0YzMu
+      MTI1LTMuMTI1LDMuMTI1LTguMTg4LDAtMTEuMzEzTDI4Mi4yNjEsMjMwLjk0N2wtNTIuNjExLTUy
+      LjYxMWMtMy4xMjUtMy4xMjUtOC4xODctMy4xMjUtMTEuMzEyLDBoMA0KICAgICAgICBDMjE1LjIx
+      MywxODEuNDYxLDIxNS4yMTMsMTg2LjUyMywyMTguMzM4LDE4OS42NDh6Ii8+DQogICAgPHBhdGgg
+      c3R5bGU9ImZpbGw6I0ZGOTMwMDsiIGQ9Ik0yNzQuMzUzLDIwNS42NjRjMS41NjMsMS41NjMsMy42
+      MDksMi4zNDQsNS42NTYsMi4zNDRzNC4wOTQtMC43ODEsNS42NTYtMi4zNDQNCiAgICAgICAgYzMu
+      MTI1LTMuMTI1LDMuMTI1LTguMTg4LDAtMTEuMzEzbC04LjAwOC04LjAwOGMtMy4xMjUtMy4xMjUt
+      OC4xODgtMy4xMjUtMTEuMzEzLDBzLTMuMTI1LDguMTg3LDAsMTEuMzEyTDI3NC4zNTMsMjA1LjY2
+      NHoiLz4NCiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRkZDRjAwOyIgZD0iTTI5OC4zNjksMjI5LjY4
+      bDE0Ny4zNDksMTQ3LjM0OWMxOC42MDMsNC44ODIsMzYuNDY3LDE0LjYzOSw0Ny41NDIsMjUuNzE0
+      DQogICAgICAgIGMwLjc0NiwwLjc0NiwxLjQ2NywxLjUwOCwyLjE2OCwyLjI4MmMtMC4zOTEtMC45
+      NzUtMC45NzktMS44OS0xLjc3LTIuNjhMMzA5LjY4MSwyMTguMzY3Yy0zLjEyNS0zLjEyNS04LjE4
+      OC0zLjEyNS0xMS4zMTMsMA0KICAgICAgICBjLTAuNDkyLDAuNDkyLTAuODk3LDEuMDM1LTEuMjM0
+      LDEuNjA3QzI5NS4zMywyMjMuMDQxLDI5NS43MzUsMjI3LjA0NiwyOTguMzY5LDIyOS42OHoiLz4N
+      CiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRkY5MzAwOyIgZD0iTTIwMC4wMSwyODguMDA4YzIuMDQ3
+      LDAsNC4wOTQtMC43ODEsNS42NTYtMi4zNDRjMy4xMjUtMy4xMjUsMy4xMjUtOC4xODgsMC0xMS4z
+      MTNsLTguMDA4LTguMDA4DQogICAgICAgIGMtMy4xMjUtMy4xMjUtOC4xODgtMy4xMjUtMTEuMzEz
+      LDBzLTMuMTI1LDguMTg4LDAsMTEuMzEzbDguMDA4LDguMDA4QzE5NS45MTYsMjg3LjIyNiwxOTcu
+      OTYzLDI4OC4wMDgsMjAwLjAxLDI4OC4wMDh6Ii8+DQogICAgPHBhdGggc3R5bGU9ImZpbGw6I0ZG
+      Q0YwMDsiIGQ9Ik00MDIuNzQ0LDQ5My4yNThjLTExLjA3MS0xMS4wNzQtMjAuODI5LTI4LjkzOC0y
+      NS43MTMtNDcuNTQxTDIyOS42ODEsMjk4LjM2Nw0KICAgICAgICBjLTIuNjMzLTIuNjMzLTYuNjM5
+      LTMuMDM5LTkuNzA1LTEuMjMzYy0wLjU3MiwwLjMzNy0xLjExNiwwLjc0Mi0xLjYwNywxLjIzM2Mt
+      My4xMjUsMy4xMjUtMy4xMjUsOC4xODgsMCwxMS4zMTJsMTgzLjk3NiwxODMuOTc3DQogICAgICAg
+      IGMwLjc5LDAuNzksMS43MDQsMS4zNzksMi42NzksMS43NjljLTAuMTU3LTAuMTQzLTAuMzA4LTAu
+      Mjk3LTAuNDY0LTAuNDQxQzQwMy45NDUsNDk0LjQyNSw0MDMuMzM4LDQ5My44NTIsNDAyLjc0NCw0
+      OTMuMjU4eiIvPg0KICAgIDxwYXRoIHN0eWxlPSJmaWxsOiNGRjkzMDA7IiBkPSJNODUuNjU4LDEx
+      NC4zNDRjLTMuMTI1LTMuMTI1LTguMTg4LTMuMTI1LTExLjMxMywwcy0zLjEyNSw4LjE4OCwwLDEx
+      LjMxM2wxNi4wMDgsMTYuMDA4DQogICAgICAgIGMxLjU2MywxLjU2MywzLjYwOSwyLjM0NCw1LjY1
+      NiwyLjM0NHM0LjA5NC0wLjc4MSw1LjY1Ni0yLjM0NGMzLjEyNS0zLjEyNSwzLjEyNS04LjE4OCww
+      LTExLjMxM0w4NS42NTgsMTE0LjM0NHoiLz4NCiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRkZDRjAw
+      OyIgZD0iTTM2MC4wMDIsNDA4YzIuMDQ3LDAsNC4wOTQtMC43ODEsNS42NTYtMi4zNDRjMy4xMjUt
+      My4xMjUsMy4xMjUtOC4xODgsMC0xMS4zMTNsLTMzLjcxNC0zMy43MTQNCiAgICAgICAgTDE1MS43
+      MjYsMTgwLjQxMWwtMjYuMDY4LTI2LjA2OGMtMy4xMjUtMy4xMjUtOC4xODgtMy4xMjUtMTEuMzEz
+      LDBzLTMuMTI1LDguMTg4LDAsMTEuMzEzbDExNi42MDMsMTE2LjYwM2wxMjMuMzk3LDEyMy4zOTcN
+      CiAgICAgICAgQzM1NS45MDgsNDA3LjIxOSwzNTcuOTU1LDQwOCwzNjAuMDAyLDQwOHoiLz4NCiAg
+      ICA8cGF0aCBzdHlsZT0iZmlsbDojRkY5MzAwOyIgZD0iTTI0Ni4zNjEsNDkuNjcyYzEuNTYzLDEu
+      NTYzLDMuNjA5LDIuMzQ0LDUuNjU2LDIuMzQ0czQuMDk0LTAuNzgxLDUuNjU2LTIuMzQ0DQogICAg
+      ICAgIGMzLjEyNS0zLjEyNSwzLjEyNS04LjE4OCwwLTExLjMxM0wyMjEuNjU4LDIuMzQ0Yy0zLjEy
+      NS0zLjEyNS04LjE4OC0zLjEyNS0xMS4zMTMsMHMtMy4xMjUsOC4xODgsMCwxMS4zMTNMMjQ2LjM2
+      MSw0OS42NzJ6Ii8+DQogICAgPHBhdGggc3R5bGU9ImZpbGw6I0ZGQ0YwMDsiIGQ9Ik0zMTkuMTYx
+      LDEyMi40NzJsODQuMTA5LDg0LjEwOWwxMS4wNzUsMTEuMDc1YzEuNTYzLDEuNTYzLDMuNjA5LDIu
+      MzQ0LDUuNjU2LDIuMzQ0DQogICAgICAgIHM0LjA5NC0wLjc4MSw1LjY1Ni0yLjM0NGMzLjEyNS0z
+      LjEyNSwzLjEyNS04LjE4OCwwLTExLjMxM2wtMTEuMDc1LTExLjA3NWwtODQuMTA5LTg0LjEwOWwt
+      NDguODE2LTQ4LjgxNg0KICAgICAgICBjLTMuMTI1LTMuMTI1LTguMTg4LTMuMTI1LTExLjMxMyww
+      cy0zLjEyNSw4LjE4OCwwLDExLjMxMkwzMTkuMTYxLDEyMi40NzJ6Ii8+DQogICAgPHBhdGggc3R5
+      bGU9ImZpbGw6I0ZGOTMwMDsiIGQ9Ik0zMTAuMzM4LDczLjY0OGMxLjU2MywxLjU2MywzLjYwOSwy
+      LjM0NCw1LjY1NiwyLjM0NHM0LjA5NC0wLjc4MSw1LjY1Ni0yLjM0NA0KICAgICAgICBjMy4xMjUt
+      My4xMjUsMy4xMjUtOC4xODcsMC0xMS4zMTJsLTM5Ljk5Mi0zOS45OTJjLTMuMTI1LTMuMTI1LTgu
+      MTg4LTMuMTI1LTExLjMxMywwcy0zLjEyNSw4LjE4OCwwLDExLjMxM0wzMTAuMzM4LDczLjY0OHoi
+      Lz4NCiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRkZDRjAwOyIgZD0iTTQ1OC41NDgsMjIxLjg1OWMx
+      NC4wODgtMC4wNzEsMzAuMjIyLDcuNTkyLDM5LjEwOSwxNi40ODRMMzQ1LjY2Niw4Ni4zNTINCiAg
+      ICAgICAgYy0zLjEyNS0zLjEyNS04LjE4OC0zLjEyNS0xMS4zMTMsMHMtMy4xMjUsOC4xODgsMCwx
+      MS4zMTNsMTAuMDYsMTAuMDZsODQuMTA5LDg0LjEwOUw0NTguNTQ4LDIyMS44NTl6Ii8+DQogICAg
+      PHBhdGggc3R5bGU9ImZpbGw6I0ZGOTMwMDsiIGQ9Ik0yNzYuMDAyLDExNmMyLjA0NywwLDQuMDk0
+      LTAuNzgxLDUuNjU2LTIuMzQ0YzMuMTI1LTMuMTI1LDMuMTI1LTguMTg4LDAtMTEuMzEzbC0zNi0z
+      Ng0KICAgICAgICBjLTMuMTI1LTMuMTI1LTguMTg4LTMuMTI1LTExLjMxMywwcy0zLjEyNSw4LjE4
+      NywwLDExLjMxMmwzNiwzNkMyNzEuOTA4LDExNS4yMTksMjczLjk1NSwxMTYsMjc2LjAwMiwxMTZ6
+      Ii8+DQogICAgPHBhdGggc3R5bGU9ImZpbGw6I0ZGQ0YwMDsiIGQ9Ik00MzIuMjYxLDI1Mi45NDds
+      LTMyLjQyNy0zMi40MjdsLTg0LjEwOS04NC4xMDlsLTEwLjA4My0xMC4wODNjLTMuMTI1LTMuMTI1
+      LTguMTg4LTMuMTI1LTExLjMxMywwDQogICAgICAgIHMtMy4xMjUsOC4xODgsMCwxMS4zMTNsMTQ4
+      LjAxNiwxNDguMDE2YzAuNDY5LDAuNDY5LDAuOTg1LDAuODU5LDEuNTI4LDEuMTg3QzQzNy40OSwy
+      NzguNzA3LDQzMi43MDMsMjY1LjQsNDMyLjI2MSwyNTIuOTQ3eiIvPg0KICAgIDxwYXRoIHN0eWxl
+      PSJmaWxsOiNGRjkzMDA7IiBkPSJNNDQuMDE3LDI2MC4wMTZjMi4wNDcsMCw0LjA5NC0wLjc4MSw1
+      LjY1Ni0yLjM0NGMzLjEyNS0zLjEyNSwzLjEyNS04LjE4OCwwLTExLjMxM2wtMzYuMDE2LTM2LjAx
+      Ng0KICAgICAgICBjLTMuMTI1LTMuMTI1LTguMTg4LTMuMTI1LTExLjMxMywwcy0zLjEyNSw4LjE4
+      OCwwLDExLjMxM2wzNi4wMTYsMzYuMDE2QzM5LjkyNCwyNTkuMjM0LDQxLjk3MSwyNjAuMDE2LDQ0
+      LjAxNywyNjAuMDE2eiIvPg0KICAgIDxwYXRoIHN0eWxlPSJmaWxsOiNGRkNGMDA7IiBkPSJNMjA2
+      LjM0NSw0MjUuNjU2YzEuNTYzLDEuNTYzLDMuNjA5LDIuMzQ0LDUuNjU2LDIuMzQ0czQuMDk0LTAu
+      NzgxLDUuNjU2LTIuMzQ0DQogICAgICAgIGMzLjEyNS0zLjEyNSwzLjEyNS04LjE4NywwLTExLjMx
+      MmwtMTEuMDc1LTExLjA3NWwtODQuMTA5LTg0LjEwOWwtNDguODE2LTQ4LjgxNmMtMy4xMjUtMy4x
+      MjUtOC4xODgtMy4xMjUtMTEuMzEzLDANCiAgICAgICAgcy0zLjEyNSw4LjE4OCwwLDExLjMxM2w0
+      OC44MTYsNDguODE2bDg0LjEwOSw4NC4xMDlMMjA2LjM0NSw0MjUuNjU2eiIvPg0KICAgIDxwYXRo
+      IHN0eWxlPSJmaWxsOiNGRjkzMDA7IiBkPSJNNjIuMzQ2LDIzMC4zNDRjLTMuMTI1LDMuMTI1LTMu
+      MTI1LDguMTg4LDAsMTEuMzEzbDM5Ljk5MiwzOS45OTINCiAgICAgICAgYzEuNTYzLDEuNTYzLDMu
+      NjA5LDIuMzQ0LDUuNjU2LDIuMzQ0czQuMDk0LTAuNzgxLDUuNjU2LTIuMzQ0YzMuMTI1LTMuMTI1
+      LDMuMTI1LTguMTg4LDAtMTEuMzEzbC0zOS45OTItMzkuOTkyDQogICAgICAgIEM3MC41MzMsMjI3
+      LjIxOSw2NS40NzEsMjI3LjIxOSw2Mi4zNDYsMjMwLjM0NHoiLz4NCiAgICA8cGF0aCBzdHlsZT0i
+      ZmlsbDojRkZDRjAwOyIgZD0iTTI1MC41NDksNDI5Ljg2YzE0LjA4OC0wLjA3MSwzMC4yMjEsNy41
+      OTIsMzkuMTA5LDE2LjQ4NGMwLjAwNiwwLjAwNiwwLjAxMiwwLjAxMywwLjAxOCwwLjAxOQ0KICAg
+      ICAgICBjLTAuMDA2LTAuMDA2LTAuMDEyLTAuMDE0LTAuMDE4LTAuMDJMMTM3LjY2NiwyOTQuMzUx
+      Yy0zLjEyNS0zLjEyNS04LjE4OC0zLjEyNS0xMS4zMTMsMHMtMy4xMjUsOC4xODgsMCwxMS4zMTNs
+      MTAuMDYsMTAuMDYNCiAgICAgICAgbDg0LjEwOSw4NC4xMDlMMjUwLjU0OSw0MjkuODZ6Ii8+DQog
+      ICAgPHBhdGggc3R5bGU9ImZpbGw6I0ZGOTMwMDsiIGQ9Ik0zNy42NTgsMjc0LjM0NGMtMy4xMjUt
+      My4xMjUtOC4xODgtMy4xMjUtMTEuMzEzLDBzLTMuMTI1LDguMTg4LDAsMTEuMzEzbDM2LDM2DQog
+      ICAgICAgIGMxLjU2MywxLjU2MywzLjYwOSwyLjM0NCw1LjY1NiwyLjM0NHM0LjA5NC0wLjc4MSw1
+      LjY1Ni0yLjM0NGMzLjEyNS0zLjEyNSwzLjEyNS04LjE4OCwwLTExLjMxM0wzNy42NTgsMjc0LjM0
+      NHoiLz4NCiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRkZDRjAwOyIgZD0iTTIyNC4yNjEsNDYwLjk0
+      N2wtMzIuNDI3LTMyLjQyN2wtODQuMTA5LTg0LjEwOWwtMTAuMDgzLTEwLjA4M2MtMy4xMjUtMy4x
+      MjUtOC4xODgtMy4xMjUtMTEuMzEzLDANCiAgICAgICAgcy0zLjEyNSw4LjE4OCwwLDExLjMxM2wx
+      NDguMDE2LDE0OC4wMTZjMC40NjgsMC40NjgsMC45ODQsMC44NTgsMS41MjcsMS4xODZDMjI5LjQ4
+      OSw0ODYuNzA2LDIyNC43MDIsNDczLjM5OSwyMjQuMjYxLDQ2MC45NDd6Ii8+DQogICAgPHBhdGgg
+      c3R5bGU9ImZpbGw6I0Q0OUU2QzsiIGQ9Ik00OTUuNDI3LDQwNS4wMjRjLTAuNzAxLTAuNzczLTEu
+      NDIyLTEuNTM1LTIuMTY4LTIuMjgyYzIuODkxLDIuODkyLDUuNDExLDYuMDEzLDcuNjMxLDkuMjc2
+      DQogICAgICAgIGMtOS42NzItNi45ODYtMjAuOTAxLTExLjAxMi0zMi4zOTItMTEuODVjLTE2LjMw
+      Mi0xLjE4OS0zMy4wNjIsMy45MDUtNDYuMzg4LDE1LjU3NGMtMjQuMjY2LDIxLjI1Ni0yOC44MzQs
+      NTcuMDY4LTEyLjExNCw4My42NjMNCiAgICAgICAgYy0xLjg2NC0xLjM3OS0zLjY4OS0yLjgzNS01
+      LjQzNy00LjQyMWMwLjE1NiwwLjE0NSwwLjMwNywwLjI5OCwwLjQ2NCwwLjQ0MWMxMi4xNTgsMTEu
+      MDI5LDI3LjU2NywxNi41NDMsNDIuOTc3LDE2LjU0Mw0KICAgICAgICBjMTYuMzkxLDAsMzIuNzgx
+      LTYuMjM0LDQ1LjI1OC0xOC43MTFDNTE3LjQ1OSw0NjkuMDUxLDUxOC4xNzksNDMwLjExMiw0OTUu
+      NDI3LDQwNS4wMjR6Ii8+DQogICAgPHBhdGggc3R5bGU9ImZpbGw6I0I2ODA1MjsiIGQ9Ik00NDUu
+      NzE4LDM3Ny4wMjhjLTEwLjY3Mi0yLjgwMS0yMS41ODctMy45OTgtMzEuNjAzLTIuOTE1DQogICAg
+      ICAgIGMtMTAuNzY5LDEuMTY0LTIwLjQ5OSw0Ljk2Mi0yNy43NjksMTIuMjMxYy03LjI3LDcuMjct
+      MTEuMDY4LDE2Ljk5OS0xMi4yMzIsMjcuNzY4Yy0xLjA4MywxMC4wMTcsMC4xMTYsMjAuOTMyLDIu
+      OTE4LDMxLjYwNQ0KICAgICAgICBjNC44ODQsMTguNjAzLDE0LjY0MiwzNi40NjcsMjUuNzEzLDQ3
+      LjU0MWMwLjU5NCwwLjU5NCwxLjIwMSwxLjE2OCwxLjgxNiwxLjcyN2MxLjc0OCwxLjU4NywzLjU3
+      MywzLjA0Miw1LjQzNyw0LjQyMQ0KICAgICAgICBjLTE2LjcyLTI2LjU5NS0xMi4xNTEtNjIuNDA3
+      LDEyLjExNC04My42NjNjMTMuMzI2LTExLjY2OSwzMC4wODYtMTYuNzYzLDQ2LjM4OC0xNS41NzRj
+      MTEuNDkxLDAuODM4LDIyLjcyLDQuODY0LDMyLjM5MiwxMS44NQ0KICAgICAgICBjLTIuMjIxLTMu
+      MjY0LTQuNzQtNi4zODQtNy42MzEtOS4yNzZDNDgyLjE4NSwzOTEuNjY4LDQ2NC4zMjEsMzgxLjkx
+      LDQ0NS43MTgsMzc3LjAyOHoiLz4NCiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRDQ5RTZDOyIgZD0i
+      TTQ5Ny43NTIsMjQ2LjJjLTkuMDg4LTQuODA4LTE5LjcyMy02LjY3My0yOS40MzQtNC4yODFjLTE5
+      LjQxOSw0Ljc3Ny0zMC4zMzcsMjUuNDE3LTIzLjM1OSw0NC4xNTgNCiAgICAgICAgYzAuNDU2LDEu
+      MjI4LDEuMDAxLDIuNDg0LDEuNjA0LDMuNzU1Yy0wLjA2Ny0wLjA2Ni0wLjE1MS0wLjEwOC0wLjIx
+      OC0wLjE3NWM2LjgzNiw2LjgzNiwxNi4yNDIsMTAuMjUsMjUuNjU2LDEwLjI1DQogICAgICAgIHMx
+      OC44Mi0zLjQxNCwyNS42NTYtMTAuMjVjMTMuMTk0LTEzLjE4NywxMy42NTEtMzUuOTgyLDEuMzc5
+      LTQ5Ljg0YzMuMDcsMy40OTgsNS4yNjksNy41ODMsNi43NDQsMTEuOTEyDQogICAgICAgIEM1MDMu
+      Mjg2LDI0OS42NDcsNTAwLjY0MywyNDcuNzI5LDQ5Ny43NTIsMjQ2LjJ6Ii8+DQogICAgPHBhdGgg
+      c3R5bGU9ImZpbGw6I0Q0OUU2QzsiIGQ9Ik00OTcuNjU4LDIzOC4zNDRjMC40NzQsMC40NzQsMC45
+      MywwLjk2MSwxLjM2OSwxLjQ2DQogICAgICAgIEM0OTguNTg2LDIzOS4zMDYsNDk4LjEzMiwyMzgu
+      ODE3LDQ5Ny42NTgsMjM4LjM0NHoiLz4NCiAgICA8cGF0aCBzdHlsZT0iZmlsbDojQjY4MDUyOyIg
+      ZD0iTTQ1OC41NDgsMjIxLjg1OWMtNy4xNTEsMC4wMzYtMTMuNzc3LDIuMDU4LTE4LjY1Niw2Ljkz
+      OGMtNS44MjEsNS44MjEtNy45NjUsMTQuNzQtNy42MzEsMjQuMTUNCiAgICAgICAgYzAuNDQyLDEy
+      LjQ1Myw1LjIyOCwyNS43NiwxMS42MTIsMzMuODk2YzAuODAxLDEuMDIxLDEuNjI2LDEuOTY3LDIu
+      NDcyLDIuODEzYzAuMDY3LDAuMDY3LDAuMTUsMC4xMDksMC4yMTgsMC4xNzUNCiAgICAgICAgYy0w
+      LjYwMy0xLjI3MS0xLjE0OC0yLjUyNy0xLjYwNC0zLjc1NWMtNi45NzktMTguNzQxLDMuOTQtMzku
+      MzgxLDIzLjM1OS00NC4xNThjOS43MTEtMi4zOTIsMjAuMzQ2LTAuNTI2LDI5LjQzNCw0LjI4MQ0K
+      ICAgICAgICBjMi44OTEsMS41MjksNS41MzQsMy40NDcsOC4wMjksNS41MjljLTEuNDc1LTQuMzMt
+      My42NzQtOC40MTQtNi43NDQtMTEuOTEyYy0wLjAwMy0wLjAwNC0wLjAwNy0wLjAwOC0wLjAxLTAu
+      MDEyDQogICAgICAgIGMtMC40MzgtMC40OTktMC44OTQtMC45ODYtMS4zNjktMS40NkM0ODguNzcx
+      LDIyOS40NTEsNDcyLjYzNiwyMjEuNzg4LDQ1OC41NDgsMjIxLjg1OXoiLz4NCiAgICA8cGF0aCBz
+      dHlsZT0iZmlsbDojRDQ5RTZDOyIgZD0iTTI5Ny43ODEsNDU5LjcyOWMtMi40OTUtMi4wODItNS4x
+      MzgtNC04LjAyOS01LjUyOWMtOS4wODgtNC44MDgtMTkuNzIzLTYuNjczLTI5LjQzNC00LjI4MQ0K
+      ICAgICAgICBjLTE5LjQxOSw0Ljc3Ny0zMC4zMzcsMjUuNDE3LTIzLjM1OSw0NC4xNThjMC40NTYs
+      MS4yMjgsMS4wMDEsMi40ODQsMS42MDQsMy43NTVjLTAuMDY3LTAuMDY2LTAuMTUxLTAuMTA4LTAu
+      MjE4LTAuMTc1DQogICAgICAgIGM2LjgzNiw2LjgzNiwxNi4yNDIsMTAuMjUsMjUuNjU2LDEwLjI1
+      YzkuNDE0LDAsMTguODItMy40MTQsMjUuNjU2LTEwLjI1YzEzLjE5NC0xMy4xODcsMTMuNjUxLTM1
+      Ljk4MiwxLjM3OS00OS44NA0KICAgICAgICBDMjk0LjEwNyw0NTEuMzE1LDI5Ni4zMDYsNDU1LjM5
+      OSwyOTcuNzgxLDQ1OS43Mjl6Ii8+DQogICAgPHBhdGggc3R5bGU9ImZpbGw6I0Q0OUU2QzsiIGQ9
+      Ik0yOTEuMDI3LDQ0Ny44MDVjLTAuNDM1LTAuNDkxLTAuODgzLTAuOTczLTEuMzUxLTEuNDQxYy0w
+      LjAwNi0wLjAwNi0wLjAxMi0wLjAxMy0wLjAxOC0wLjAxOQ0KICAgICAgICBDMjkwLjEzMiw0NDYu
+      ODE5LDI5MC41ODgsNDQ3LjMwNiwyOTEuMDI3LDQ0Ny44MDV6Ii8+DQogICAgPHBhdGggc3R5bGU9
+      ImZpbGw6I0I2ODA1MjsiIGQ9Ik0yMzYuOTU5LDQ5NC4wNzdjLTYuOTc5LTE4Ljc0MSwzLjk0LTM5
+      LjM4MSwyMy4zNTktNDQuMTU4YzkuNzExLTIuMzkyLDIwLjM0Ni0wLjUyNiwyOS40MzQsNC4yODEN
+      CiAgICAgICAgYzIuODkxLDEuNTI5LDUuNTM0LDMuNDQ3LDguMDI5LDUuNTI5Yy0xLjQ3NS00LjMz
+      LTMuNjc0LTguNDE0LTYuNzQ0LTExLjkxMmMtMC4wMDMtMC4wMDQtMC4wMDctMC4wMDgtMC4wMS0w
+      LjAxMg0KICAgICAgICBjLTAuNDM4LTAuNDk5LTAuODk0LTAuOTg2LTEuMzY5LTEuNDZjLTguODg3
+      LTguODkyLTI1LjAyMS0xNi41NTUtMzkuMTA5LTE2LjQ4NGMtNy4xNTEsMC4wMzYtMTMuNzc3LDIu
+      MDU4LTE4LjY1Nyw2LjkzOA0KICAgICAgICBjLTUuODIxLDUuODIxLTcuOTY1LDE0Ljc0LTcuNjMx
+      LDI0LjE0OWMwLjQ0MSwxMi40NTMsNS4yMjgsMjUuNzU5LDExLjYxMSwzMy44OTVjMC44MDIsMS4w
+      MjIsMS42MjcsMS45NjgsMi40NzMsMi44MTUNCiAgICAgICAgYzAuMDY3LDAuMDY3LDAuMTUsMC4x
+      MDksMC4yMTgsMC4xNzVDMjM3Ljk2LDQ5Ni41NjIsMjM3LjQxNSw0OTUuMzA1LDIzNi45NTksNDk0
+      LjA3N3oiLz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9n
+      Pg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4N
+      CjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8
+      Zz4NCjwvZz4NCjwvc3ZnPg0K
+    mediatype: image/svg+xml
   install:
     spec:
       clusterPermissions:
@@ -452,8 +738,14 @@ spec:
   - data science
   - jupyterhub
   links:
-  - name: Meteor Operator
+  - name: Meteor
     url: https://github.com/aicoe/meteor
+  - name: Meteor Operator
+    url: https://github.com/aicoe/meteor-operator
+  - name: Public deployment
+    url: https://shower.meteor.zone
+  maintainers:
+  - name: Open Services @ Red Hat
   maturity: alpha
   provider:
     name: Red Hat

@@ -17,7 +17,8 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Shower is the Schema for the showers API
+        description: Shower represents a Shower UI and runtime configuration associated
+          with Meteors produced from this instance.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

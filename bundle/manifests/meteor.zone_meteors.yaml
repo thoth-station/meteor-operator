@@ -26,7 +26,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Meteor is the Schema for the meteors API
+        description: Meteor resource represents a repository build. It defines which
+          pipelines are executed and what is the livespan of the produced resources
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
