@@ -98,10 +98,10 @@ func (r *ShowerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	actions := []func(*context.Context, reconcile.Request) error{
 		r.ReconcileServiceAccount,
-		r.ReconcileShowerRolebinding,
 		r.ReconcileShowerRole,
-		r.ReconcilePipelineRolebinding,
+		r.ReconcileShowerRolebinding,
 		r.ReconcilePipelineRole,
+		r.ReconcilePipelineRolebinding,
 		r.ReconcileDeployment,
 		r.ReconcileService,
 		r.ReconcileServiceMonitor,
@@ -111,8 +111,8 @@ func (r *ShowerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if externalService.Namespace != "" {
 			actions = append(
 				actions,
-				r.ReconcileExternalRolebinding(externalService.Namespace),
 				r.ReconcileExternalRole(externalService.Namespace),
+				r.ReconcileExternalRolebinding(externalService.Namespace),
 			)
 		}
 	}
