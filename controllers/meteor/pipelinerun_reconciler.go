@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/types"
+	pointer "k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -105,6 +106,19 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 										},
 									},
 								},
+							},
+						},
+						{
+							Name: "sslcertdir",
+							ConfigMap: &v1.ConfigMapVolumeSource{
+								LocalObjectReference: v1.LocalObjectReference{
+									Name: "openshift-service-ca.crt",
+								},
+								Items: []v1.KeyToPath{{
+									Key:  "service-ca.crt",
+									Path: "ca.crt",
+								}},
+								DefaultMode: pointer.Int32(420),
 							},
 						},
 					},
