@@ -29,9 +29,6 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 
 	logger := log.FromContext(*ctx).WithValues("pipelinerun", namespacedName)
 
-	labels := r.Meteor.SeedLabels()
-	labels[v1alpha1.MeteorPipelineLabel] = name
-
 	updateStatus := func(status metav1.ConditionStatus, reason, message string) {
 		r.UpdateStatus(r.Meteor, "PipelineRun", name, status, reason, message)
 	}
@@ -65,7 +62,6 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      resourceName,
 					Namespace: req.NamespacedName.Namespace,
-					Labels:    labels,
 				},
 				Spec: pipelinev1beta1.PipelineRunSpec{
 					PipelineRef: &pipelinev1beta1.PipelineRef{

@@ -125,24 +125,6 @@ func (m *Meteor) GetExpirationTimestamp() time.Time {
 	return m.GetCreationTimestamp().Add(time.Duration(m.Spec.TTL) * time.Second)
 }
 
-const (
-	MeteorPipelineLabel   = "meteor.zone/pipeline"
-	MeteorDeploymentLabel = "meteor.zone/deployment"
-	MeteorLabel           = "meteor.zone/meteor"
-	ODHJupyterHubLabel    = "opendatahub.io/notebook-image"
-)
-
-// Pre-populate labels for children resources
-func (m *Meteor) SeedLabels() map[string]string {
-	return map[string]string{MeteorLabel: string(m.GetUID())}
-}
-
-const (
-	PhaseFailed  = "Failed"
-	PhaseRunning = "Building"
-	PhaseOk      = "Ready"
-)
-
 // Aggregate phase from conditions
 func (m *Meteor) AggregatePhase() string {
 	if len(m.Status.Conditions) == 0 {
