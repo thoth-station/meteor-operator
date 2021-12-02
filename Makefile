@@ -113,19 +113,13 @@ install: manifests kustomize ## Install CRDs and other dependancies into the K8s
 
 uninstall: manifests kustomize ## Uninstall CRDs and other dependancies from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/crd | kubectl delete -f -
-	$(KUSTOMIZE) build config/pushgateway | kubectl delete -f -
-	$(KUSTOMIZE) build config/pipelines | kubectl delete -f -
 
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
-	$(KUSTOMIZE) build config/pushgateway | kubectl apply -f -
-	$(KUSTOMIZE) build config/pipelines | kubectl apply -f -
 
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
-	$(KUSTOMIZE) build config/pushgateway | kubectl delete -f -
-	$(KUSTOMIZE) build config/pipelines | kubectl delete -f -
 
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
