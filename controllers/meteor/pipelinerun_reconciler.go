@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	v1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/types"
+	pointer "k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -106,6 +108,19 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 								},
 							},
 						},
+						{
+							Name: "sslcertdir",
+							ConfigMap: &v1.ConfigMapVolumeSource{
+								LocalObjectReference: v1.LocalObjectReference{
+									Name: "openshift-service-ca.crt",
+								},
+								Items: []v1.KeyToPath{{
+									Key:  "service-ca.crt",
+									Path: "ca.crt",
+								}},
+								DefaultMode: pointer.Int32(420),
+							},
+						},
 					},
 				},
 			}
@@ -114,7 +129,7 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 			if len(r.Shower.Spec.Workspace.AccessModes) != 0 {
 				res.Spec.Workspaces[0].VolumeClaimTemplate.Spec.AccessModes = r.Shower.Spec.Workspace.AccessModes
 			}
-			if r.Shower.Spec.Workspace.Resources.Requests.Storage() != nil {
+			if !reflect.ValueOf(r.Shower.Spec.Workspace.Resources).IsZero() {
 				res.Spec.Workspaces[0].VolumeClaimTemplate.Spec.Resources = r.Shower.Spec.Workspace.Resources
 			}
 			if r.Meteor.Spec.TTL == 0 && r.Shower.Spec.PersistentMeteorsHost != "" {

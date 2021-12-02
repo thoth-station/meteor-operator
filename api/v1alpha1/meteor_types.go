@@ -84,9 +84,9 @@ type MeteorStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase"
 //+kubebuilder:printcolumn:name="Url",type="string",JSONPath=".spec.url",description="Repository URL"
-//+operator-sdk:csv:customresourcedefinitions:resources={{PipelineRun,tekton.dev/v1beta1},{Deployment,apps/v1},{Service,v1},{Route,v1},{ImageStream,v1}}
+//+operator-sdk:csv:customresourcedefinitions:resources={{PipelineRun,v1beta1},{Deployment,v1},{Service,v1},{Route,v1},{ImageStream,v1}}
 
-// Meteor is the Schema for the meteors API
+// Meteor resource represents a repository build. It defines which pipelines are executed and what is the livespan of the produced resources
 type Meteor struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

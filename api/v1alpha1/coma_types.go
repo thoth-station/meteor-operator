@@ -33,7 +33,7 @@ type ComaStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// Coma is the Schema for the comas API
+// Coma is a complementary resource to Meteor in namespaces defined by Shower's externalServices property. This resource is generated automatically.
 type Coma struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

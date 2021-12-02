@@ -6,7 +6,9 @@ metadata:
   creationTimestamp: null
   name: manager-role
 rules:
-- resources:
+- apiGroups:
+  - ""
+  resources:
   - serviceaccounts
   verbs:
   - create
@@ -16,7 +18,9 @@ rules:
   - patch
   - update
   - watch
-- resources:
+- apiGroups:
+  - ""
+  resources:
   - services
   verbs:
   - create
@@ -39,6 +43,30 @@ rules:
   - update
   - watch
 - apiGroups:
+  - image.openshift.io
+  resources:
+  - imagestreams
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - image.openshift.io
+  resources:
+  - imagestreams/layers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - meteor.zone
   resources:
   - comas
@@ -50,6 +78,12 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - meteor.zone
+  resources:
+  - comas/finalizers
+  verbs:
+  - update
 - apiGroups:
   - meteor.zone
   resources:
@@ -150,6 +184,30 @@ rules:
   - route.openshift.io
   resources:
   - routes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes/custom-host
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes/status
   verbs:
   - create
   - delete

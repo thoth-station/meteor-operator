@@ -88,8 +88,9 @@ type IngressSpec struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+operator-sdk:csv:customresourcedefinitions:resources={{Role,v1},{RoleBinding,v1},{Deployment,v1},{Service,v1},{Route,v1},{ServiceAccount,v1},{ServiceMonitor,v1}}
 
-// Shower is the Schema for the showers API
+// Shower represents a Shower UI and runtime configuration associated with Meteors produced from this instance.
 type Shower struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
