@@ -6,4 +6,4 @@ metadata:
   namespace: openshift-marketplace
 spec:
   sourceType: grpc
-  image: quay.io/aicoe/meteor-operator-catalog:v0.0.1
+  image: quay.io/tcoufal/meteor-operator-catalog:v0.0.1

@@ -1,0 +1,5 @@
+apiVersion: meteor.zone/v1alpha1
+kind: Coma
+metadata:
+  name: demo
+spec: {}

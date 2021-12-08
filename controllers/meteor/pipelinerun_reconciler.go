@@ -40,8 +40,9 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 			}
 		}
 		result := v1alpha1.PipelineResult{
-			Name:  name,
-			Ready: "False",
+			Name:            name,
+			Ready:           "False",
+			PipelineRunName: resourceName,
 		}
 		r.Meteor.Status.Pipelines = append(r.Meteor.Status.Pipelines, result)
 		return len(r.Meteor.Status.Pipelines) - 1
@@ -172,11 +173,20 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 		condition := res.Status.Conditions[0]
 		updateStatus(metav1.ConditionStatus(condition.Status), condition.Reason, condition.Message)
 	}
-	if res.Status.CompletionTime != nil && res.Status.Conditions[0].Reason == "Succeeded" {
-		r.Meteor.Status.Pipelines[statusIndex].Ready = "True"
-		if len(res.Status.PipelineResults) > 0 {
-			r.Meteor.Status.Pipelines[statusIndex].Url = res.Status.PipelineResults[0].Value
+
+	if res.Status.CompletionTime != nil {
+		r.Meteor.Status.Stage.Running = remove(r.Meteor.Status.Stage.Running, resourceName)
+		if res.Status.Conditions[0].Reason == "Succeeded" {
+			r.Meteor.Status.Pipelines[statusIndex].Ready = "True"
+			r.Meteor.Status.Stage.Succeeded = appendUnique(r.Meteor.Status.Stage.Succeeded, resourceName)
+			if len(res.Status.PipelineResults) > 0 {
+				r.Meteor.Status.Pipelines[statusIndex].Url = res.Status.PipelineResults[0].Value
+			}
+		} else {
+			r.Meteor.Status.Stage.Failed = appendUnique(r.Meteor.Status.Stage.Failed, resourceName)
 		}
+	} else {
+		r.Meteor.Status.Stage.Running = appendUnique(r.Meteor.Status.Stage.Running, resourceName)
 	}
 	return nil
 }
@@ -193,4 +203,22 @@ func (r *MeteorReconciler) ownerReferences() (string, error) {
 func (r *MeteorReconciler) externalServices() (string, error) {
 	ownerReferences, err := json.CaseSensitiveJSONIterator().Marshal(r.Shower.Spec.ExternalServices)
 	return string(ownerReferences), err
+}
+
+func appendUnique(slice []string, elem string) []string {
+	for _, v := range slice {
+		if v == elem {
+			return slice
+		}
+	}
+	return append(slice, elem)
+}
+
+func remove(slice []string, elem string) []string {
+	for i, v := range slice {
+		if v == elem {
+			return append(slice[:i], slice[i+1:]...)
+		}
+	}
+	return slice
 }

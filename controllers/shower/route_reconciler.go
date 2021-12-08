@@ -3,6 +3,7 @@ package shower
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	routev1 "github.com/openshift/api/route/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -61,8 +62,10 @@ func (r *ShowerReconciler) ReconcileRoute(ctx *context.Context, req ctrl.Request
 
 	if !isMapASubset(res.ObjectMeta.Annotations, r.Shower.Spec.Ingress.Annotations) ||
 		!isMapASubset(res.ObjectMeta.Labels, r.Shower.Spec.Ingress.Labels) ||
-		res.Spec.Host != r.Shower.Spec.Ingress.Host ||
-		res.Spec.Path != r.Shower.Spec.Ingress.Path {
+		res.Spec.Host != desiredSpec.Host ||
+		res.Spec.Path != desiredSpec.Path ||
+		reflect.DeepEqual(res.Spec.To, desiredSpec.To) ||
+		reflect.DeepEqual(res.Spec.Port, desiredSpec.Port) {
 
 		for k, v := range r.Shower.Spec.Ingress.Annotations {
 			res.ObjectMeta.Annotations[k] = v
@@ -70,14 +73,21 @@ func (r *ShowerReconciler) ReconcileRoute(ctx *context.Context, req ctrl.Request
 		for k, v := range r.Shower.Spec.Ingress.Labels {
 			res.ObjectMeta.Labels[k] = v
 		}
-		res.Spec.Host = r.Shower.Spec.Ingress.Host
-		res.Spec.Path = r.Shower.Spec.Ingress.Path
+		res.Spec.Host = desiredSpec.Host
+		res.Spec.Path = desiredSpec.Path
+		res.Spec.To = desiredSpec.To
+		res.Spec.Port = desiredSpec.Port
 
 		if err := r.Update(*ctx, res); err != nil {
 			logger.Error(err, "Unable to update")
 			return err
 		}
 	}
+	scheme := "http"
+	if res.Spec.TLS != nil {
+		scheme = "https"
+	}
+	r.Shower.Status.Url = scheme + "://" + res.Spec.Host + res.Spec.Path
 	return nil
 }
 

@@ -52,9 +52,11 @@ type ShowerSpec struct {
 // ShowerStatus defines the observed state of Shower
 type ShowerStatus struct {
 	// Current condition of the Shower.
+	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Phase",xDescriptors={"urn:alm:descriptor:io.kubernetes.phase'"}
 	//+optional
 	Phase string `json:"phase,omitempty"`
 	// Current service state of Meteor.
+	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Conditions",xDescriptors={"urn:alm:descriptor:io.kubernetes.conditions"}
 	//+optional
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 	// Most recent observed generation of Shower. Sanity check.
@@ -63,6 +65,10 @@ type ShowerStatus struct {
 	// Optional shower image. By default the same version as operator is used from quay.io/aicoe/meteor-shower
 	//+optional
 	Image string `json:"image,omitempty"`
+	// Route to access Shower UI
+	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Shower URL",xDescriptors={"urn:alm:descriptor:org.w3:link"}
+	//+optional
+	Url string `json:"url"`
 }
 
 // ExternalServiceSpec defines external integration point wich can be used by pipelines submitted by Meteor
@@ -88,6 +94,8 @@ type IngressSpec struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase"
+//+kubebuilder:printcolumn:name="Replicas",type="string",JSONPath="..replicas",description="Replicas"
 //+operator-sdk:csv:customresourcedefinitions:resources={{Role,v1},{RoleBinding,v1},{Deployment,v1},{Service,v1},{Route,v1},{ServiceAccount,v1},{ServiceMonitor,v1}}
 
 // Shower represents a Shower UI and runtime configuration associated with Meteors produced from this instance.

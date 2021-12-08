@@ -53,6 +53,27 @@ spec:
         path: url
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
+      statusDescriptors:
+      - description: Current service state of Meteor.
+        displayName: Conditions
+        path: conditions
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes.conditions
+      - description: Current condition of the Meteor.
+        displayName: Phase
+        path: phase
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes.phase
+      - description: Name of the corresponding PipelineRun resource
+        displayName: PipelineRun
+        path: pipelines[0].pipelineRunName
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:tekton.dev:v1beta1:PipelineRun
+      - description: State of individual pipelines
+        displayName: Pipelines
+        path: stage
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
       version: v1alpha1
     - description: Shower represents a Shower UI and runtime configuration associated
         with Meteors produced from this instance.
@@ -81,6 +102,22 @@ spec:
       - kind: ServiceMonitor
         name: ""
         version: v1
+      statusDescriptors:
+      - description: Current service state of Meteor.
+        displayName: Conditions
+        path: conditions
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes.conditions
+      - description: Current condition of the Shower.
+        displayName: Phase
+        path: phase
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes.phase'
+      - description: Route to access Shower UI
+        displayName: Shower URL
+        path: url
+        x-descriptors:
+        - urn:alm:descriptor:org.w3:link
       version: v1alpha1
   description: |
     Project Meteor provides a single click deployment model for data science
