@@ -64,7 +64,7 @@ func (r *ShowerReconciler) ReconcileDeployment(ctx *context.Context, req ctrl.Re
 
 	if err := r.Get(*ctx, namespacedName, res); err != nil {
 		if k8serrors.IsNotFound(err) {
-			logger.Info("Creating ServiceAccount")
+			logger.Info("Creating")
 
 			res = &appsv1.Deployment{
 				ObjectMeta: metav1.ObjectMeta{
@@ -76,12 +76,15 @@ func (r *ShowerReconciler) ReconcileDeployment(ctx *context.Context, req ctrl.Re
 			controllerutil.SetControllerReference(r.Shower, res, r.Scheme)
 
 			if err := r.Create(*ctx, res); err != nil {
-				logger.Error(err, "Unable to create ServiceAccount")
+				logger.Error(err, "Unable to create")
+				r.SetCondition("Deployment", metav1.ConditionFalse, "CreateError", "Deployment has failed to create.")
 				return err
 			}
+
+			r.SetCondition("Deployment", metav1.ConditionFalse, "Created", "Deployment has been created. Waiting for it to become ready.")
 			return nil
 		}
-		logger.Error(err, "Error fetching Deployment")
+		logger.Error(err, "Error fetching resource")
 		return err
 	}
 
@@ -90,9 +93,18 @@ func (r *ShowerReconciler) ReconcileDeployment(ctx *context.Context, req ctrl.Re
 		res.Spec.Selector = desiredSpec.Selector
 		res.Spec.Template = desiredSpec.Template
 		if err := r.Update(*ctx, res); err != nil {
-			logger.Error(err, "Error reconciling")
+			logger.Error(err, "Unable to update")
 			return err
 		}
 	}
+	for _, condition := range res.Status.Conditions {
+		if condition.Type == "Available" {
+			if condition.Status == corev1.ConditionStatus(metav1.ConditionTrue) {
+				r.SetCondition("Deployment", metav1.ConditionTrue, "Ready", "Deployment is ready.")
+			}
+			break
+		}
+	}
+
 	return nil
 }

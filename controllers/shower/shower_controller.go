@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -33,6 +34,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ShowerReconciler reconciles a Shower object
@@ -124,7 +126,18 @@ func (r *ShowerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		}
 	}
 
-	return ctrl.Result{}, nil
+	return r.UpdateStatusNow(ctx, nil)
+}
+
+// Set status condition helper
+func (r *ShowerReconciler) SetCondition(conditionType string, status metav1.ConditionStatus, reason, message string) {
+	meta.SetStatusCondition(&r.Shower.Status.Conditions, metav1.Condition{
+		Type:               conditionType,
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		ObservedGeneration: r.Shower.GetGeneration(),
+	})
 }
 
 // Force object status update. Returns a reconcile result
@@ -134,7 +147,11 @@ func (r *ShowerReconciler) UpdateStatusNow(ctx context.Context, originalErr erro
 		logger.WithValues("reason", err.Error()).Info("Unable to update status, retrying")
 		return ctrl.Result{Requeue: true}, nil
 	}
-	return ctrl.Result{RequeueAfter: RequeueAfter}, originalErr
+	if originalErr != nil {
+		return ctrl.Result{RequeueAfter: RequeueAfter}, originalErr
+	} else {
+		return ctrl.Result{}, nil
+	}
 }
 
 // SetupWithManager sets up the controller with the Manager.
