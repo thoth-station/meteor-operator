@@ -134,13 +134,13 @@ func (r *MeteorReconciler) UpdateStatusNow(ctx context.Context, originalErr erro
 }
 
 // Set status condition helper
-func (r *MeteorReconciler) UpdateStatus(meteor *v1alpha1.Meteor, kind, name string, status metav1.ConditionStatus, reason, message string) {
-	meta.SetStatusCondition(&meteor.Status.Conditions, metav1.Condition{
+func (r *MeteorReconciler) SetCondition(kind, name string, status metav1.ConditionStatus, reason, message string) {
+	meta.SetStatusCondition(&r.Meteor.Status.Conditions, metav1.Condition{
 		Type:               kind + strings.Title(name),
 		Status:             status,
 		Reason:             reason,
 		Message:            message,
-		ObservedGeneration: meteor.GetGeneration(),
+		ObservedGeneration: r.Meteor.GetGeneration(),
 	})
 }
 

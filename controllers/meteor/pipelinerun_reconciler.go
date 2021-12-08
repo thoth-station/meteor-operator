@@ -30,7 +30,7 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 	logger := log.FromContext(*ctx).WithValues("pipelinerun", namespacedName)
 
 	updateStatus := func(status metav1.ConditionStatus, reason, message string) {
-		r.UpdateStatus(r.Meteor, "PipelineRun", name, status, reason, message)
+		r.SetCondition("PipelineRun", name, status, reason, message)
 	}
 
 	statusIndex := func() int {
