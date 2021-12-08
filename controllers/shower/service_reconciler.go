@@ -20,7 +20,7 @@ func (r *ShowerReconciler) ReconcileService(ctx *context.Context, req ctrl.Reque
 	resourceName := fmt.Sprintf("meteor-shower-%s", r.Shower.GetName())
 	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.Namespace}
 	desiredSpec := corev1.ServiceSpec{
-		Selector: map[string]string{"shower.meteor.zone": resourceName},
+		Selector: getSelector(resourceName),
 		Type:     corev1.ServiceTypeClusterIP,
 		Ports: []corev1.ServicePort{
 			{

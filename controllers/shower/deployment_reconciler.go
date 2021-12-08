@@ -26,11 +26,11 @@ func (r *ShowerReconciler) ReconcileDeployment(ctx *context.Context, req ctrl.Re
 	desiredSpec := appsv1.DeploymentSpec{
 		Replicas: &r.Shower.Spec.Replicas,
 		Selector: &metav1.LabelSelector{
-			MatchLabels: map[string]string{"shower.meteor.zone": resourceName},
+			MatchLabels: getSelector(resourceName),
 		},
 		Template: corev1.PodTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
-				Labels: map[string]string{"shower.meteor.zone": resourceName},
+				Labels: getSelector(resourceName),
 			},
 			Spec: corev1.PodSpec{
 				ServiceAccountName: resourceName,

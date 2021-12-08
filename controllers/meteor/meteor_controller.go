@@ -212,7 +212,7 @@ func (r *MeteorReconciler) findOwnerShower(ctx context.Context) error {
 		r.Shower = &showerList.Items[0]
 	} else {
 		for k, v := range r.Meteor.ObjectMeta.Labels {
-			if k == "shower.meteor.zone" {
+			if k == common.SelectorKey {
 				for _, s := range showerList.Items {
 					if s.ObjectMeta.Name == v {
 						r.Shower = &s
