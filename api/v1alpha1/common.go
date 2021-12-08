@@ -1,7 +1,8 @@
 package v1alpha1
 
 const (
-	PhaseFailed  = "Failed"
-	PhaseRunning = "Building"
-	PhaseOk      = "Ready"
+	PhaseFailed   = "Failed"
+	PhaseBuilding = "Building"
+	PhasePending  = "Pending"
+	PhaseOk       = "Ready"
 )

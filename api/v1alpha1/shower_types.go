@@ -112,6 +112,23 @@ func init() {
 	SchemeBuilder.Register(&Shower{}, &ShowerList{})
 }
 
+// Aggregate phase from conditions
+func (m *Shower) AggregatePhase() string {
+	if len(m.Status.Conditions) == 0 {
+		return PhasePending
+	}
+
+	for _, c := range m.Status.Conditions {
+		switch c.Type {
+		case "Deployment":
+			if c.Status == metav1.ConditionFalse {
+				return PhasePending
+			}
+		}
+	}
+	return PhaseOk
+}
+
 func (m *Shower) GetReference(isController bool) NamespacedOwnerReference {
 	blockOwnerDeletion := true
 	return NamespacedOwnerReference{

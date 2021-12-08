@@ -95,6 +95,7 @@ func (r *ShowerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	} else {
 		r.Shower.Status.Image = DefaultImageBase + version.Version
 	}
+	r.Shower.Status.Phase = r.Shower.AggregatePhase()
 
 	actions := []func(*context.Context, reconcile.Request) error{
 		r.ReconcileServiceAccount,

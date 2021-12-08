@@ -128,11 +128,11 @@ func (m *Meteor) GetExpirationTimestamp() time.Time {
 // Aggregate phase from conditions
 func (m *Meteor) AggregatePhase() string {
 	if len(m.Status.Conditions) == 0 {
-		return PhaseRunning
+		return PhaseBuilding
 	}
 
 	for _, c := range m.Status.Conditions {
-		if c.Status == "False" {
+		if c.Status == metav1.ConditionFalse {
 			return PhaseFailed
 		}
 
@@ -142,11 +142,11 @@ func (m *Meteor) AggregatePhase() string {
 			case "Succeeded", "Completed":
 				continue
 			}
-			return PhaseRunning
+			return PhaseBuilding
 		}
 
 		if c.Reason != "Ready" {
-			return PhaseRunning
+			return PhaseBuilding
 		}
 	}
 	return PhaseOk
