@@ -44,12 +44,27 @@ type MeteorSpec struct {
 
 type PipelineResult struct {
 	Name string `json:"name"`
+	// Name of the corresponding PipelineRun resource
+	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="PipelineRun",xDescriptors={"urn:alm:descriptor:io.kubernetes:tekton.dev:v1beta1:PipelineRun"}
+	PipelineRunName string `json:"pipelineRunName"`
 	// Url to a running deployment. Routable at least within the cluster. Empty if not yet scheduled.
 	//+optional
 	Url string `json:"url,omitempty"`
 	// True if build completed successfully.
 	//+optional
 	Ready string `json:"ready,omitempty"`
+}
+
+type ComponentStatus struct {
+	// Component is in running state
+	//+optional
+	Running []string `json:"running,omitempty"`
+	// Component finished successfully
+	//+optional
+	Succeeded []string `json:"succeeded,omitempty"`
+	// Component terminated with a failure
+	//+optional
+	Failed []string `json:"failed,omitempty"`
 }
 
 type NamespacedOwnerReference struct {
@@ -61,9 +76,11 @@ type NamespacedOwnerReference struct {
 // MeteorStatus defines the observed state of Meteor
 type MeteorStatus struct {
 	// Current condition of the Meteor.
+	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Phase",xDescriptors={"urn:alm:descriptor:io.kubernetes.phase"}
 	//+optional
 	Phase string `json:"phase,omitempty"`
 	// Current service state of Meteor.
+	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Conditions",xDescriptors={"urn:alm:descriptor:io.kubernetes.conditions"}
 	//+optional
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 	// Stores results from pipelines. Empty if neither pipeline has completed.
@@ -78,6 +95,9 @@ type MeteorStatus struct {
 	// List of comas owned in different namespaces
 	//+optional
 	Comas []NamespacedOwnerReference `json:"comas,omitempty"`
+	// State of individual pipelines
+	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Pipelines",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:podStatuses"}
+	Stage ComponentStatus `json:"stage,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -128,11 +148,11 @@ func (m *Meteor) GetExpirationTimestamp() time.Time {
 // Aggregate phase from conditions
 func (m *Meteor) AggregatePhase() string {
 	if len(m.Status.Conditions) == 0 {
-		return PhaseRunning
+		return PhaseBuilding
 	}
 
 	for _, c := range m.Status.Conditions {
-		if c.Status == "False" {
+		if c.Status == metav1.ConditionFalse {
 			return PhaseFailed
 		}
 
@@ -142,11 +162,11 @@ func (m *Meteor) AggregatePhase() string {
 			case "Succeeded", "Completed":
 				continue
 			}
-			return PhaseRunning
+			return PhaseBuilding
 		}
 
 		if c.Reason != "Ready" {
-			return PhaseRunning
+			return PhaseBuilding
 		}
 	}
 	return PhaseOk

@@ -20,7 +20,7 @@ func (r *ShowerReconciler) ReconcileServiceMonitor(ctx *context.Context, req ctr
 	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.Namespace}
 	desiredSpec := monitoringv1.ServiceMonitorSpec{
 		Selector: metav1.LabelSelector{
-			MatchLabels: map[string]string{"shower.meteor.zone": resourceName},
+			MatchLabels: getSelector(resourceName),
 		},
 		Endpoints: []monitoringv1.Endpoint{
 			{

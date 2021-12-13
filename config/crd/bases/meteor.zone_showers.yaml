@@ -16,7 +16,16 @@ spec:
     singular: shower
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Phase
+      jsonPath: .status.phase
+      name: Phase
+      type: string
+    - description: Replicas
+      jsonPath: ..replicas
+      name: Replicas
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Shower represents a Shower UI and runtime configuration associated
@@ -393,6 +402,9 @@ spec:
                 type: integer
               phase:
                 description: Current condition of the Shower.
+                type: string
+              url:
+                description: Route to access Shower UI
                 type: string
             type: object
         type: object
