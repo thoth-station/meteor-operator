@@ -7,24 +7,26 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 func (r *MeteorReconciler) ReconcileComas(ctx context.Context) error {
 	logger := log.FromContext(ctx)
-	namespaces := []string{"opf-jupyterhub"}
-	name := r.Meteor.GetName()
 
-	for _, namespace := range namespaces {
+	for _, externalService := range r.Shower.Spec.ExternalServices {
+		if externalService.Namespace == "" {
+			continue
+		}
 		coma := &v1alpha1.Coma{}
-		namespacedName := types.NamespacedName{Name: r.Meteor.GetName(), Namespace: namespace}
+		namespacedName := types.NamespacedName{Name: r.Meteor.GetName(), Namespace: externalService.Namespace}
 
 		if err := r.Get(ctx, namespacedName, coma); err != nil {
 			if errors.IsNotFound(err) {
 				coma = &v1alpha1.Coma{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      name,
-						Namespace: namespace,
+						Name:      r.Meteor.GetName(),
+						Namespace: externalService.Namespace,
 					},
 				}
 				if err := r.Create(ctx, coma); err != nil {
@@ -41,10 +43,9 @@ func (r *MeteorReconciler) ReconcileComas(ctx context.Context) error {
 
 		ref := v1alpha1.NamespacedOwnerReference{
 			OwnerReference: *metav1.NewControllerRef(coma, coma.GroupVersionKind()),
-			Namespace:      namespace,
+			Namespace:      externalService.Namespace,
 		}
-		isControlled := false
-		ref.Controller = &isControlled
+		ref.Controller = pointer.BoolPtr(false)
 		if !containsComa(r.Meteor.Status.Comas, ref) {
 			r.Meteor.Status.Comas = append(r.Meteor.Status.Comas, ref)
 		}
