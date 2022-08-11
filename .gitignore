@@ -26,3 +26,4 @@ testbin/*
 
 # Debug run runtime binary
 __debug_bin
+.vscode/
