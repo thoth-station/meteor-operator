@@ -2,6 +2,7 @@ package meteor
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -9,7 +10,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/types"
 	pointer "k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -198,12 +198,12 @@ func (r *MeteorReconciler) ownerReferences() (string, error) {
 		return "", errors.New("no Comas found")
 	}
 	allRefs := append(r.Meteor.Status.Comas, r.Meteor.GetReference(false))
-	ownerReferences, err := json.CaseSensitiveJSONIterator().Marshal(allRefs)
+	ownerReferences, err := json.Marshal(allRefs)
 	return string(ownerReferences), err
 }
 
 func (r *MeteorReconciler) externalServices() (string, error) {
-	ownerReferences, err := json.CaseSensitiveJSONIterator().Marshal(r.Shower.Spec.ExternalServices)
+	ownerReferences, err := json.Marshal(r.Shower.Spec.ExternalServices)
 	return string(ownerReferences), err
 }
 
