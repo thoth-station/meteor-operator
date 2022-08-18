@@ -180,7 +180,9 @@ func (r *MeteorReconciler) ReconcilePipelineRun(name string, ctx *context.Contex
 			r.Meteor.Status.Pipelines[statusIndex].Ready = "True"
 			r.Meteor.Status.Stage.Succeeded = appendUnique(r.Meteor.Status.Stage.Succeeded, resourceName)
 			if len(res.Status.PipelineResults) > 0 {
-				r.Meteor.Status.Pipelines[statusIndex].Url = res.Status.PipelineResults[0].Value
+				if res.Status.PipelineResults[0].Value.Type == "string" {
+					r.Meteor.Status.Pipelines[statusIndex].Url = res.Status.PipelineResults[0].Value.StringVal
+				}
 			}
 		} else {
 			r.Meteor.Status.Stage.Failed = appendUnique(r.Meteor.Status.Stage.Failed, resourceName)
