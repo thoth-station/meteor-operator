@@ -61,6 +61,20 @@ make deploy
 kustomize build config/dev | oc apply -f -
 ```
 
+## Testing locally with `envtest`
+
+see https://book.kubebuilder.io/reference/envtest.html for details, extract:
+
+```sh
+export K8S_VERSION=1.21.2
+curl -sSLo envtest-bins.tar.gz "https://go.kubebuilder.io/test-tools/${K8S_VERSION}/$(go env GOOS)/$(go env GOARCH)"
+sudo mkdir /usr/local/kubebuilder
+sudo chown $(whoami) /usr/local/kubebuilder
+tar -C /usr/local/kubebuilder --strip-components=1 -zvxf envtest-bins.tar.gz
+make test SKIP_FETCH_TOOLS=1 KUBEBUILDER_ASSETS=/usr/local/kubebuilder
+
+```
+
 ## Known issues
 
 - Webhooks are currently disabled due to certificate issues
