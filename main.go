@@ -36,6 +36,7 @@ import (
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
+	"github.com/aicoe/meteor-operator/controllers"
 	common "github.com/aicoe/meteor-operator/controllers/common"
 	meteor "github.com/aicoe/meteor-operator/controllers/meteor"
 	shower "github.com/aicoe/meteor-operator/controllers/shower"
@@ -99,6 +100,13 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Shower")
+		os.Exit(1)
+	}
+	if err = (&controllers.CustomNBImageReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "CustomNBImage")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
