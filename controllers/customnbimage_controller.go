@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -64,7 +65,7 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// TODO your logic here
 
-	return ctrl.Result{}, nil
+	return r.UpdateStatusNow(ctx, nil)
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -72,4 +73,18 @@ func (r *CustomNBImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&meteorv1alpha1.CustomNBImage{}).
 		Complete(r)
+}
+
+// Force object status update. Returns a reconcile result
+func (r *CustomNBImageReconciler) UpdateStatusNow(ctx context.Context, originalErr error) (ctrl.Result, error) {
+	logger := log.FromContext(ctx)
+	if err := r.Status().Update(ctx, r.CNBi); err != nil {
+		logger.WithValues("reason", err.Error()).Info("Unable to update status, retrying")
+		return ctrl.Result{Requeue: true}, nil
+	}
+	if originalErr != nil {
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, originalErr
+	} else {
+		return ctrl.Result{}, nil
+	}
 }
