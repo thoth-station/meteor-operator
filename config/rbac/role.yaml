@@ -94,6 +94,32 @@ rules:
 - apiGroups:
   - meteor.zone
   resources:
+  - customnbimages
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - meteor.zone
+  resources:
+  - customnbimages/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - meteor.zone
+  resources:
+  - customnbimages/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - meteor.zone
+  resources:
   - meteors
   verbs:
   - create

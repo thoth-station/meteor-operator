@@ -1,0 +1,6 @@
+apiVersion: meteor.zone/v1alpha1
+kind: CustomNBImage
+metadata:
+  name: customnbimage-sample
+spec:
+  # TODO(user): Add fields here
