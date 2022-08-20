@@ -35,10 +35,30 @@ spec:
           spec:
             description: CustomNBImageSpec defines the desired state of CustomNBImage
             properties:
-              foo:
-                description: Foo is an example field of CustomNBImage. Edit customnbimage_types.go
-                  to remove/update
-                type: string
+              packageVersions:
+                description: PackageVersion is a set of Packages including their Version
+                  Specifiers
+                items:
+                  type: string
+                type: array
+              runtimeEnvironment:
+                description: RuntimeEnvironment is the runtime environment to use
+                  for the Custome Notebook Image
+                properties:
+                  baseImage:
+                    description: BaseImage is an alternative the the three above fields
+                    type: string
+                  osName:
+                    description: OSName is the Name of the Operating System to use
+                    type: string
+                  osVersion:
+                    description: OSVersion is the Version of the Operating System
+                      to use
+                    type: string
+                  pythonVersion:
+                    description: PythonVersion is the version of Python to use
+                    type: string
+                type: object
             type: object
           status:
             description: CustomNBImageStatus defines the observed state of CustomNBImage

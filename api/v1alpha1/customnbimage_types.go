@@ -22,10 +22,24 @@ import (
 
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// CustomNBImageRuntimeSpec defines a Runtime Environment, aka 'the Python version used'
+type CustomNBImageRuntimeSpec struct {
+	// PythonVersion is the version of Python to use
+	PythonVersion string `json:"pythonVersion,omitempty"`
+	// OSName is the Name of the Operating System to use
+	OSName string `json:"osName,omitempty"`
+	// OSVersion is the Version of the Operating System to use
+	OSVersion string `json:"osVersion,omitempty"`
+	// BaseImage is an alternative the the three above fields
+	BaseImage string `json:"baseImage,omitempty"`
+}
+
 // CustomNBImageSpec defines the desired state of CustomNBImage
 type CustomNBImageSpec struct {
-	// Foo is an example field of CustomNBImage. Edit customnbimage_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// RuntimeEnvironment is the runtime environment to use for the Custome Notebook Image
+	RuntimeEnvironment CustomNBImageRuntimeSpec `json:"runtimeEnvironment,omitempty"`
+	// PackageVersion is a set of Packages including their Version Specifiers
+	PackageVersion []string `json:"packageVersions,omitempty"`
 }
 
 // CustomNBImageStatus defines the observed state of CustomNBImage
