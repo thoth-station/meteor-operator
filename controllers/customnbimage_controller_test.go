@@ -61,7 +61,7 @@ var _ = Describe("CustomNBImage controller", func() {
 				return err == nil
 			}, timeout, interval).Should(BeTrue())
 
-			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.PhasePending))
+			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhasePending))
 		})
 	})
 	Context("when a CustomNBImage object is created with a BaseImage URL", func() {
@@ -88,7 +88,7 @@ var _ = Describe("CustomNBImage controller", func() {
 				return err == nil
 			}, timeout, interval).Should(BeTrue())
 
-			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.PhasePending))
+			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhasePending))
 		})
 	})
 	/* TODO

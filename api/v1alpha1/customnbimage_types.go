@@ -21,6 +21,14 @@ import (
 )
 
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+const (
+	CNBiPhasePending            = "Pending"
+	CNBiPhaseFailed             = "Failed"
+	CNBiPhaseCreatingRepository = "CreatingRepository"
+	CNBiPhaseResolving          = "Resolving"
+	CNBiPhaseBuilding           = "Building"
+	CNBiPhaseOk                 = "Ready"
+)
 
 // CustomNBImageRuntimeSpec defines a Runtime Environment, aka 'the Python version used'
 type CustomNBImageRuntimeSpec struct {
@@ -57,7 +65,7 @@ type CustomNBImageStatus struct {
 // Aggregate phase from conditions
 func (cnbi *CustomNBImage) AggregatePhase() string {
 	if len(cnbi.Status.Conditions) == 0 {
-		return PhasePending
+		return CNBiPhasePending
 	}
 
 	//	for _, c := range cnbi.Status.Conditions {
