@@ -75,6 +75,15 @@ make test SKIP_FETCH_TOOLS=1 KUBEBUILDER_ASSETS=/usr/local/kubebuilder
 
 ```
 
+## Deploying to a local kind cluster
+
+```sh
+kind create cluster
+kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+kubectl apply -f https://github.com/tektoncd/dashboard/releases/latest/download/tekton-dashboard-release.yaml
+kubectl -n tekton-pipelines port-forward svc/tekton-dashboard 9097:9097
+
 ## Known issues
 
 - Webhooks are currently disabled due to certificate issues
+```

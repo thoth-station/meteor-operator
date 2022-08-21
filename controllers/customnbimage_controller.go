@@ -18,14 +18,26 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+
+	"github.com/aicoe/meteor-operator/api/v1alpha1"
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
 )
 
@@ -39,6 +51,9 @@ type CustomNBImageReconciler struct {
 //+kubebuilder:rbac:groups=meteor.zone,resources=customnbimages,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=meteor.zone,resources=customnbimages/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=meteor.zone,resources=customnbimages/finalizers,verbs=update
+//+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -65,6 +80,10 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// TODO your logic here
 
+	if err := r.ReconcilePipelineRun("cnbi-create-repo", &ctx, req); err != nil {
+		return r.UpdateStatusNow(ctx, err)
+	}
+
 	return r.UpdateStatusNow(ctx, nil)
 }
 
@@ -87,4 +106,121 @@ func (r *CustomNBImageReconciler) UpdateStatusNow(ctx context.Context, originalE
 	} else {
 		return ctrl.Result{}, nil
 	}
+}
+
+// Set status condition helper
+func (r *CustomNBImageReconciler) SetCondition(kind, name string, status metav1.ConditionStatus, reason, message string) {
+	meta.SetStatusCondition(&r.CNBi.Status.Conditions, metav1.Condition{
+		Type:    kind + strings.Title(name),
+		Status:  status,
+		Reason:  reason,
+		Message: message,
+	})
+}
+
+// ReconcilePipelineRun will reconcile the pipeline run for the CustomNBImage.
+func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context.Context, req ctrl.Request) error {
+	pipelineRun := &pipelinev1beta1.PipelineRun{}
+	resourceName := fmt.Sprintf("%s-%s", r.CNBi.GetName(), name)
+	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
+
+	logger := log.FromContext(*ctx).WithValues("pipelinerun", namespacedName)
+
+	updateStatus := func(status metav1.ConditionStatus, reason, message string) {
+		r.SetCondition("PipelineRun", name, status, reason, message)
+	}
+
+	statusIndex := func() int {
+		for i, pr := range r.CNBi.Status.Pipelines {
+			if pr.Name == name {
+				return i
+			}
+		}
+		result := v1alpha1.PipelineResult{
+			Name:            name,
+			Ready:           "False",
+			PipelineRunName: resourceName,
+		}
+		r.CNBi.Status.Pipelines = append(r.CNBi.Status.Pipelines, result)
+		return len(r.CNBi.Status.Pipelines) - 1
+	}()
+
+	if err := r.Get(*ctx, namespacedName, pipelineRun); err != nil {
+		if errors.IsNotFound(err) {
+			logger.Info("Creating PipelineRun")
+
+			pipelineRun = &pipelinev1beta1.PipelineRun{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      resourceName,
+					Namespace: req.NamespacedName.Namespace,
+				},
+				Spec: pipelinev1beta1.PipelineRunSpec{
+					PipelineRef: &pipelinev1beta1.PipelineRef{
+						Name: name,
+					},
+					Workspaces: []pipelinev1beta1.WorkspaceBinding{
+						{
+							Name: "data",
+							VolumeClaimTemplate: &v1.PersistentVolumeClaim{
+								Spec: v1.PersistentVolumeClaimSpec{
+									AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+									Resources: v1.ResourceRequirements{
+										Requests: v1.ResourceList{
+											v1.ResourceStorage: resource.MustParse("500Mi"),
+										},
+									},
+								},
+							},
+						},
+						{
+							Name: "sslcertdir",
+							ConfigMap: &v1.ConfigMapVolumeSource{
+								LocalObjectReference: v1.LocalObjectReference{
+									Name: "openshift-service-ca.crt",
+								},
+								Items: []v1.KeyToPath{{
+									Key:  "service-ca.crt",
+									Path: "ca.crt",
+								}},
+								DefaultMode: pointer.Int32(420),
+							},
+						},
+					},
+				},
+			}
+			controllerutil.SetControllerReference(r.CNBi, pipelineRun, r.Scheme)
+
+			if err := r.Create(*ctx, pipelineRun); err != nil {
+				logger.Error(err, "Unable to create PipelineRun")
+				updateStatus(metav1.ConditionTrue, "CreateError", fmt.Sprintf("Unable to create pipelinerun. %s", err))
+				return err
+			}
+			updateStatus(metav1.ConditionTrue, "BuildStated", "Tekton pipeline was submitted.")
+			return nil
+		}
+		logger.Error(err, "Error fetching PipelineRun")
+
+		updateStatus(metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
+		return err
+	}
+
+	if len(pipelineRun.Status.Conditions) > 0 {
+		if len(pipelineRun.Status.Conditions) != 1 {
+			logger.Error(nil, "Tekton reported multiple conditions")
+		}
+		condition := pipelineRun.Status.Conditions[0]
+		updateStatus(metav1.ConditionStatus(condition.Status), condition.Reason, condition.Message)
+	}
+
+	if pipelineRun.Status.CompletionTime != nil {
+		if pipelineRun.Status.Conditions[0].Reason == "Succeeded" {
+			r.CNBi.Status.Pipelines[statusIndex].Ready = "True"
+			if len(pipelineRun.Status.PipelineResults) > 0 {
+				if pipelineRun.Status.PipelineResults[0].Value.Type == "string" {
+					r.CNBi.Status.Pipelines[statusIndex].Url = pipelineRun.Status.PipelineResults[0].Value.StringVal
+				}
+			}
+		}
+	}
+	return nil
 }

@@ -6,8 +6,8 @@ metadata:
 spec:
   runtimeEnvironment:
     osName: ubi
-    osVersion: 8
-    pythonVersion: 3.8
+    osVersion: "8"
+    pythonVersion: "3.8"
 ---
 apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage
@@ -24,7 +24,7 @@ metadata:
 spec:
   runtimeEnvironment:
     osName: ubi
-    osVersion: 8
-    pythonVersion: 3.8
+    osVersion: "8"
+    pythonVersion: "3.8"
   packageVersions:
     - "pandas"

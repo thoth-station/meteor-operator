@@ -60,6 +60,9 @@ type CustomNBImageStatus struct {
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Conditions",xDescriptors={"urn:alm:descriptor:io.kubernetes.conditions"}
 	//+optional
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+	// Stores results from pipelines. Empty if neither pipeline has completed.
+	//+optional
+	Pipelines []PipelineResult `json:"pipelines,omitempty"`
 }
 
 // Aggregate phase from conditions

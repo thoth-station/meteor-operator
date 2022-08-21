@@ -135,6 +135,28 @@ spec:
               phase:
                 description: Current condition of the Shower.
                 type: string
+              pipelines:
+                description: Stores results from pipelines. Empty if neither pipeline
+                  has completed.
+                items:
+                  properties:
+                    name:
+                      type: string
+                    pipelineRunName:
+                      description: Name of the corresponding PipelineRun resource
+                      type: string
+                    ready:
+                      description: True if build completed successfully.
+                      type: string
+                    url:
+                      description: Url to a running deployment. Routable at least
+                        within the cluster. Empty if not yet scheduled.
+                      type: string
+                  required:
+                  - name
+                  - pipelineRunName
+                  type: object
+                type: array
             type: object
         type: object
     served: true
