@@ -9,3 +9,4 @@ webhook:
 leaderElection:
   leaderElect: true
   resourceName: 05b1bff9.meteor.zone
+enableComa: false

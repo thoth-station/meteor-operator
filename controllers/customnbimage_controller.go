@@ -19,8 +19,10 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -84,6 +86,7 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return r.UpdateStatusNow(ctx, err)
 	}
 
+	logger.Info("Reconciled CustomNBImage", "status", r.CNBi.Status)
 	return r.UpdateStatusNow(ctx, nil)
 }
 
@@ -111,7 +114,7 @@ func (r *CustomNBImageReconciler) UpdateStatusNow(ctx context.Context, originalE
 // Set status condition helper
 func (r *CustomNBImageReconciler) SetCondition(kind, name string, status metav1.ConditionStatus, reason, message string) {
 	meta.SetStatusCondition(&r.CNBi.Status.Conditions, metav1.Condition{
-		Type:    kind + strings.Title(name),
+		Type:    kind + cases.Title(language.Und).String(name),
 		Status:  status,
 		Reason:  reason,
 		Message: message,
@@ -192,15 +195,15 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 
 			if err := r.Create(*ctx, pipelineRun); err != nil {
 				logger.Error(err, "Unable to create PipelineRun")
-				updateStatus(metav1.ConditionTrue, "CreateError", fmt.Sprintf("Unable to create pipelinerun. %s", err))
+				updateStatus(metav1.ConditionTrue, "ErrorPipelineRunCreate", fmt.Sprintf("Unable to create PipelineRun. %s", err))
 				return err
 			}
-			updateStatus(metav1.ConditionTrue, "BuildStated", "Tekton pipeline was submitted.")
+			updateStatus(metav1.ConditionTrue, "SuccessPipelineRunCreate", "Tekton PipelineRun was created.")
 			return nil
 		}
 		logger.Error(err, "Error fetching PipelineRun")
 
-		updateStatus(metav1.ConditionFalse, "Error", fmt.Sprintf("Reconcile resulted in error. %s", err))
+		updateStatus(metav1.ConditionFalse, "ErrorPipelineRun", fmt.Sprintf("Reconcile resulted in error. %s", err))
 		return err
 	}
 

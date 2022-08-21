@@ -44,15 +44,18 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme     = runtime.NewScheme()
+	setupLog   = ctrl.Log.WithName("setup")
+	ctrlConfig = meteorv1alpha1.MeteorConfig{}
 )
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(meteorv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(pipelinev1beta1.AddToScheme(scheme))
-	utilruntime.Must(routev1.AddToScheme(scheme))
+	if ctrlConfig.Spec.EnableShower {
+		utilruntime.Must(routev1.AddToScheme(scheme))
+	}
 	utilruntime.Must(monitoringv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 	common.InitMetrics()
@@ -62,11 +65,17 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+	var configFile string
+
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.StringVar(&configFile, "config", "",
+		"The controller will load its initial configuration from this file. "+
+			"Omit this flag to use the default configuration values. "+
+			"Command-line flags override configuration from this file.")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -74,15 +83,27 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	var err error
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	options := ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "05b1bff9.meteor.zone",
-	})
+	}
+
+	if configFile != "" {
+		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))
+
+		if err != nil {
+			setupLog.Error(err, "unable to load the config file")
+			os.Exit(1)
+		}
+	}
+
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
@@ -95,13 +116,17 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Meteor")
 		os.Exit(1)
 	}
-	if err = (&shower.ShowerReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Shower")
-		os.Exit(1)
+
+	if ctrlConfig.Spec.EnableShower {
+		if err = (&shower.ShowerReconciler{
+			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "Shower")
+			os.Exit(1)
+		}
 	}
+
 	if err = (&controllers.CustomNBImageReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),

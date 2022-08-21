@@ -1,0 +1,24 @@
+# permissions for end users to edit meteorconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: meteorconfig-editor-role
+rules:
+- apiGroups:
+  - meteor.zone
+  resources:
+  - meteorconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - meteor.zone
+  resources:
+  - meteorconfigs/status
+  verbs:
+  - get
