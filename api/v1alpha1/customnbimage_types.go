@@ -79,6 +79,7 @@ func (cnbi *CustomNBImage) AggregatePhase() string {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase"
 
 // CustomNBImage is the Schema for the customnbimages API
 type CustomNBImage struct {

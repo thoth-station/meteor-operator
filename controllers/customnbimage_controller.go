@@ -82,7 +82,7 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// TODO your logic here
 
-	if err := r.ReconcilePipelineRun("cnbi-create-repo", &ctx, req); err != nil {
+	if err := r.ReconcilePipelineRun("prepare", &ctx, req); err != nil {
 		return r.UpdateStatusNow(ctx, err)
 	}
 
@@ -94,6 +94,7 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 func (r *CustomNBImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&meteorv1alpha1.CustomNBImage{}).
+		Owns(&pipelinev1beta1.PipelineRun{}).
 		Complete(r)
 }
 
@@ -124,7 +125,8 @@ func (r *CustomNBImageReconciler) SetCondition(kind, name string, status metav1.
 // ReconcilePipelineRun will reconcile the pipeline run for the CustomNBImage.
 func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context.Context, req ctrl.Request) error {
 	pipelineRun := &pipelinev1beta1.PipelineRun{}
-	resourceName := fmt.Sprintf("%s-%s", r.CNBi.GetName(), name)
+	resourceName := fmt.Sprintf("cnbi-%s-%s", r.CNBi.GetName(), name)
+	pipelineReferenceName := fmt.Sprintf("cnbi-%s", name)
 	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
 
 	logger := log.FromContext(*ctx).WithValues("pipelinerun", namespacedName)
@@ -150,7 +152,52 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 
 	if err := r.Get(*ctx, namespacedName, pipelineRun); err != nil {
 		if errors.IsNotFound(err) {
+			params := []pipelinev1beta1.Param{}
 			logger.Info("Creating PipelineRun")
+
+			// if we have a BaseImage supplied, use it
+			if r.CNBi.Spec.RuntimeEnvironment.BaseImage != "" {
+				params = append(params, pipelinev1beta1.Param{
+					Name: "baseImage",
+					Value: pipelinev1beta1.ArrayOrString{
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: r.CNBi.Spec.RuntimeEnvironment.BaseImage,
+					},
+				})
+			} else {
+				params = append(params, pipelinev1beta1.Param{
+					Name: "osVersion",
+					Value: pipelinev1beta1.ArrayOrString{
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: r.CNBi.Spec.RuntimeEnvironment.OSVersion,
+					},
+				})
+				params = append(params, pipelinev1beta1.Param{
+					Name: "osName",
+					Value: pipelinev1beta1.ArrayOrString{
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: r.CNBi.Spec.RuntimeEnvironment.OSName,
+					},
+				})
+				params = append(params, pipelinev1beta1.Param{
+					Name: "pythonVersion",
+					Value: pipelinev1beta1.ArrayOrString{
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: r.CNBi.Spec.RuntimeEnvironment.PythonVersion,
+					},
+				})
+			}
+
+			// if we have no PackageVersion specified, we are done...
+			if len(r.CNBi.Spec.PackageVersion) > 0 {
+				params = append(params, pipelinev1beta1.Param{
+					Name: "packages",
+					Value: pipelinev1beta1.ArrayOrString{
+						Type:     pipelinev1beta1.ParamTypeArray,
+						ArrayVal: r.CNBi.Spec.PackageVersion,
+					},
+				})
+			}
 
 			pipelineRun = &pipelinev1beta1.PipelineRun{
 				ObjectMeta: metav1.ObjectMeta{
@@ -159,8 +206,9 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				},
 				Spec: pipelinev1beta1.PipelineRunSpec{
 					PipelineRef: &pipelinev1beta1.PipelineRef{
-						Name: name,
+						Name: pipelineReferenceName,
 					},
+					Params: params,
 					Workspaces: []pipelinev1beta1.WorkspaceBinding{
 						{
 							Name: "data",

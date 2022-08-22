@@ -2,7 +2,7 @@
 apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage
 metadata:
-  name: cnbi-ubi8-py38-sample-1
+  name: ubi8-py38-sample-1
 spec:
   runtimeEnvironment:
     osName: ubi
@@ -12,7 +12,7 @@ spec:
 apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage
 metadata:
-  name: cnbi-s2i-thoth-ubi8-py39-baseimage-sample-1
+  name: s2i-thoth-ubi8-py39-baseimage-sample-1
 spec:
   runtimeEnvironment:
     baseImage: quay.io/thoth-station/s2i-thoth-ubi8-py39:v0.34.1
@@ -20,7 +20,7 @@ spec:
 apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage
 metadata:
-  name: cnbi-ubi8-py38-sample-2
+  name: ubi8-py38-sample-2
 spec:
   runtimeEnvironment:
     osName: ubi
@@ -28,3 +28,16 @@ spec:
     pythonVersion: "3.8"
   packageVersions:
     - "pandas"
+---
+apiVersion: meteor.zone/v1alpha1
+kind: CustomNBImage
+metadata:
+  name: ubi8-py38-sample-3
+spec:
+  runtimeEnvironment:
+    osName: ubi
+    osVersion: "8"
+    pythonVersion: "3.8"
+  packageVersions:
+    - pandas
+    - boto3>=1.24.0

@@ -36,7 +36,7 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: cnbi-create-repo
+  name: cnbi-prepare
 spec:
   tasks:
     - name: create-repo
