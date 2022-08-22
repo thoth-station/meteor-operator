@@ -86,17 +86,14 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/a
 kubectl apply -f hack/dashboard-adminuser.yaml
 kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
 kubectl apply -f https://github.com/tektoncd/dashboard/releases/latest/download/tekton-dashboard-release.yaml
-<<<<<<< HEAD
 curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/raw | sed -e s/Task/ClusterTask/ | kubectl apply -f -
-=======
->>>>>>> 4d773b4 (Separate kind instructions from operator test instructions)
 
 kubectl -n tekton-pipelines port-forward svc/tekton-dashboard 9097:9097
 
 export T=$(kubectl -n kubernetes-dashboard create token admin-user)
 ```
 
-`kubectl proxy` to expose 8001 and access http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/ for the kubernetes dashboard.
+Run `kubectl proxy` to expose 8001 and access http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/ for the kubernetes dashboard.
 
 Use `kubectl port-forward -n tekton-pipelines service/tekton-dashboard 9097:9097` to expose the tekton dashboard, visit it at http://localhost:9097/
 
@@ -104,7 +101,7 @@ Use `kubectl port-forward -n tekton-pipelines service/tekton-dashboard 9097:9097
 
 Pre-requisite: a Kubernetes or OpenShift cluster, with the local `KUBECONFIG` configured to access it in the preferred target namespace.
 
-deploy the tekton pipelines and tasks CNBi Operator depends on: `kubectl apply -f hack/create-repo-pipeline.yaml`.
+Deploy the tekton pipelines and tasks CNBi Operator depends on: `kubectl apply -f hack/cnbi-prepare.yaml`.
 
 ## Testing the operator against an existing cluster
 
