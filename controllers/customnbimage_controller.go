@@ -82,9 +82,12 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// TODO your logic here
 
+	// Check for the PipelineRun reconcilation, and update the status of the CustomNBImage resource
 	if err := r.ReconcilePipelineRun("prepare", &ctx, req); err != nil {
 		return r.UpdateStatusNow(ctx, err)
 	}
+
+	// if we see some changes to the .spec, we need to create another PipelineRun...
 
 	logger.Info("Reconciled CustomNBImage", "status", r.CNBi.Status)
 	return r.UpdateStatusNow(ctx, nil)

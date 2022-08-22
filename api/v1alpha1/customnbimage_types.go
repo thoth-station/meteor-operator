@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"strings"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -71,10 +73,26 @@ func (cnbi *CustomNBImage) AggregatePhase() string {
 		return CNBiPhasePending
 	}
 
-	//	for _, c := range cnbi.Status.Conditions {
-	//	}
+	for _, c := range cnbi.Status.Conditions {
+		if c.Status == metav1.ConditionFalse {
+			return CNBiPhaseFailed
+		}
 
-	return PhaseOk
+		// Claim ready only if pipelineruns have completed
+		if strings.HasPrefix(c.Type, "PipelineRun") {
+			switch c.Reason {
+			case "Succeeded", "Completed":
+				continue
+			}
+			// TODO distinguish between preparing and building (depending on the pipelinerun name containing 'prepare' or 'build'?)
+			return CNBiPhaseBuilding
+		}
+
+		if c.Reason != "Ready" {
+			return CNBiPhaseBuilding
+		}
+	}
+	return CNBiPhaseOk
 }
 
 //+kubebuilder:object:root=true
