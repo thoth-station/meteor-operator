@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// SPDX-License-Identifier: Apache-2.0
+
 package v1alpha1
 
 import (
@@ -125,4 +127,14 @@ type CustomNBImageList struct {
 
 func init() {
 	SchemeBuilder.Register(&CustomNBImage{}, &CustomNBImageList{})
+}
+
+// IsReady returns true the Ready condition status is True
+func (status CustomNBImageStatus) IsReady() bool {
+	for _, condition := range status.Conditions {
+		if condition.Status == metav1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }

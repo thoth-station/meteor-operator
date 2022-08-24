@@ -84,6 +84,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/a
 kubectl apply -f hack/dashboard-adminuser.yaml
 kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
 kubectl apply -f https://github.com/tektoncd/dashboard/releases/latest/download/tekton-dashboard-release.yaml
+kubectl apply -f hack/cnbi-prepare.yaml
 
 kubectl -n tekton-pipelines port-forward svc/tekton-dashboard 9097:9097
 
