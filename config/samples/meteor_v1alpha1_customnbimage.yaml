@@ -4,6 +4,8 @@ kind: CustomNBImage
 metadata:
   name: ubi8-py38-sample-1
 spec:
+  name: ubi8-py38
+  creator: meteor
   runtimeEnvironment:
     osName: ubi
     osVersion: "8"
@@ -14,6 +16,8 @@ kind: CustomNBImage
 metadata:
   name: s2i-thoth-ubi8-py39-baseimage-sample-1
 spec:
+  name: s2i-thoth-ubi8-py39
+  creator: thoth-station
   runtimeEnvironment:
     baseImage: quay.io/thoth-station/s2i-thoth-ubi8-py39:v0.34.1
 ---
@@ -22,6 +26,8 @@ kind: CustomNBImage
 metadata:
   name: ubi8-py38-sample-2
 spec:
+  name: ubi8-py38-2
+  creator: meteor
   runtimeEnvironment:
     osName: ubi
     osVersion: "8"
@@ -34,6 +40,8 @@ kind: CustomNBImage
 metadata:
   name: ubi8-py38-sample-3
 spec:
+  name: ubi8-py38-3
+  creator: meteor
   runtimeEnvironment:
     osName: ubi
     osVersion: "8"

@@ -40,6 +40,15 @@ spec:
           spec:
             description: CustomNBImageSpec defines the desired state of CustomNBImage
             properties:
+              creator:
+                description: Creator is the name of the user who created the CustomNBImage
+                type: string
+              description:
+                description: Description that should be shown in the UI
+                type: string
+              name:
+                description: Name that should be shown in the UI
+                type: string
               packageVersions:
                 description: PackageVersion is a set of Packages including their Version
                   Specifiers
@@ -64,6 +73,9 @@ spec:
                     description: PythonVersion is the version of Python to use
                     type: string
                 type: object
+            required:
+            - creator
+            - name
             type: object
           status:
             description: CustomNBImageStatus defines the observed state of CustomNBImage

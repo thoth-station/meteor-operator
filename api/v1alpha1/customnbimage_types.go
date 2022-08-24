@@ -50,6 +50,12 @@ type CustomNBImageSpec struct {
 	RuntimeEnvironment CustomNBImageRuntimeSpec `json:"runtimeEnvironment,omitempty"`
 	// PackageVersion is a set of Packages including their Version Specifiers
 	PackageVersion []string `json:"packageVersions,omitempty"`
+	// Name that should be shown in the UI
+	Name string `json:"name"`
+	// Description that should be shown in the UI
+	Description string `json:"description,omitempty"`
+	// Creator is the name of the user who created the CustomNBImage
+	Creator string `json:"creator"`
 }
 
 // CustomNBImageStatus defines the observed state of CustomNBImage

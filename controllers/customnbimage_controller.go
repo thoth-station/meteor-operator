@@ -78,23 +78,24 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	r.CNBi.Status.Phase = r.CNBi.AggregatePhase()
-	logger.Info("Reconciling CustomNBImage", "phase", r.CNBi.Status.Phase)
-
-	// TODO your logic here
 
 	// Check for the PipelineRun reconcilation, and update the status of the CustomNBImage resource
 	if err := r.ReconcilePipelineRun("prepare", &ctx, req); err != nil {
 		return r.UpdateStatusNow(ctx, err)
 	}
 
-	// if we see some changes to the .spec, we need to create another PipelineRun...
+	/* TODO check if the PipelineRun ran for the current runtime environment
+	 * if not, delete the PipelineRun and reconcile?
+	 */
 
-	logger.Info("Reconciled CustomNBImage", "status", r.CNBi.Status)
+	logger.Info("Reconciled CustomNBImage", "self", r.CNBi)
 	return r.UpdateStatusNow(ctx, nil)
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *CustomNBImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// TODO setup index for PipelineRuns
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&meteorv1alpha1.CustomNBImage{}).
 		Owns(&pipelinev1beta1.PipelineRun{}).
