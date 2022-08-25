@@ -36,7 +36,7 @@ import (
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
-	"github.com/aicoe/meteor-operator/controllers"
+	cnbi "github.com/aicoe/meteor-operator/controllers/cnbi"
 	common "github.com/aicoe/meteor-operator/controllers/common"
 	meteor "github.com/aicoe/meteor-operator/controllers/meteor"
 	shower "github.com/aicoe/meteor-operator/controllers/shower"
@@ -127,7 +127,7 @@ func main() {
 		}
 	}
 
-	if err = (&controllers.CustomNBImageReconciler{
+	if err = (&cnbi.CustomNBImageReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
