@@ -1,22 +1,195 @@
----
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: dummy
-spec:
-  steps:
-    - name: dummy
-      image: registry.access.redhat.com/ubi9-minimal:9.0.0-1608
-      script: |
-        #!/bin/bash
-        echo "this is a dummy task, it is the BYON validation pipeline refurbished!"
----
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: cnbi-import
+  labels:
+    app.kubernetes.io/created-by: byon
 spec:
+  params:
+    - name: baseImage
+      description: Container image repository url
+      type: string
+    - name: name
+      description: Image name
+      type: string
+    - name: description
+      description: Custom description
+      type: string
+    - name: creator
+      description: Owner, user who requested the import
+      type: string
+  workspaces:
+    - name: data
+
   tasks:
-    - name: dummy
+    - name: create-imagestream
       taskRef:
-        name: dummy
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        # FIXME thisis yaml inside of a shell script inside of a yaml which is run in a container?!!?
+        - name: SCRIPT
+          value: |
+            echo "Creating image stream:"
+            echo "  Name:       $(context.pipelineRun.name)"
+            echo "  Namespace:  $(context.pipelineRun.namespace)"
+            echo
+            echo "  Image name:        $(params.name)"
+            echo "  Image description: $(params.description)"
+            echo "  Image URL:         $(params.baseImage)"
+            echo
+            echo "  Creator:           $(params.creator)"
+            echo "  Phase:             Validating"
+            echo "  Messages:          ''"
+            echo "  Visibility:        false"
+            echo "  Origin:            Admin"
+            echo
+
+            oc apply -f - <<EOM
+            ---
+            kind: ImageStream
+            apiVersion: image.openshift.io/v1
+            metadata:
+              annotations:
+                opendatahub.io/notebook-image-desc: $(params.description)
+                opendatahub.io/notebook-image-messages: ''
+                opendatahub.io/notebook-image-name: $(params.name)
+                opendatahub.io/notebook-image-phase: Validating
+                opendatahub.io/notebook-image-url: $(params.baseImage)
+                opendatahub.io/notebook-image-creator: $(params.creator)
+                opendatahub.io/notebook-image-origin: Admin
+              name: $(context.pipelineRun.name)
+              namespace: $(context.pipelineRun.namespace)
+              labels:
+                app.kubernetes.io/created-by: byon
+            spec:
+              lookupPolicy:
+                local: true
+              tags: []
+            EOM
+
+    - name: setup
+      workspaces:
+        - name: data
+          workspace: data
+      params:
+        - name: url
+          value: "$(params.baseImage)"
+      taskSpec:
+        params:
+          - name: url
+            type: string
+        workspaces:
+          - name: data
+        steps:
+          - name: setup
+            image: registry.access.redhat.com/ubi8/skopeo:8.5-10
+            script: |
+              #!/usr/bin/env bash
+              echo -n "Creating output files... "
+
+              umask 0
+              touch $(workspaces.data.path)/messages.ndjson
+              echo -n "[]" > $(workspaces.data.path)/notebook-software.json
+              echo -n "[]" > $(workspaces.data.path)/notebook-python-dependencies.json
+
+              echo "DONE"
+
+              echo -n "Verifying image is pull-able... "
+              if ! skopeo inspect docker://$(params.url) 2>/dev/null >/dev/null; then
+                echo '{"severity":"error","message":"Unable to pull image"}' >> $(workspaces.data.path)/messages.ndjson
+                echo "FAILED"
+                exit 1
+              else
+                echo "DONE"
+              fi
+
+    - name: validate
+      taskRef:
+        name: byon-validate-jupyterhub-image
+      runAfter:
+        - setup
+      workspaces:
+        - name: data
+          workspace: data
+      params:
+        - name: url
+          value: "$(params.baseImage)"
+
+  finally:
+    - name: update-imagestream
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      workspaces:
+        - name: manifest-dir
+          workspace: data
+      params:
+        - name: SCRIPT
+          value: |
+            # Parse validation results
+
+            PHASE="Failed"
+            VISIBLE="false"
+
+            if [ ! -s $(workspaces.manifest-dir.path)/messages.ndjson ]; then
+              if [ $(tasks.status) == "Failed" ]; then
+                # If a task has failed and there are no messages, report error. This should not happen.
+                MESSAGES='[{"severity":"error","message":"Validation error"}]'
+              else
+                # If all validation steps succeed and return empty messages, it means the image passed validation
+                PHASE="Succeeded"
+                VISIBLE="true"
+              fi
+            else
+              # There are messages available, report them.
+              MESSAGES="[$(sed ':a;N;$!ba;s/\n/,/g' $(workspaces.manifest-dir.path)/messages.ndjson)]"
+            fi
+
+            # Parse tag
+            IMAGE_TAG=$(echo $(params.baseImage)  | sed '/.*:.*/!s/.*/latest/; s/.*://')  # Parse text after ":" if available, use "latest" otherwise
+
+            NOTEBOOK_SOFTWARE=$(cat $(workspaces.manifest-dir.path)/notebook-software.json)
+            NOTEBOOK_PYTHON_DEPENDENCIES=$(cat $(workspaces.manifest-dir.path)/notebook-python-dependencies.json)
+
+            echo "Updating image stream:"
+            echo "  Name:       $(context.pipelineRun.name)"
+            echo "  Namespace:  $(context.pipelineRun.namespace)"
+            echo
+            echo "  Image tag:           $IMAGE_TAG"
+            echo "  Phase:               $PHASE"
+            echo "  Messages:            $MESSAGES"
+            echo "  Visibility:          $VISIBLE"
+            echo "  Software:            $NOTEBOOK_SOFTWARE"
+            echo "  Python dependencies: $NOTEBOOK_PYTHON_DEPENDENCIES"
+            echo
+
+            cat <<EOM > patch-file.yaml
+            metadata:
+              annotations:
+                opendatahub.io/notebook-image-messages: |
+                  $MESSAGES
+                opendatahub.io/notebook-image-phase: "$PHASE"
+            EOM
+
+            [ "$VISIBLE" == "true" ] && cat <<EOM >> patch-file.yaml
+              labels:
+                opendatahub.io/notebook-image: 'true'
+            EOM
+
+            cat <<EOM >> patch-file.yaml
+            spec:
+              tags:
+                - annotations:
+                    opendatahub.io/notebook-software: |
+                      $NOTEBOOK_SOFTWARE
+                    opendatahub.io/notebook-python-dependencies: |
+                      $NOTEBOOK_PYTHON_DEPENDENCIES
+                    openshift.io/imported-from: $(params.baseImage)
+                  from:
+                    kind: DockerImage
+                    name: $(params.baseImage)
+                  name: $IMAGE_TAG
+            EOM
+
+            oc patch imagestream $(context.pipelineRun.name) -n $(context.pipelineRun.namespace) --type="merge" --patch-file patch-file.yaml

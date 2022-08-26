@@ -84,7 +84,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/a
 kubectl apply -f hack/dashboard-adminuser.yaml
 kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
 kubectl apply -f https://github.com/tektoncd/dashboard/releases/latest/download/tekton-dashboard-release.yaml
-kubectl apply -f hack/cnbi-prepare.yaml
+curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/raw | sed -e s/Task/ClusterTask/ | kubectl apply -f -
 
 kubectl -n tekton-pipelines port-forward svc/tekton-dashboard 9097:9097
 
@@ -97,6 +97,14 @@ use `kubectl port-forward -n tekton-pipelines service/tekton-dashboard 9097:9097
 it at http://localhost:9097/
 
 deploy the tekton pipelines and tasks CNBi Operator depends on: `kubectl apply -f hack/create-repo-pipeline.yaml`.
+
+## Testing the operator against an existing cluster
+
+Pre-requisite: a Kubernetes or OpenShift cluster, with the local `KUBECONFIG` configured to access it in the preferred target namespace.
+
+Deploy the tekton pipelines and tasks CNBi Operator depends on:
+
+`cat hack/cnbi-*.yaml | kubectl apply -f -`
 
 `make install` will deploy all our CRD, and `make run` to run the controller locally but connected to the cluster.
 
