@@ -28,11 +28,29 @@ import (
 const (
 	CNBiPhasePending            = "Pending"
 	CNBiPhaseFailed             = "Failed"
+	CNBiPhasePreparing          = "Preparing"
 	CNBiPhaseCreatingRepository = "CreatingRepository"
 	CNBiPhaseResolving          = "Resolving"
+	CNBiPhaseRunning            = "Running"
 	CNBiPhaseBuilding           = "Building"
+	CNBiPhageImporting          = "Importing"
 	CNBiPhaseOk                 = "Ready"
 )
+
+// Strategies we support for a CNBi
+const (
+	CNBiStrategyImageImport         = "import"
+	CNBiStrategyBuildUsingPython    = "build"
+	CNBiStrategyBuildUsingBaseImage = "baseImage"
+)
+
+// CustomNBImageStrategy is the strategy super-set of configurations for all strategies.
+type CustomNBImageStrategy struct {
+	// Type is the strategy
+	Type string `json:"type,omitempty"`
+	// From is the reference to the source image, used for import strategy
+	From string `json:"from,omitempty"`
+}
 
 // CustomNBImageRuntimeSpec defines a Runtime Environment, aka 'the Python version used'
 type CustomNBImageRuntimeSpec struct {
@@ -46,18 +64,26 @@ type CustomNBImageRuntimeSpec struct {
 	BaseImage string `json:"baseImage,omitempty"`
 }
 
-// CustomNBImageSpec defines the desired state of CustomNBImage
-type CustomNBImageSpec struct {
-	// RuntimeEnvironment is the runtime environment to use for the Custome Notebook Image
-	RuntimeEnvironment CustomNBImageRuntimeSpec `json:"runtimeEnvironment,omitempty"`
-	// PackageVersion is a set of Packages including their Version Specifiers
-	PackageVersion []string `json:"packageVersions,omitempty"`
-	// Name that should be shown in the UI
+// CustomNBImageDashboardInformation is the information needed to generate the annoatation used by Open Data Hub Dashboard.
+type CustomNBImageDashboardInformation struct {
+	// Name is the name of the CustomNBImage
 	Name string `json:"name"`
-	// Description that should be shown in the UI
+	// Description is the description of the CustomNBImage
 	Description string `json:"description,omitempty"`
 	// Creator is the name of the user who created the CustomNBImage
 	Creator string `json:"creator"`
+}
+
+// CustomNBImageSpec defines the desired state of CustomNBImage
+type CustomNBImageSpec struct {
+	// RuntimeEnvironment is the runtime environment to use for the Custom Notebook Image
+	RuntimeEnvironment CustomNBImageRuntimeSpec `json:"runtimeEnvironment,omitempty"`
+	// PackageVersion is a set of Packages including their Version Specifiers
+	PackageVersion []string `json:"packageVersions,omitempty"`
+	// DashboardInformation is the information needed to generate the annoatation used by Open Data Hub Dashboard.
+	DashboardInformation CustomNBImageDashboardInformation `json:"dashboardInformation"`
+	// StrategyConfig is the configuration for the strategy, if no strategy is specified, we assume "prepare"
+	Strategy CustomNBImageStrategy `json:"strategy,omitempty"`
 }
 
 // CustomNBImageStatus defines the observed state of CustomNBImage
@@ -93,11 +119,15 @@ func (cnbi *CustomNBImage) AggregatePhase() string {
 				continue
 			}
 			// TODO distinguish between preparing and building (depending on the pipelinerun name containing 'prepare' or 'build'?)
-			return CNBiPhaseBuilding
+			if strings.HasPrefix(c.Type, "PipelineRunPrepare") {
+				return CNBiPhasePreparing
+			} else if strings.HasPrefix(c.Type, "PipelineRunImport") {
+				return CNBiPhageImporting
+			}
 		}
 
 		if c.Reason != "Ready" {
-			return CNBiPhaseBuilding
+			return CNBiPhaseRunning
 		}
 	}
 	return CNBiPhaseOk

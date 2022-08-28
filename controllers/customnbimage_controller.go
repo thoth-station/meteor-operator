@@ -79,9 +79,18 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	r.CNBi.Status.Phase = r.CNBi.AggregatePhase()
 
+	// depending on the import Strategy, we reconcile a pipelinerun
 	// Check for the PipelineRun reconcilation, and update the status of the CustomNBImage resource
-	if err := r.ReconcilePipelineRun("prepare", &ctx, req); err != nil {
-		return r.UpdateStatusNow(ctx, err)
+	if r.CNBi.Spec.Strategy.Type == meteorv1alpha1.CNBiStrategyImageImport {
+		if err := r.ReconcilePipelineRun("import", &ctx, req); err != nil {
+			return r.UpdateStatusNow(ctx, err)
+		}
+	} else {
+		// we assume its a build from UI parameters...
+
+		if err := r.ReconcilePipelineRun("prepare", &ctx, req); err != nil {
+			return r.UpdateStatusNow(ctx, err)
+		}
 	}
 
 	/* TODO check if the PipelineRun ran for the current runtime environment
@@ -99,6 +108,7 @@ func (r *CustomNBImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&meteorv1alpha1.CustomNBImage{}).
 		Owns(&pipelinev1beta1.PipelineRun{}).
+		Owns(&v1alpha1.Meteor{}).
 		Complete(r)
 }
 

@@ -40,15 +40,23 @@ spec:
           spec:
             description: CustomNBImageSpec defines the desired state of CustomNBImage
             properties:
-              creator:
-                description: Creator is the name of the user who created the CustomNBImage
-                type: string
-              description:
-                description: Description that should be shown in the UI
-                type: string
-              name:
-                description: Name that should be shown in the UI
-                type: string
+              dashboardInformation:
+                description: DashboardInformation is the information needed to generate
+                  the annoatation used by Open Data Hub Dashboard.
+                properties:
+                  creator:
+                    description: Creator is the name of the user who created the CustomNBImage
+                    type: string
+                  description:
+                    description: Description is the description of the CustomNBImage
+                    type: string
+                  name:
+                    description: Name is the name of the CustomNBImage
+                    type: string
+                required:
+                - creator
+                - name
+                type: object
               packageVersions:
                 description: PackageVersion is a set of Packages including their Version
                   Specifiers
@@ -57,7 +65,7 @@ spec:
                 type: array
               runtimeEnvironment:
                 description: RuntimeEnvironment is the runtime environment to use
-                  for the Custome Notebook Image
+                  for the Custom Notebook Image
                 properties:
                   baseImage:
                     description: BaseImage is an alternative the the three above fields
@@ -73,9 +81,19 @@ spec:
                     description: PythonVersion is the version of Python to use
                     type: string
                 type: object
+              strategy:
+                description: StrategyConfig is the configuration for the strategy
+                properties:
+                  from:
+                    description: From is the reference to the source image, used for
+                      import strategy
+                    type: string
+                  type:
+                    description: Type is the strategy
+                    type: string
+                type: object
             required:
-            - creator
-            - name
+            - dashboardInformation
             type: object
           status:
             description: CustomNBImageStatus defines the observed state of CustomNBImage

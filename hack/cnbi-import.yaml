@@ -1,0 +1,22 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: dummy
+spec:
+  steps:
+    - name: dummy
+      image: registry.access.redhat.com/ubi9-minimal:9.0.0-1608
+      script: |
+        #!/bin/bash
+        echo "this is a dummy task, it is the BYON validation pipeline refurbished!"
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: cnbi-import
+spec:
+  tasks:
+    - name: dummy
+      taskRef:
+        name: dummy
