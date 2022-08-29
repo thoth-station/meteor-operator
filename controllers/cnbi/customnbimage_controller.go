@@ -168,17 +168,25 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 		if errors.IsNotFound(err) {
 			logger.Info("Creating PipelineRun")
 
+			/*
+			   params:
+			     - name: baseImage
+			       description: Container image repository url
+			       type: string
+
+			*/
+
 			// let's put the mandatory name and creator in the PipelineRun
 			params := []pipelinev1beta1.Param{
 				pipelinev1beta1.Param{
-					Name: "cnbiName",
+					Name: "name",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
 						StringVal: r.CNBi.Spec.DashboardInformation.Name,
 					},
 				},
 				pipelinev1beta1.Param{
-					Name: "cnbiCreator",
+					Name: "creator",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
 						StringVal: r.CNBi.Spec.DashboardInformation.Creator,
@@ -189,7 +197,7 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 			// and if available the description too
 			if len(r.CNBi.Spec.DashboardInformation.Description) > 0 {
 				params = append(params, pipelinev1beta1.Param{
-					Name: "cnbiDescription",
+					Name: "description",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
 						StringVal: r.CNBi.Spec.DashboardInformation.Description,
@@ -197,48 +205,61 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				})
 			}
 
-			// if we have a BaseImage supplied, use it
-			if r.CNBi.Spec.RuntimeEnvironment.BaseImage != "" {
+			if r.CNBi.Spec.Strategy.Type == meteorv1alpha1.CNBiStrategyImageImport {
 				params = append(params, pipelinev1beta1.Param{
 					Name: "baseImage",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CNBi.Spec.RuntimeEnvironment.BaseImage,
-					},
-				})
-			} else {
-				params = append(params, pipelinev1beta1.Param{
-					Name: "osVersion",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CNBi.Spec.RuntimeEnvironment.OSVersion,
-					},
-				})
-				params = append(params, pipelinev1beta1.Param{
-					Name: "osName",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CNBi.Spec.RuntimeEnvironment.OSName,
-					},
-				})
-				params = append(params, pipelinev1beta1.Param{
-					Name: "pythonVersion",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CNBi.Spec.RuntimeEnvironment.PythonVersion,
-					},
+						Type:      "string",
+						StringVal: r.CNBi.Spec.Strategy.From,
+					}, // TODO we need a validator for this
 				})
 			}
 
-			// if we have no PackageVersion specified, we are done...
-			if len(r.CNBi.Spec.PackageVersion) > 0 {
-				params = append(params, pipelinev1beta1.Param{
-					Name: "packages",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:     pipelinev1beta1.ParamTypeArray,
-						ArrayVal: r.CNBi.Spec.PackageVersion,
-					},
-				})
+			if r.CNBi.Spec.Strategy.Type == meteorv1alpha1.CNBiStrategyBuildUsingPython {
+
+				// if we have a BaseImage supplied, use it
+				if r.CNBi.Spec.RuntimeEnvironment.BaseImage != "" {
+					params = append(params, pipelinev1beta1.Param{
+						Name: "baseImage",
+						Value: pipelinev1beta1.ArrayOrString{
+							Type:      pipelinev1beta1.ParamTypeString,
+							StringVal: r.CNBi.Spec.RuntimeEnvironment.BaseImage,
+						},
+					})
+				} else {
+					params = append(params, pipelinev1beta1.Param{
+						Name: "osVersion",
+						Value: pipelinev1beta1.ArrayOrString{
+							Type:      pipelinev1beta1.ParamTypeString,
+							StringVal: r.CNBi.Spec.RuntimeEnvironment.OSVersion,
+						},
+					})
+					params = append(params, pipelinev1beta1.Param{
+						Name: "osName",
+						Value: pipelinev1beta1.ArrayOrString{
+							Type:      pipelinev1beta1.ParamTypeString,
+							StringVal: r.CNBi.Spec.RuntimeEnvironment.OSName,
+						},
+					})
+					params = append(params, pipelinev1beta1.Param{
+						Name: "pythonVersion",
+						Value: pipelinev1beta1.ArrayOrString{
+							Type:      pipelinev1beta1.ParamTypeString,
+							StringVal: r.CNBi.Spec.RuntimeEnvironment.PythonVersion,
+						},
+					})
+				}
+
+				// if we have no PackageVersion specified, we are done...
+				if len(r.CNBi.Spec.PackageVersion) > 0 {
+					params = append(params, pipelinev1beta1.Param{
+						Name: "packages",
+						Value: pipelinev1beta1.ArrayOrString{
+							Type:     pipelinev1beta1.ParamTypeArray,
+							ArrayVal: r.CNBi.Spec.PackageVersion,
+						},
+					})
+				}
 			}
 
 			pipelineRun = &pipelinev1beta1.PipelineRun{

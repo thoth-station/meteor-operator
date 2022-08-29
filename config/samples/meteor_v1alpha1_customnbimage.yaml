@@ -62,6 +62,7 @@ spec:
   dashboardInformation:
     name: s2i-minimal-py38-notebook
     creator: meteor
+    description: minimal python notebook
   strategy:
     type: import
     from: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2

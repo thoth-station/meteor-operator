@@ -82,7 +82,8 @@ spec:
                     type: string
                 type: object
               strategy:
-                description: StrategyConfig is the configuration for the strategy
+                description: StrategyConfig is the configuration for the strategy,
+                  if no strategy is specified, we assume "prepare"
                 properties:
                   from:
                     description: From is the reference to the source image, used for
