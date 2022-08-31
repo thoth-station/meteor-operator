@@ -40,23 +40,6 @@ spec:
           spec:
             description: CustomNBImageSpec defines the desired state of CustomNBImage
             properties:
-              dashboardInformation:
-                description: DashboardInformation is the information needed to generate
-                  the annoatation used by Open Data Hub Dashboard.
-                properties:
-                  creator:
-                    description: Creator is the name of the user who created the CustomNBImage
-                    type: string
-                  description:
-                    description: Description is the description of the CustomNBImage
-                    type: string
-                  name:
-                    description: Name is the name of the CustomNBImage
-                    type: string
-                required:
-                - creator
-                - name
-                type: object
               packageVersions:
                 description: PackageVersion is a set of Packages including their Version
                   Specifiers
@@ -93,8 +76,6 @@ spec:
                     description: Type is the strategy
                     type: string
                 type: object
-            required:
-            - dashboardInformation
             type: object
           status:
             description: CustomNBImageStatus defines the observed state of CustomNBImage

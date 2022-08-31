@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"time"
 
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -36,8 +36,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 
 	"github.com/aicoe/meteor-operator/api/v1alpha1"
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
@@ -176,33 +174,30 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 
 			*/
 
-			// let's put the mandatory name and creator in the PipelineRun
+			// let's put the mandatory annotations into the PipelineRun
+			// TODO a validator should govern this
 			params := []pipelinev1beta1.Param{
 				pipelinev1beta1.Param{
 					Name: "name",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
-						StringVal: r.CNBi.Spec.DashboardInformation.Name,
+						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-name"],
 					},
 				},
 				pipelinev1beta1.Param{
 					Name: "creator",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
-						StringVal: r.CNBi.Spec.DashboardInformation.Creator,
+						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-creator"],
 					},
 				},
-			}
-
-			// and if available the description too
-			if len(r.CNBi.Spec.DashboardInformation.Description) > 0 {
-				params = append(params, pipelinev1beta1.Param{
+				pipelinev1beta1.Param{
 					Name: "description",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
-						StringVal: r.CNBi.Spec.DashboardInformation.Description,
+						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-desc"],
 					},
-				})
+				},
 			}
 
 			if r.CNBi.Spec.Strategy.Type == meteorv1alpha1.CNBiStrategyImageImport {
