@@ -18,7 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	cfg "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
+	config "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
 )
 
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
@@ -28,7 +28,7 @@ type MeteorConfigSpec struct {
 	metav1.TypeMeta `json:",inline"`
 
 	// ControllerManagerConfigurationSpec returns the contfigurations for controllers
-	cfg.ControllerManagerConfigurationSpec `json:",inline"`
+	config.ControllerManagerConfigurationSpec `json:",inline"`
 
 	// EnableShower is the feature flar/config to enable Shower
 	EnableShower bool `json:"enableComa,omitempty"`
@@ -45,8 +45,8 @@ type MeteorConfig struct {
 }
 
 // Complete implements config.ControllerManagerConfiguration
-func (*MeteorConfig) Complete() (cfg.ControllerManagerConfigurationSpec, error) {
-	return cfg.ControllerManagerConfigurationSpec{}, nil
+func (*MeteorConfig) Complete() (config.ControllerManagerConfigurationSpec, error) {
+	return config.ControllerManagerConfigurationSpec{}, nil
 }
 
 func init() {

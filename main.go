@@ -134,6 +134,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "CustomNBImage")
 		os.Exit(1)
 	}
+	if err = (&meteorv1alpha1.CustomNBImage{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "CustomNBImage")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

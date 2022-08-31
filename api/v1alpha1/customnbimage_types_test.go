@@ -36,7 +36,7 @@ func TestIsReady(t *testing.T) {
 		"readySucceeded": {
 			status: CustomNBImageStatus{
 				Conditions: []metav1.Condition{
-					metav1.Condition{
+					{
 						Type:   "PipelineRunPrepare",
 						Status: metav1.ConditionTrue,
 						Reason: "Succeeded",
@@ -48,7 +48,7 @@ func TestIsReady(t *testing.T) {
 		"notReadyCouldntGetPipeline": {
 			status: CustomNBImageStatus{
 				Conditions: []metav1.Condition{
-					metav1.Condition{
+					{
 						Type:   "PipelineRunPrepare",
 						Status: metav1.ConditionFalse,
 						Reason: "CouldntGetPipeline",
@@ -60,7 +60,7 @@ func TestIsReady(t *testing.T) {
 		"notReadyRunning": {
 			status: CustomNBImageStatus{
 				Conditions: []metav1.Condition{
-					metav1.Condition{
+					{
 						Type:   "PipelineRunPrepare",
 						Status: metav1.ConditionUnknown,
 						Reason: "Running",
