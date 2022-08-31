@@ -101,12 +101,6 @@ Use `kubectl port-forward -n tekton-pipelines service/tekton-dashboard 9097:9097
 
 Pre-requisite: a Kubernetes or OpenShift cluster, with the local `KUBECONFIG` configured to access it in the preferred target namespace.
 
-Deploy the tekton pipelines and tasks CNBi Operator depends on: `kubectl apply -f hack/cnbi-prepare.yaml`.
-
-## Testing the operator against an existing cluster
-
-Pre-requisite: a Kubernetes or OpenShift cluster, with the local `KUBECONFIG` configured to access it in the preferred target namespace.
-
 Deploy the tekton pipelines and tasks CNBi Operator depends on:
 
 `cat hack/cnbi-*.yaml | kubectl apply -f -`
