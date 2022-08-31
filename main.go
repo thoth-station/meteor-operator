@@ -134,9 +134,9 @@ func main() {
 	}
 
 	/* Since we might want to run
-	the webhooks separately, or not run them when testing our controller
-	locally, we'll put them behind an environment variable.
-	We'll just make sure to set `ENABLE_WEBHOOKS=false` when we run locally.
+	   the webhooks separately, or not run them when testing our controller
+	   locally, we'll put them behind an environment variable.
+	   We'll just make sure to set `ENABLE_WEBHOOKS=false` when we run locally.
 	*/
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 		if err = (&meteorv1alpha1.CustomNBImage{}).SetupWebhookWithManager(mgr); err != nil {
