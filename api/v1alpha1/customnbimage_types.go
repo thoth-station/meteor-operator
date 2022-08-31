@@ -64,24 +64,12 @@ type CustomNBImageRuntimeSpec struct {
 	BaseImage string `json:"baseImage,omitempty"`
 }
 
-// CustomNBImageDashboardInformation is the information needed to generate the annoatation used by Open Data Hub Dashboard.
-type CustomNBImageDashboardInformation struct {
-	// Name is the name of the CustomNBImage
-	Name string `json:"name"`
-	// Description is the description of the CustomNBImage
-	Description string `json:"description,omitempty"`
-	// Creator is the name of the user who created the CustomNBImage
-	Creator string `json:"creator"`
-}
-
 // CustomNBImageSpec defines the desired state of CustomNBImage
 type CustomNBImageSpec struct {
 	// RuntimeEnvironment is the runtime environment to use for the Custom Notebook Image
 	RuntimeEnvironment CustomNBImageRuntimeSpec `json:"runtimeEnvironment,omitempty"`
 	// PackageVersion is a set of Packages including their Version Specifiers
 	PackageVersion []string `json:"packageVersions,omitempty"`
-	// DashboardInformation is the information needed to generate the annoatation used by Open Data Hub Dashboard.
-	DashboardInformation CustomNBImageDashboardInformation `json:"dashboardInformation"`
 	// StrategyConfig is the configuration for the strategy, if no strategy is specified, we assume "prepare"
 	Strategy CustomNBImageStrategy `json:"strategy,omitempty"`
 }

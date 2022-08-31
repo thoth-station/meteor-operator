@@ -2,39 +2,14 @@
 apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage
 metadata:
-  name: ubi8-py38-sample-1
-spec:
-  dashboardInformation:
-    name: ubi8-py38
-    creator: meteor
-  runtimeEnvironment:
-    osName: ubi
-    osVersion: "8"
-    pythonVersion: "3.8"
----
-apiVersion: meteor.zone/v1alpha1
-kind: CustomNBImage
-metadata:
-  name: s2i-thoth-ubi8-py39-baseimage-sample-1
-spec:
-  dashboardInformation:
-    name: s2i-thoth-ubi8-py39
-    creator: thoth-station
-  runtimeEnvironment:
-    baseImage: quay.io/thoth-station/s2i-thoth-ubi8-py39:v0.34.1
----
-apiVersion: meteor.zone/v1alpha1
-kind: CustomNBImage
-metadata:
   name: ubi8-py38-sample-2
 spec:
-  dashboardInformation:
-    name: ubi8-py38-2
-    creator: meteor
   runtimeEnvironment:
     osName: ubi
     osVersion: "8"
     pythonVersion: "3.8"
+  strategy:
+    type: packageList
   packageVersions:
     - "pandas"
 ---
@@ -42,14 +17,19 @@ apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage
 metadata:
   name: ubi8-py38-sample-3
+  labels:
+    app.kubernetes.io/created-by: cpe:/a:meteor.zone:CNBi:v0.1.0
+  annotations:
+    opendatahub.io/notebook-image-name: ubi8-py38-sample-3
+    opendatahub.io/notebook-image-desc: a Notebook with Python 3.8 and pandas and boto3
+    opendatahub.io/notebook-image-creator: goern
 spec:
-  dashboardInformation:
-    name: ubi8-py38-3
-    creator: meteor
   runtimeEnvironment:
     osName: ubi
     osVersion: "8"
     pythonVersion: "3.8"
+  strategy:
+    type: packageList
   packageVersions:
     - pandas
     - boto3>=1.24.0
@@ -58,11 +38,13 @@ apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage
 metadata:
   name: s2i-minimal-py38-notebook
+  labels:
+    app.kubernetes.io/created-by: cpe:/a:meteor.zone:CNBi:v0.1.0
+  annotations:
+    opendatahub.io/notebook-image-name: s2i-minimal-py38-notebook
+    opendatahub.io/notebook-image-desc: minimal notebook image for python 3.8
+    opendatahub.io/notebook-image-creator: goern
 spec:
-  dashboardInformation:
-    name: s2i-minimal-py38-notebook
-    creator: meteor
-    description: minimal python notebook
   strategy:
     type: import
     from: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2
