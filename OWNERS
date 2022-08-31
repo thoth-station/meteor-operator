@@ -1,12 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
+  - codificat
   - durandom
+  - goern
+  - harshad16
   - tumido
   - HumairAK
 
 reviewers:
+  - codificat
   - durandom
-  - harshad16
   - goern
-  - codificat 
+  - harshad16
