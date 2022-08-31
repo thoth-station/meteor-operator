@@ -71,7 +71,7 @@ curl -sSLo envtest-bins.tar.gz "https://go.kubebuilder.io/test-tools/${K8S_VERSI
 sudo mkdir /usr/local/kubebuilder
 sudo chown $(whoami) /usr/local/kubebuilder
 tar -C /usr/local/kubebuilder --strip-components=1 -zvxf envtest-bins.tar.gz
-make test SKIP_FETCH_TOOLS=1 KUBEBUILDER_ASSETS=/usr/local/kubebuilder
+make test SKIP_FETCH_TOOLS=1 KUBEBUILDER_ASSETS=/usr/local/kubebuilder ENABLE_WEBHOOKS=false
 
 ```
 

@@ -18,7 +18,8 @@ kind: CustomNBImage
 metadata:
   name: ubi8-py38-sample-3
   labels:
-    app.kubernetes.io/created-by: cpe:/a:meteor.zone:CNBi:v0.1.0
+    # Orignal, : and / need to be replaced! app.kubernetes.io/created-by: cpe:/a:meteor.zone:CNBi:v0.1.0
+    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
   annotations:
     opendatahub.io/notebook-image-name: ubi8-py38-sample-3
     opendatahub.io/notebook-image-desc: a Notebook with Python 3.8 and pandas and boto3
@@ -39,7 +40,7 @@ kind: CustomNBImage
 metadata:
   name: s2i-minimal-py38-notebook
   labels:
-    app.kubernetes.io/created-by: cpe:/a:meteor.zone:CNBi:v0.1.0
+    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
   annotations:
     opendatahub.io/notebook-image-name: s2i-minimal-py38-notebook
     opendatahub.io/notebook-image-desc: minimal notebook image for python 3.8

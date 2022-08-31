@@ -19,7 +19,10 @@ limitations under the License.
 package v1alpha1
 
 import (
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -34,8 +37,6 @@ func (r *CustomNBImage) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-
 //+kubebuilder:webhook:path=/mutate-meteor-zone-v1alpha1-customnbimage,mutating=true,failurePolicy=fail,sideEffects=None,groups=meteor.zone,resources=customnbimages,verbs=create;update,versions=v1alpha1,name=mcustomnbimage.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &CustomNBImage{}
@@ -47,7 +48,6 @@ func (r *CustomNBImage) Default() {
 	// TODO(user): fill in your defaulting logic.
 }
 
-// TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 //+kubebuilder:webhook:path=/validate-meteor-zone-v1alpha1-customnbimage,mutating=false,failurePolicy=fail,sideEffects=None,groups=meteor.zone,resources=customnbimages,verbs=create;update,versions=v1alpha1,name=vcustomnbimage.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &CustomNBImage{}
@@ -56,22 +56,56 @@ var _ webhook.Validator = &CustomNBImage{}
 func (r *CustomNBImage) ValidateCreate() error {
 	customnbimagelog.Info("validate create", "name", r.Name)
 
-	// TODO(user): fill in your validation logic upon object creation.
-	return nil
+	return r.ValidateCustomNBImage()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *CustomNBImage) ValidateUpdate(old runtime.Object) error {
 	customnbimagelog.Info("validate update", "name", r.Name)
 
-	// TODO(user): fill in your validation logic upon object update.
-	return nil
+	return r.ValidateCustomNBImage()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *CustomNBImage) ValidateDelete() error {
 	customnbimagelog.Info("validate delete", "name", r.Name)
 
-	// TODO(user): fill in your validation logic upon object deletion.
+	// TODO change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
+	// TODO fill in your validation logic upon object deletion.
+	return nil
+}
+
+// ValidateCustomNBImage implements webhook.Validator for create/update
+func (r *CustomNBImage) ValidateCustomNBImage() error {
+	var allErrs field.ErrorList
+
+	if err := r.validateCustomNBImageAnnotation(CNBiAnnotationName); err != nil {
+		allErrs = append(allErrs, err)
+	}
+	if err := r.validateCustomNBImageAnnotation(CNBiAnnotationDescription); err != nil {
+		allErrs = append(allErrs, err)
+	}
+	if err := r.validateCustomNBImageAnnotation(CNBiAnnotationCreator); err != nil {
+		allErrs = append(allErrs, err)
+	}
+
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return apierrors.NewInvalid(
+		schema.GroupKind{Group: Group, Kind: "CustomNBImage"},
+		r.Name, allErrs)
+}
+
+func (r *CustomNBImage) validateCustomNBImageAnnotation(annotation string) *field.Error {
+	if r.Annotations == nil {
+		return field.Required(field.NewPath("metadata.annotations"), "annotation is required")
+	}
+
+	if _, ok := r.Annotations[annotation]; !ok {
+		return field.Required(field.NewPath("metadata.annotations").Key(annotation), "annotation is required")
+	}
+
 	return nil
 }

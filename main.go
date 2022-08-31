@@ -20,27 +20,24 @@ import (
 	"flag"
 	"os"
 
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	// to ensure that exec-entrypoint and run can make use of them.
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-
-	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	//+kubebuilder:scaffold:imports
 
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
 	"github.com/aicoe/meteor-operator/controllers"
 	common "github.com/aicoe/meteor-operator/controllers/common"
 	meteor "github.com/aicoe/meteor-operator/controllers/meteor"
 	shower "github.com/aicoe/meteor-operator/controllers/shower"
-	//+kubebuilder:scaffold:imports
 )
 
 var (
@@ -62,16 +59,8 @@ func init() {
 }
 
 func main() {
-	var metricsAddr string
-	var enableLeaderElection bool
-	var probeAddr string
 	var configFile string
 
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
-	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&configFile, "config", "",
 		"The controller will load its initial configuration from this file. "+
 			"Omit this flag to use the default configuration values. "+
@@ -87,13 +76,22 @@ func main() {
 
 	options := ctrl.Options{
 		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
+		MetricsBindAddress:     "127.0.0.1:8080",
 		Port:                   9443,
-		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         enableLeaderElection,
+		HealthProbeBindAddress: ":8081",
+		LeaderElection:         true,
 		LeaderElectionID:       "05b1bff9.meteor.zone",
 	}
 
+	/* FIXME #68 using this results in a
+	```
+	ERROR setup unable to load the config file {"error": "could not decode file into runtime.Object"}
+	main.main
+	/workspace/main.go:101
+	runtime.main
+	/usr/local/go/src/runtime/proc.go:250
+	```
+	*/
 	if configFile != "" {
 		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))
 
@@ -134,9 +132,17 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "CustomNBImage")
 		os.Exit(1)
 	}
-	if err = (&meteorv1alpha1.CustomNBImage{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "CustomNBImage")
-		os.Exit(1)
+
+	/* Since we might want to run
+	the webhooks separately, or not run them when testing our controller
+	locally, we'll put them behind an environment variable.
+	We'll just make sure to set `ENABLE_WEBHOOKS=false` when we run locally.
+	*/
+	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		if err = (&meteorv1alpha1.CustomNBImage{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "CustomNBImage")
+			os.Exit(1)
+		}
 	}
 	//+kubebuilder:scaffold:builder
 

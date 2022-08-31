@@ -3,7 +3,6 @@ module github.com/aicoe/meteor-operator
 go 1.18
 
 require (
-	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.20.0
 	github.com/openshift/api v0.0.0-20220818135244-55ceb195d29a
@@ -15,11 +14,6 @@ require (
 	k8s.io/client-go v0.24.3
 	k8s.io/utils v0.0.0-20220713171938-56c0de1e6f5e
 	sigs.k8s.io/controller-runtime v0.12.3
-)
-
-require (
-	github.com/nxadm/tail v1.4.8 // indirect
-	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
 
 require (

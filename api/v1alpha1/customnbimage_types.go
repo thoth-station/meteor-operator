@@ -44,6 +44,13 @@ const (
 	CNBiStrategyBuildUsingBaseImage = "baseImage"
 )
 
+// CustomNBAnnotations is a list of annotations that are added to the custom notebook image
+const (
+	CNBiAnnotationName        = "opendatahub.io/notebook-image-name"
+	CNBiAnnotationDescription = "opendatahub.io/notebook-image-desc"
+	CNBiAnnotationCreator     = "opendatahub.io/notebook-image-creator"
+)
+
 // CustomNBImageStrategy is the strategy super-set of configurations for all strategies.
 type CustomNBImageStrategy struct {
 	// Type is the strategy
