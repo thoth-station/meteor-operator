@@ -37,7 +37,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/aicoe/meteor-operator/api/v1alpha1"
 	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
 )
 
@@ -106,7 +105,7 @@ func (r *CustomNBImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&meteorv1alpha1.CustomNBImage{}).
 		Owns(&pipelinev1beta1.PipelineRun{}).
-		Owns(&v1alpha1.Meteor{}).
+		Owns(&meteorv1alpha1.Meteor{}).
 		Complete(r)
 }
 
@@ -153,7 +152,7 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				return i
 			}
 		}
-		result := v1alpha1.PipelineResult{
+		result := meteorv1alpha1.PipelineResult{
 			Name:            name,
 			Ready:           "False",
 			PipelineRunName: resourceName,
@@ -177,21 +176,21 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 			// let's put the mandatory annotations into the PipelineRun
 			// TODO a validator should govern this
 			params := []pipelinev1beta1.Param{
-				pipelinev1beta1.Param{
+				{
 					Name: "name",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
 						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-name"],
 					},
 				},
-				pipelinev1beta1.Param{
+				{
 					Name: "creator",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
 						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-creator"],
 					},
 				},
-				pipelinev1beta1.Param{
+				{
 					Name: "description",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
