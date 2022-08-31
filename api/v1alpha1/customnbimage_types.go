@@ -33,7 +33,7 @@ const (
 	CNBiPhaseResolving          = "Resolving"
 	CNBiPhaseRunning            = "Running"
 	CNBiPhaseBuilding           = "Building"
-	CNBiPhageImporting          = "Importing"
+	CNBiPhaseImporting          = "Importing"
 	CNBiPhaseOk                 = "Ready"
 )
 
@@ -110,7 +110,7 @@ func (cnbi *CustomNBImage) AggregatePhase() string {
 			if strings.HasPrefix(c.Type, "PipelineRunPrepare") {
 				return CNBiPhasePreparing
 			} else if strings.HasPrefix(c.Type, "PipelineRunImport") {
-				return CNBiPhageImporting
+				return CNBiPhaseImporting
 			}
 		}
 
