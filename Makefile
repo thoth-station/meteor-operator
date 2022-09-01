@@ -224,3 +224,34 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+# local testing
+KIND_CLUSTER_NAME ?= "meteor-cnbi"
+
+.PHONY: kind-start
+kind-start:
+ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l))
+	@echo "Cluster already exists" 
+else
+	@echo "Creating Cluster"	
+	kind create cluster --name ${KIND_CLUSTER_NAME} --config hack/kind-config.yaml
+	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/aio/deploy/recommended.yaml
+	kubectl apply -f hack/dashboard-adminuser.yaml
+	kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+	kubectl apply -f https://github.com/tektoncd/dashboard/releases/latest/download/tekton-dashboard-release.yaml
+	curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/raw | sed -e s/Task/ClusterTask/ | kubectl apply -f -
+	kubectl apply -f hack/cnbi-prepare.yaml
+	kubectl apply -f hack/cnbi-import.yaml
+	kubectl apply -f hack/cnbi-validate-task.yaml
+
+endif
+
+.PHONY: kind-load-img
+kind-load-img: docker-build kind-start
+	@echo "Loading image into kind"
+	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME} --loglevel "trace" 
+
+.PHONY: kind-delete
+kind-delete:
+	kind delete cluster --name ${KIND_CLUSTER_NAME}
