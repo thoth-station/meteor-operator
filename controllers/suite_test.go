@@ -18,10 +18,14 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
+	"github.com/onsi/ginkgo/v2/reporters"
+	"github.com/onsi/ginkgo/v2/types"
 	. "github.com/onsi/gomega"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -107,4 +111,12 @@ var _ = AfterSuite(func() {
 	By("tearing down the test environment")
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
+})
+
+var _ = ReportAfterSuite("test suite reports", func(report types.Report) {
+	// FIXME I'm pretty sure this needs error handling...
+
+	_ = os.MkdirAll("../reports", 0755)
+	reportsFilename := fmt.Sprintf("%s/%s", "../reports", "controller_suite_report.xml")
+	_ = reporters.GenerateJUnitReport(report, reportsFilename)
 })

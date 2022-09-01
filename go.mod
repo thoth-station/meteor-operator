@@ -3,8 +3,8 @@ module github.com/aicoe/meteor-operator
 go 1.18
 
 require (
-	github.com/onsi/ginkgo/v2 v2.1.4
-	github.com/onsi/gomega v1.20.0
+	github.com/onsi/ginkgo/v2 v2.1.6
+	github.com/onsi/gomega v1.20.2
 	github.com/openshift/api v0.0.0-20220818135244-55ceb195d29a
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.58.0
 	github.com/prometheus/client_golang v1.13.0
@@ -75,10 +75,10 @@ require (
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
-	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
