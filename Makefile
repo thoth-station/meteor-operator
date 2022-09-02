@@ -252,7 +252,7 @@ endif
 .PHONY: kind-load-img
 kind-load-img: docker-build kind-start
 	@echo "Loading image into kind"
-	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME} -v
+	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME}
 
 .PHONY: kind-delete
 kind-delete:
