@@ -46,7 +46,7 @@ Install `dlv` via `go get -u github.com/go-delve/delve/cmd/dlv`
 
 ## Quick deploy via operator-sdk
 
-Run following commands. Operator will be deployed to `aicoe-meteor` namespace
+Run following commands. Operator will be deployed to the `meteor-system` namespace
 
 ```sh
 podman login ...
