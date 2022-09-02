@@ -2,35 +2,17 @@
 apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage
 metadata:
-  name: ubi8-py38-sample-2
-spec:
-  runtimeEnvironment:
-    osName: ubi
-    osVersion: "8"
-    pythonVersion: "3.8"
-  strategy:
-    type: packageList
-  packageVersions:
-    - "pandas"
----
-apiVersion: meteor.zone/v1alpha1
-kind: CustomNBImage
-metadata:
-  name: ubi8-py38-sample-3
+  name: s2i-minimal-py38-sample-1 # TODO
   labels:
     # Orignal, : and / need to be replaced! app.kubernetes.io/created-by: cpe:/a:meteor.zone:CNBi:v0.1.0
     app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
   annotations:
-    opendatahub.io/notebook-image-name: ubi8-py38-sample-3
-    opendatahub.io/notebook-image-desc: a Notebook with Python 3.8 and pandas and boto3
-    opendatahub.io/notebook-image-creator: goern
+    opendatahub.io/notebook-image-name: elyra-aidevsecops-tutorial
+    opendatahub.io/notebook-image-desc: Build from the Elyra Tutorial
+    opendatahub.io/notebook-image-creator: codificat
 spec:
-  runtimeEnvironment:
-    osName: ubi
-    osVersion: "8"
-    pythonVersion: "3.8"
-  strategy:
-    type: packageList
+  type: PackageList
+  baseImage: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2
   packageVersions:
     - pandas
     - boto3>=1.24.0
@@ -38,7 +20,46 @@ spec:
 apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage
 metadata:
-  name: s2i-minimal-py38-notebook
+  name: ubi8-py38-sample-1 # TODO
+  labels:
+    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
+  annotations:
+    opendatahub.io/notebook-image-name: elyra-aidevsecops-tutorial
+    opendatahub.io/notebook-image-desc: Build from the Elyra Tutorial
+    opendatahub.io/notebook-image-creator: codificat
+spec:
+  type: packageList
+  runtimeEnvironment:
+    osName: ubi
+    osVersion: "8"
+    pythonVersion: "3.8"
+  packageVersions:
+    - "pandas"
+---
+apiVersion: meteor.zone/v1alpha1
+kind: CustomNBImage
+metadata:
+  name: ubi8-py38-sample-2 # TODO
+  labels:
+    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
+  annotations:
+    opendatahub.io/notebook-image-name: ubi8-py38-sample-3
+    opendatahub.io/notebook-image-desc: a Notebook with Python 3.8 and pandas and boto3
+    opendatahub.io/notebook-image-creator: goern
+spec:
+  type: packageList
+  runtimeEnvironment:
+    osName: ubi
+    osVersion: "8"
+    pythonVersion: "3.8"
+  packageVersions:
+    - pandas
+    - boto3>=1.24.0
+---
+apiVersion: meteor.zone/v1alpha1
+kind: CustomNBImage
+metadata:
+  name: s2i-minimal-py38-notebook-import # TODO
   labels:
     app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
   annotations:
@@ -46,6 +67,20 @@ metadata:
     opendatahub.io/notebook-image-desc: minimal notebook image for python 3.8
     opendatahub.io/notebook-image-creator: goern
 spec:
-  strategy:
-    type: import
-    from: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2
+  type: importImage
+  image: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2
+---
+apiVersion: meteor.zone/v1alpha1
+kind: CustomNBImage
+metadata:
+  name: elyra-aidevsecops-tutorial
+  labels:
+    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
+  annotations:
+    opendatahub.io/notebook-image-name: elyra-aidevsecops-tutorial
+    opendatahub.io/notebook-image-desc: Build from the Elyra Tutorial
+    opendatahub.io/notebook-image-creator: codificat
+spec:
+  type: GitRepository
+  baseImage: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2
+  repositoryUrl: https://github.com/AICoE/elyra-aidevsecops-tutorial
