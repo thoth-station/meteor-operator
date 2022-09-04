@@ -28,7 +28,7 @@ metadata:
     opendatahub.io/notebook-image-desc: Build from the Elyra Tutorial
     opendatahub.io/notebook-image-creator: codificat
 spec:
-  type: packageList
+  type: PackageList
   runtimeEnvironment:
     osName: ubi
     osVersion: "8"
@@ -47,7 +47,7 @@ metadata:
     opendatahub.io/notebook-image-desc: a Notebook with Python 3.8 and pandas and boto3
     opendatahub.io/notebook-image-creator: goern
 spec:
-  type: packageList
+  type: PackageList
   runtimeEnvironment:
     osName: ubi
     osVersion: "8"
@@ -67,8 +67,8 @@ metadata:
     opendatahub.io/notebook-image-desc: minimal notebook image for python 3.8
     opendatahub.io/notebook-image-creator: goern
 spec:
-  type: importImage
-  image: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2
+  type: ImportImage
+  fromUrl: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2
 ---
 apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage

@@ -75,12 +75,13 @@ func main() {
 	var err error
 
 	options := ctrl.Options{
-		Scheme:                 scheme,
-		MetricsBindAddress:     "127.0.0.1:8080",
-		Port:                   9443,
-		HealthProbeBindAddress: ":8081",
-		LeaderElection:         true,
-		LeaderElectionID:       "05b1bff9.meteor.zone",
+		Scheme:                  scheme,
+		MetricsBindAddress:      "127.0.0.1:8080",
+		Port:                    9443,
+		HealthProbeBindAddress:  ":8081",
+		LeaderElection:          true,
+		LeaderElectionID:        "05b1bff9.meteor.zone",
+		LeaderElectionNamespace: "cnbi-system",
 	}
 
 	/* FIXME #68 using this results in a

@@ -8,5 +8,6 @@ webhook:
   port: 9443
 leaderElection:
   leaderElect: true
+  leaderElectionNamespace: cnbi-system
   resourceName: 05b1bff9.meteor.zone
 enableShower: false

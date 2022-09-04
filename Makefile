@@ -93,7 +93,7 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out -args -ginkgo.v
 
 ##@ Build
 
@@ -234,8 +234,8 @@ install-pipelines:
 # local testing
 KIND_CLUSTER_NAME ?= "meteor-cnbi"
 
-.PHONY: kind-start
-kind-start:
+.PHONY: kind-create
+kind-create:
 ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l))
 	@echo "Cluster already exists"
 else
@@ -250,7 +250,7 @@ else
 endif
 
 .PHONY: kind-load-img
-kind-load-img: docker-build kind-start
+kind-load-img: docker-build kind-create
 	@echo "Loading image into kind"
 	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME}
 

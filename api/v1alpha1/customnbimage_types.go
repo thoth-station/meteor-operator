@@ -24,17 +24,21 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+// CNBiPhase describes the phase of the CustomNBImage
+// +kubebuilder:validation:Enum=Pending;Failed;Preparing;CreatingRepository;Resolving;Running;Building;Importing;Validating;Ready
+type CNBiPhase string
+
 const (
-	CNBiPhasePending            = "Pending"
-	CNBiPhaseFailed             = "Failed"
-	CNBiPhasePreparing          = "Preparing"
-	CNBiPhaseCreatingRepository = "CreatingRepository"
-	CNBiPhaseResolving          = "Resolving"
-	CNBiPhaseRunning            = "Running"
-	CNBiPhaseBuilding           = "Building"
-	CNBiPhaseImporting          = "Importing"
-	CNBiPhaseOk                 = "Ready"
+	CNBiPhasePending            CNBiPhase = "Pending"
+	CNBiPhaseFailed             CNBiPhase = "Failed"
+	CNBiPhasePreparing          CNBiPhase = "Preparing"
+	CNBiPhaseCreatingRepository CNBiPhase = "CreatingRepository"
+	CNBiPhaseResolving          CNBiPhase = "Resolving"
+	CNBiPhaseRunning            CNBiPhase = "Running"
+	CNBiPhaseBuilding           CNBiPhase = "Building"
+	CNBiPhaseImporting          CNBiPhase = "Importing"
+	CNBiPhaseValidating         CNBiPhase = "Validating"
+	CNBiPhaseOk                 CNBiPhase = "Ready"
 )
 
 // BuildType describes how to build a custom notebook image.
@@ -44,9 +48,16 @@ const (
 type BuildType string
 
 const (
-	CNBiStrategyImageImport         = "import"
-	CNBiStrategyBuildUsingPython    = "build"
-	CNBiStrategyBuildUsingBaseImage = "baseImage"
+	// ImportImage will simply import the image from the given URL
+	ImportImage BuildType = "ImageImport"
+
+	// PackageList will build a custom image using a specific List of Python Packages
+	// if no RuntimeEnvironment is specified, a baseImage must be specified for the build
+	// TODO #70 this needs a validator to ensure that either a RuntimeEnvironment or a baseImage is specified
+	PackageList BuildType = "PackageList"
+
+	// BuildGitRepository will builds a custom image from a git repository
+	GitRepository BuildType = "GitRepository"
 )
 
 // CNBi Annotations is a list of annotations that are added to the custom notebook image
@@ -56,8 +67,8 @@ const (
 	CNBiCreatorAnnotationKey     = "opendatahub.io/notebook-image-creator"
 )
 
-// CustomNBImageStrategy is the strategy super-set of configurations for all strategies.
-type CustomNBImageStrategy struct {
+// BuildTypeSpec is the strategy super-set of configurations for all strategies.
+type BuildTypeSpec struct {
 	// Type is the strategy
 	// +required
 	// +kubebuilder:Required
@@ -76,20 +87,26 @@ type CustomNBImageStrategy struct {
 // CustomNBImageRuntimeSpec defines a Runtime Environment, aka 'the Python version used'
 type CustomNBImageRuntimeSpec struct {
 	// PythonVersion is the version of Python to use
+	// +optional
 	PythonVersion string `json:"pythonVersion,omitempty"`
 	// OSName is the Name of the Operating System to use
+	// +optional
 	OSName string `json:"osName,omitempty"`
 	// OSVersion is the Version of the Operating System to use
+	// +optional
 	OSVersion string `json:"osVersion,omitempty"`
 	// BaseImage is an alternative the the three above fields
+	// +optional
 	BaseImage string `json:"baseImage,omitempty"`
 }
 
 // CustomNBImageSpec defines the desired state of CustomNBImage
 type CustomNBImageSpec struct {
 	// RuntimeEnvironment is the runtime environment to use for the Custom Notebook Image
+	// +optional
 	RuntimeEnvironment CustomNBImageRuntimeSpec `json:"runtimeEnvironment,omitempty"`
 	// PackageVersion is a set of Packages including their Version Specifiers
+	// +optional
 	PackageVersion []string `json:"packageVersions,omitempty"`
 	// BuildType is the configuration for the build
 	// +required
@@ -102,7 +119,7 @@ type CustomNBImageStatus struct {
 	// Current condition of the Shower.
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Phase",xDescriptors={"urn:alm:descriptor:io.kubernetes.phase'"}
 	//+optional
-	Phase string `json:"phase,omitempty"`
+	Phase CNBiPhase `json:"phase,omitempty"`
 	// Current service state of Meteor.
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Conditions",xDescriptors={"urn:alm:descriptor:io.kubernetes.conditions"}
 	//+optional
@@ -112,8 +129,30 @@ type CustomNBImageStatus struct {
 	Pipelines []PipelineResult `json:"pipelines,omitempty"`
 }
 
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase"
+
+// CustomNBImage is the Schema for the customnbimages API
+type CustomNBImage struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   CustomNBImageSpec   `json:"spec,omitempty"`
+	Status CustomNBImageStatus `json:"status,omitempty"`
+}
+
+//+kubebuilder:object:root=true
+
+// CustomNBImageList contains a list of CustomNBImage
+type CustomNBImageList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []CustomNBImage `json:"items"`
+}
+
 // Aggregate phase from conditions
-func (cnbi *CustomNBImage) AggregatePhase() string {
+func (cnbi *CustomNBImage) AggregatePhase() CNBiPhase {
 	if len(cnbi.Status.Conditions) == 0 {
 		return CNBiPhasePending
 	}
@@ -144,32 +183,6 @@ func (cnbi *CustomNBImage) AggregatePhase() string {
 	return CNBiPhaseOk
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase"
-
-// CustomNBImage is the Schema for the customnbimages API
-type CustomNBImage struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   CustomNBImageSpec   `json:"spec,omitempty"`
-	Status CustomNBImageStatus `json:"status,omitempty"`
-}
-
-//+kubebuilder:object:root=true
-
-// CustomNBImageList contains a list of CustomNBImage
-type CustomNBImageList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []CustomNBImage `json:"items"`
-}
-
-func init() {
-	SchemeBuilder.Register(&CustomNBImage{}, &CustomNBImageList{})
-}
-
 // IsReady returns true the Ready condition status is True
 func (status CustomNBImageStatus) IsReady() bool {
 	for _, condition := range status.Conditions {
@@ -178,4 +191,8 @@ func (status CustomNBImageStatus) IsReady() bool {
 		}
 	}
 	return false
+}
+
+func init() {
+	SchemeBuilder.Register(&CustomNBImage{}, &CustomNBImageList{})
 }
