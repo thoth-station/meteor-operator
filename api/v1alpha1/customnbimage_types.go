@@ -37,26 +37,40 @@ const (
 	CNBiPhaseOk                 = "Ready"
 )
 
-// Strategies we support for a CNBi
+// BuildType describes how to build a custom notebook image.
+// Only one of the following build types may be specified.
+// +kubebuilder:validation:MinLength:1
+// +kubebuilder:validation:Enum=ImageImport;PackageList;GitRepository
+type BuildType string
+
 const (
 	CNBiStrategyImageImport         = "import"
 	CNBiStrategyBuildUsingPython    = "build"
 	CNBiStrategyBuildUsingBaseImage = "baseImage"
 )
 
-// CustomNBAnnotations is a list of annotations that are added to the custom notebook image
+// CNBi Annotations is a list of annotations that are added to the custom notebook image
 const (
-	CNBiAnnotationName        = "opendatahub.io/notebook-image-name"
-	CNBiAnnotationDescription = "opendatahub.io/notebook-image-desc"
-	CNBiAnnotationCreator     = "opendatahub.io/notebook-image-creator"
+	CNBiNameAnnotationKey        = "opendatahub.io/notebook-image-name"
+	CNBiDescriptionAnnotationKey = "opendatahub.io/notebook-image-desc"
+	CNBiCreatorAnnotationKey     = "opendatahub.io/notebook-image-creator"
 )
 
 // CustomNBImageStrategy is the strategy super-set of configurations for all strategies.
 type CustomNBImageStrategy struct {
 	// Type is the strategy
-	Type string `json:"type,omitempty"`
-	// From is the reference to the source image, used for import strategy
-	From string `json:"from,omitempty"`
+	// +required
+	// +kubebuilder:Required
+	Type BuildType `json:"type"`
+	// FromUrl is the reference to the source image, used for import strategy
+	// +optional
+	FromUrl string `json:"from,omitempty"`
+	// BaseImage is the reference to the base image, used for building
+	// +optional
+	BaseImage string `json:"baseImage,omitempty"`
+	// RepositoryUrl is the URL of the git repository, used for building
+	// +optional
+	RepositoryUrl string `json:"repositoryUrl,omitempty"`
 }
 
 // CustomNBImageRuntimeSpec defines a Runtime Environment, aka 'the Python version used'
@@ -77,8 +91,10 @@ type CustomNBImageSpec struct {
 	RuntimeEnvironment CustomNBImageRuntimeSpec `json:"runtimeEnvironment,omitempty"`
 	// PackageVersion is a set of Packages including their Version Specifiers
 	PackageVersion []string `json:"packageVersions,omitempty"`
-	// StrategyConfig is the configuration for the strategy, if no strategy is specified, we assume "prepare"
-	Strategy CustomNBImageStrategy `json:"strategy,omitempty"`
+	// BuildType is the configuration for the build
+	// +required
+	// +kubebuilder:Required
+	BuildTypeSpec `json:",inline"`
 }
 
 // CustomNBImageStatus defines the observed state of CustomNBImage

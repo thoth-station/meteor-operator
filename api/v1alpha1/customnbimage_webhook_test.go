@@ -35,9 +35,9 @@ var _ = Describe("CustomNBImage Webhook", func() {
 				Spec:       CustomNBImageSpec{},
 				Status:     CustomNBImageStatus{},
 			}
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiAnnotationName, "custom-nbimage-1")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiAnnotationDescription, "default")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiAnnotationCreator, "ginko+gomega")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-1")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiCreatorAnnotationKey, "ginko+gomega")
 
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
 
@@ -61,7 +61,7 @@ var _ = Describe("CustomNBImage Webhook", func() {
 				Spec:       CustomNBImageSpec{},
 				Status:     CustomNBImageStatus{},
 			}
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiAnnotationName, "custom-nbimage-3")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-3")
 
 			err := k8sClient.Create(context.Background(), cnbi)
 			Expect(err).ShouldNot(Succeed())
