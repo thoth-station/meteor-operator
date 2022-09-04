@@ -81,7 +81,11 @@ var _ = Describe("CustomNBImage controller", func() {
 			}
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
 
-			lookupKey := types.NamespacedName{Name: "custom-nbimage-2", Namespace: "default"}
+			By("checking the CustomNBImage object has been created on the cluster")
+			// lets give the cluster a little time to start reconciling
+			time.Sleep(8 * time.Second)
+
+			lookupKey := types.NamespacedName{Name: "test-2", Namespace: "default"}
 			createdCNBi := &meteorv1alpha1.CustomNBImage{}
 
 			Consistently(func() bool {
@@ -90,9 +94,6 @@ var _ = Describe("CustomNBImage controller", func() {
 			}, timeout, interval).Should(BeTrue())
 
 			By("looking if the Controller started reconciling the CustomNBImage object")
-			// lets give the cluster a little time to start reconciling
-			time.Sleep(8 * time.Second)
-
 			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhaseImporting))
 		})
 	})

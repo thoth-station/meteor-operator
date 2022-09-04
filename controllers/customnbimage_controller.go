@@ -82,9 +82,7 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if err := r.ReconcilePipelineRun("import", &ctx, req); err != nil {
 			return r.UpdateStatusNow(ctx, err)
 		}
-	} else {
-		// we assume its a build from UI parameters...
-
+	} else if r.CNBi.Spec.BuildTypeSpec.Type == meteorv1alpha1.PackageList {
 		if err := r.ReconcilePipelineRun("prepare", &ctx, req); err != nil {
 			return r.UpdateStatusNow(ctx, err)
 		}
@@ -134,26 +132,26 @@ func (r *CustomNBImageReconciler) SetCondition(kind, name string, status metav1.
 }
 
 // ReconcilePipelineRun will reconcile the pipeline run for the CustomNBImage.
-func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context.Context, req ctrl.Request) error {
+func (r *CustomNBImageReconciler) ReconcilePipelineRun(runType string, ctx *context.Context, req ctrl.Request) error {
 	pipelineRun := &pipelinev1beta1.PipelineRun{}
-	resourceName := fmt.Sprintf("cnbi-%s-%s", r.CNBi.GetName(), name)
-	pipelineReferenceName := fmt.Sprintf("cnbi-%s", name)
+	resourceName := fmt.Sprintf("cnbi-%s-%s", r.CNBi.GetName(), runType)
+	pipelineReferenceName := fmt.Sprintf("cnbi-%s", runType)
 	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
 
 	logger := log.FromContext(*ctx).WithValues("pipelinerun", namespacedName)
 
 	updateStatus := func(status metav1.ConditionStatus, reason, message string) {
-		r.SetCondition("PipelineRun", name, status, reason, message)
+		r.SetCondition("PipelineRun", runType, status, reason, message)
 	}
 
 	statusIndex := func() int {
 		for i, pr := range r.CNBi.Status.Pipelines {
-			if pr.Name == name {
+			if pr.Name == runType {
 				return i
 			}
 		}
 		result := meteorv1alpha1.PipelineResult{
-			Name:            name,
+			Name:            runType,
 			Ready:           "False",
 			PipelineRunName: resourceName,
 		}
@@ -163,7 +161,7 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 
 	if err := r.Get(*ctx, namespacedName, pipelineRun); err != nil {
 		if errors.IsNotFound(err) {
-			logger.Info("Creating PipelineRun")
+			logger.Info("Creating PipelineRun", "type", runType, "spec", r.CNBi.Spec)
 
 			/*
 			   params:
@@ -179,22 +177,22 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				{
 					Name: "name",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      "string",
-						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-name"],
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: r.CNBi.ObjectMeta.Annotations[meteorv1alpha1.CNBiNameAnnotationKey],
 					},
 				},
 				{
 					Name: "creator",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      "string",
-						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-creator"],
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: r.CNBi.ObjectMeta.Annotations[meteorv1alpha1.CNBiCreatorAnnotationKey],
 					},
 				},
 				{
 					Name: "description",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      "string",
-						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-desc"],
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: r.CNBi.ObjectMeta.Annotations[meteorv1alpha1.CNBiDescriptionAnnotationKey],
 					},
 				},
 			}
@@ -203,13 +201,11 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				params = append(params, pipelinev1beta1.Param{
 					Name: "baseImage",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      "string",
-						StringVal: r.CNBi.Spec.Strategy.From,
+						Type:      pipelinev1beta1.ParamTypeString,
+						StringVal: r.CNBi.Spec.BuildTypeSpec.FromUrl,
 					}, // TODO we need a validator for this
 				})
-			}
-
-			if r.CNBi.Spec.Strategy.Type == meteorv1alpha1.CNBiStrategyBuildUsingPython {
+			} else if r.CNBi.Spec.BuildTypeSpec.Type == meteorv1alpha1.PackageList {
 
 				// if we have a BaseImage supplied, use it
 				if r.CNBi.Spec.RuntimeEnvironment.BaseImage != "" {
