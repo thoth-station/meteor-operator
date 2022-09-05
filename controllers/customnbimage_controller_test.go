@@ -48,7 +48,7 @@ var _ = Describe("CustomNBImage controller", func() {
 			// TODO implement your test here
 			By("creating a CustomNBImage object")
 			build := meteorv1alpha1.BuildTypeSpec{
-				Type: meteorv1alpha1.PackageList,
+				BuildType: meteorv1alpha1.PackageList,
 			}
 			cnbi := &meteorv1alpha1.CustomNBImage{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
@@ -77,8 +77,8 @@ var _ = Describe("CustomNBImage controller", func() {
 		It("should have Status 'Importing'", func() {
 			By("creating a CustomNBImage object")
 			build := meteorv1alpha1.BuildTypeSpec{
-				Type:    meteorv1alpha1.ImportImage,
-				FromUrl: "quay.io/thoth-station/s2i-custom-notebook:latest",
+				BuildType: meteorv1alpha1.ImportImage,
+				FromImage: "quay.io/thoth-station/s2i-custom-notebook:latest",
 			}
 			cnbi := &meteorv1alpha1.CustomNBImage{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},

@@ -69,19 +69,19 @@ const (
 
 // BuildTypeSpec is the strategy super-set of configurations for all strategies.
 type BuildTypeSpec struct {
-	// Type is the strategy
+	// BuildType is the strategy
 	// +required
 	// +kubebuilder:Required
-	Type BuildType `json:"type"`
+	BuildType BuildType `json:"buildType"`
 	// FromUrl is the reference to the source image, used for import strategy
 	// +optional
-	FromUrl string `json:"from,omitempty"`
-	// BaseImage is the reference to the base image, used for building
+	FromImage string `json:"fromImage,omitempty"`
+	// BuilderImage is the reference to the base image, used for building
 	// +optional
-	BaseImage string `json:"baseImage,omitempty"`
-	// RepositoryUrl is the URL of the git repository, used for building
+	BuilderImage string `json:"builderImage,omitempty"`
+	// Repository is the URL of the git repository, used for building
 	// +optional
-	RepositoryUrl string `json:"repositoryUrl,omitempty"`
+	Repository string `json:"repository,omitempty"`
 }
 
 // CustomNBImageRuntimeSpec defines a Runtime Environment, aka 'the Python version used'
@@ -95,9 +95,9 @@ type CustomNBImageRuntimeSpec struct {
 	// OSVersion is the Version of the Operating System to use
 	// +optional
 	OSVersion string `json:"osVersion,omitempty"`
-	// BaseImage is an alternative the the three above fields
+	// BuilderImage is an alternative the the three above fields
 	// +optional
-	BaseImage string `json:"baseImage,omitempty"`
+	BuilderImage string `json:"builderImage,omitempty"`
 }
 
 // CustomNBImageSpec defines the desired state of CustomNBImage

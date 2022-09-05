@@ -40,11 +40,18 @@ spec:
           spec:
             description: CustomNBImageSpec defines the desired state of CustomNBImage
             properties:
-              baseImage:
-                description: BaseImage is the reference to the base image, used for
-                  building
+              buildType:
+                description: BuildType is the strategy
+                enum:
+                - ImageImport
+                - PackageList
+                - GitRepository
                 type: string
-              from:
+              builderImage:
+                description: BuilderImage is the reference to the base image, used
+                  for building
+                type: string
+              fromImage:
                 description: FromUrl is the reference to the source image, used for
                   import strategy
                 type: string
@@ -54,16 +61,17 @@ spec:
                 items:
                   type: string
                 type: array
-              repositoryUrl:
-                description: RepositoryUrl is the URL of the git repository, used
-                  for building
+              repository:
+                description: Repository is the URL of the git repository, used for
+                  building
                 type: string
               runtimeEnvironment:
                 description: RuntimeEnvironment is the runtime environment to use
                   for the Custom Notebook Image
                 properties:
-                  baseImage:
-                    description: BaseImage is an alternative the the three above fields
+                  builderImage:
+                    description: BuilderImage is an alternative the the three above
+                      fields
                     type: string
                   osName:
                     description: OSName is the Name of the Operating System to use
@@ -76,15 +84,8 @@ spec:
                     description: PythonVersion is the version of Python to use
                     type: string
                 type: object
-              type:
-                description: Type is the strategy
-                enum:
-                - ImageImport
-                - PackageList
-                - GitRepository
-                type: string
             required:
-            - type
+            - buildType
             type: object
           status:
             description: CustomNBImageStatus defines the observed state of CustomNBImage

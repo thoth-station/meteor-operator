@@ -27,7 +27,7 @@ import (
 
 var _ = Describe("CustomNBImage Webhook", func() {
 	build := BuildTypeSpec{
-		Type: PackageList,
+		BuildType: PackageList,
 	}
 
 	Context("when a CustomNBImage object is created", func() {

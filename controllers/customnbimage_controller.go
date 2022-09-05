@@ -78,7 +78,7 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// depending on the import Strategy, we reconcile a pipelinerun
 	// Check for the PipelineRun reconcilation, and update the status of the CustomNBImage resource
-	if r.CNBi.Spec.BuildTypeSpec.Type == meteorv1alpha1.ImportImage {
+	if r.CNBi.Spec.BuildTypeSpec.BuildType == meteorv1alpha1.ImportImage {
 		if err := r.ReconcilePipelineRun("import", &ctx, req); err != nil {
 			return r.UpdateStatusNow(ctx, err)
 		}
@@ -190,25 +190,25 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				},
 			}
 
-			if r.CNBi.Spec.BuildTypeSpec.Type == meteorv1alpha1.ImportImage {
+			if r.CNBi.Spec.BuildTypeSpec.BuildType == meteorv1alpha1.ImportImage {
 				params = append(params, pipelinev1beta1.Param{
 					Name: "baseImage",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
-						StringVal: r.CNBi.Spec.BuildTypeSpec.FromUrl,
+						StringVal: r.CNBi.Spec.BuildTypeSpec.FromImage,
 					}, // TODO we need a validator for this
 				})
 			}
 
-			if r.CNBi.Spec.BuildTypeSpec.Type == meteorv1alpha1.PackageList {
+			if r.CNBi.Spec.BuildTypeSpec.BuildType == meteorv1alpha1.PackageList {
 
 				// if we have a BaseImage supplied, use it
-				if r.CNBi.Spec.RuntimeEnvironment.BaseImage != "" {
+				if r.CNBi.Spec.RuntimeEnvironment.BuilderImage != "" {
 					params = append(params, pipelinev1beta1.Param{
 						Name: "baseImage",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CNBi.Spec.RuntimeEnvironment.BaseImage,
+							StringVal: r.CNBi.Spec.RuntimeEnvironment.BuilderImage,
 						},
 					})
 				} else {
