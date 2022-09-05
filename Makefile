@@ -225,6 +225,12 @@ catalog-build: opm ## Build a catalog image.
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
 
+.PHONY: install-pipelines
+install-pipelines:
+	kubectl apply -f hack/cnbi-prepare.yaml
+	kubectl apply -f hack/cnbi-import.yaml
+	kubectl apply -f hack/cnbi-validate-task.yaml
+
 # local testing
 KIND_CLUSTER_NAME ?= "meteor-cnbi"
 
@@ -241,16 +247,12 @@ else
 	kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
 	kubectl apply -f https://github.com/tektoncd/dashboard/releases/latest/download/tekton-dashboard-release.yaml
 	curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/raw | sed -e s/Task/ClusterTask/ | kubectl apply -f -
-	kubectl apply -f hack/cnbi-prepare.yaml
-	kubectl apply -f hack/cnbi-import.yaml
-	kubectl apply -f hack/cnbi-validate-task.yaml
-
 endif
 
 .PHONY: kind-load-img
 kind-load-img: docker-build kind-start
 	@echo "Loading image into kind"
-	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME} --loglevel "trace"
+	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME} -v
 
 .PHONY: kind-delete
 kind-delete:

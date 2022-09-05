@@ -2,7 +2,10 @@
 
 ## Prerequisites
 
-- Openshift Pipelines
+The cluster where the operator will be working on must have these components already deployed and available:
+
+- Tekton / Openshift Pipelines
+- [cert-manager](https://github.com/cert-manager/cert-manager)
 
 ## Custom Resources
 
@@ -20,6 +23,18 @@ spec:
   ref: main
   ttl: 100000 # Time to live in seconds, defaults to 24h
 ```
+
+# Development
+
+General pre-requisites:
+
+1. A Kubernetes or OpenShift cluster, with the local `KUBECONFIG` configured to access it in the preferred target namespace.
+   - for OpenShift: `oc login`, and use `oc project XXX` to switch to the `XXX` target namespace
+   - for a quick local Kubernetes cluster deployment, see the `kind` instructions below
+
+2. The cluster must meet the prerequisites mentioned above (tekton, etc)
+
+3. To deploy the tekton pipelines and tasks CNBi Operator depends on: `make install-pipelines`
 
 ## Run operator locally
 
@@ -39,26 +54,25 @@ Install `dlv` via `go get -u github.com/go-delve/delve/cmd/dlv`
 2. Install CRDs via `make install`
 3. Start VSCode debugging session by selecting `Meteor Operator` profile
 
-### Run from local machine without debugging
+## Quick build and deploy to a cluster
 
-1. Log in to your cluster via `oc login`
-2. Run `make install run`
+The following commands will build the image, push it to the container registry, and deploy the operator to the `meteor-system` namespace of your currently configured cluster (as per your `$KUBECONFIG`):
 
-## Quick deploy via operator-sdk
-
-Run following commands. Operator will be deployed to `aicoe-meteor` namespace
+If you want to use a custom image name/version:
 
 ```sh
-podman login ...
+export IMAGE_TAG_BASE=quay.io/myorg/meteor-operator
+export VERSION=0.0.7
+```
+
+To build, push and deploy:
+
+```sh
+podman login ...  # to make sure you can push the image to the public registry
 
 make docker-build
-
-podman tag controller:latest quay.io/<your_account>/meteor-operator:latest
-podman push quay.io/<your_account>/meteor-operator:latest
-
+make docker-push
 make deploy
-
-kustomize build config/dev | oc apply -f -
 ```
 
 ## Testing locally with `envtest`
@@ -89,10 +103,5 @@ Use `kubectl port-forward -n tekton-pipelines service/tekton-dashboard 9097:9097
 
 ## Testing the operator against an existing cluster
 
-Pre-requisite: a Kubernetes or OpenShift cluster, with the local `KUBECONFIG` configured to access it in the preferred target namespace.
-
-Deploy the tekton pipelines and tasks CNBi Operator depends on:
-
-`cat hack/cnbi-*.yaml | kubectl apply -f -`
-
-`make install` will deploy all our CRD, and `make run` to run the controller locally but connected to the cluster.
+1. `make install` will deploy all our CRD
+2. `make run` will run the controller locally but connected to the cluster.
