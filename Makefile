@@ -231,9 +231,9 @@ KIND_CLUSTER_NAME ?= "meteor-cnbi"
 .PHONY: kind-start
 kind-start:
 ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l))
-	@echo "Cluster already exists" 
+	@echo "Cluster already exists"
 else
-	@echo "Creating Cluster"	
+	@echo "Creating Cluster"
 	kind create cluster --name ${KIND_CLUSTER_NAME} --config hack/kind-config.yaml
 	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/aio/deploy/recommended.yaml
@@ -250,7 +250,7 @@ endif
 .PHONY: kind-load-img
 kind-load-img: docker-build kind-start
 	@echo "Loading image into kind"
-	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME} --loglevel "trace" 
+	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME} --loglevel "trace"
 
 .PHONY: kind-delete
 kind-delete:
