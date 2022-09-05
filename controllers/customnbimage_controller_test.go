@@ -36,7 +36,7 @@ const (
 
 var _ = Describe("CustomNBImage controller", func() {
 	Context("when a CustomNBImage object is created with a RuntimeEnvironment", func() {
-		It("should have Status 'Pending'", func() {
+		It("should have Status 'Preparing'", func() {
 			// TODO implement your test here
 			By("creating a CustomNBImage object")
 			cnbi := &meteorv1alpha1.CustomNBImage{
@@ -61,19 +61,20 @@ var _ = Describe("CustomNBImage controller", func() {
 				return err == nil
 			}, timeout, interval).Should(BeTrue())
 
-			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhasePending))
+			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhasePreparing))
 		})
 	})
-	Context("when a CustomNBImage object is created with a BaseImage URL", func() {
-		It("should have Status 'Pending'", func() {
+	Context("when a CustomNBImage object is created with Import Strategy", func() {
+		It("should have Status 'Importing'", func() {
 			// TODO implement your test here
 			By("creating a CustomNBImage object")
 			cnbi := &meteorv1alpha1.CustomNBImage{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
 				ObjectMeta: metav1.ObjectMeta{Name: "custom-nbimage-2", Namespace: "default"},
 				Spec: meteorv1alpha1.CustomNBImageSpec{
-					RuntimeEnvironment: meteorv1alpha1.CustomNBImageRuntimeSpec{
-						BaseImage: "quay.io/thoth-station/s2i-thoth-ubi8-py39:v0.34.1",
+					Strategy: meteorv1alpha1.CustomNBImageStrategy{
+						Type: "import",
+						From: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
 				Status: meteorv1alpha1.CustomNBImageStatus{},
@@ -88,29 +89,7 @@ var _ = Describe("CustomNBImage controller", func() {
 				return err == nil
 			}, timeout, interval).Should(BeTrue())
 
-			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhasePending))
+			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhaseImporting))
 		})
 	})
-	/* TODO
-	Context("when a CustomNBImage object is created with a BaseImage URL AND a RuntimeEnvironment", func() {
-		It("should not be successful", func() {
-			By("creating a CustomNBImage object")
-			cnbi := &meteorv1alpha1.CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
-				ObjectMeta: metav1.ObjectMeta{Name: "custom-nbimage-3", Namespace: "default"},
-				Spec: meteorv1alpha1.CustomNBImageSpec{
-					RuntimeEnvironment: meteorv1alpha1.CustomNBImageRuntimeSpec{
-						PythonVersion: "3.8",
-						OSName:        "ubi",
-						OSVersion:     "8",
-						BaseImage:     "quay.io/thoth-station/s2i-thoth-ubi8-py39:v0.34.1",
-					},
-				},
-				Status: meteorv1alpha1.CustomNBImageStatus{},
-			}
-			// This kind of CNBi should be denied by the admission/validation controller
-			Expect(k8sClient.Create(context.Background(), cnbi)).ShouldNot(Succeed())
-		})
-	})
-	*/
 })

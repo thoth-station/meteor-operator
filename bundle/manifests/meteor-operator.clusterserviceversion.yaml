@@ -702,10 +702,7 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
-                env:
-                - name: ENABLE_WEBHOOKS
-                  value: "false"
-                image: quay.io/tcoufal/meteor-operator:v0.0.1
+                image: quay.io/goern/meteor-operator:v0.1.0
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:

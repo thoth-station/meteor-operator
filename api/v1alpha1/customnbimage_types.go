@@ -33,7 +33,7 @@ const (
 	CNBiPhaseResolving          = "Resolving"
 	CNBiPhaseRunning            = "Running"
 	CNBiPhaseBuilding           = "Building"
-	CNBiPhageImporting          = "Importing"
+	CNBiPhaseImporting          = "Importing"
 	CNBiPhaseOk                 = "Ready"
 )
 
@@ -42,6 +42,13 @@ const (
 	CNBiStrategyImageImport         = "import"
 	CNBiStrategyBuildUsingPython    = "build"
 	CNBiStrategyBuildUsingBaseImage = "baseImage"
+)
+
+// CustomNBAnnotations is a list of annotations that are added to the custom notebook image
+const (
+	CNBiAnnotationName        = "opendatahub.io/notebook-image-name"
+	CNBiAnnotationDescription = "opendatahub.io/notebook-image-desc"
+	CNBiAnnotationCreator     = "opendatahub.io/notebook-image-creator"
 )
 
 // CustomNBImageStrategy is the strategy super-set of configurations for all strategies.
@@ -110,7 +117,7 @@ func (cnbi *CustomNBImage) AggregatePhase() string {
 			if strings.HasPrefix(c.Type, "PipelineRunPrepare") {
 				return CNBiPhasePreparing
 			} else if strings.HasPrefix(c.Type, "PipelineRunImport") {
-				return CNBiPhageImporting
+				return CNBiPhaseImporting
 			}
 		}
 

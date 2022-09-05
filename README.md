@@ -71,27 +71,17 @@ curl -sSLo envtest-bins.tar.gz "https://go.kubebuilder.io/test-tools/${K8S_VERSI
 sudo mkdir /usr/local/kubebuilder
 sudo chown $(whoami) /usr/local/kubebuilder
 tar -C /usr/local/kubebuilder --strip-components=1 -zvxf envtest-bins.tar.gz
-make test SKIP_FETCH_TOOLS=1 KUBEBUILDER_ASSETS=/usr/local/kubebuilder
+make test SKIP_FETCH_TOOLS=1 KUBEBUILDER_ASSETS=/usr/local/kubebuilder ENABLE_WEBHOOKS=false
 
 ```
 
 ## Deploying a local cluster with `kind`
 
-The following steps will set up a local Kubernetes cluster for testing, using [kind](https://kind.sigs.k8s.io/):
+Using `make kind-start` will set up a local Kubernetes cluster for testing, using [kind](https://kind.sigs.k8s.io/).
+`make kind-load-img` will build and load the operator container image into the cluster.
 
-```sh
-kind create cluster --config hack/kind-config.yaml
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/aio/deploy/recommended.yaml
-kubectl apply -f hack/dashboard-adminuser.yaml
-kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-kubectl apply -f https://github.com/tektoncd/dashboard/releases/latest/download/tekton-dashboard-release.yaml
-curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/raw | sed -e s/Task/ClusterTask/ | kubectl apply -f -
-
-kubectl -n tekton-pipelines port-forward svc/tekton-dashboard 9097:9097
-
-export T=$(kubectl -n kubernetes-dashboard create token admin-user)
-```
+`export T=$(kubectl -n kubernetes-dashboard create token admin-user)` will get the admin user token for the
+Kubernetes dashboard.
 
 Run `kubectl proxy` to expose 8001 and access http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/ for the kubernetes dashboard.
 
@@ -106,7 +96,3 @@ Deploy the tekton pipelines and tasks CNBi Operator depends on:
 `cat hack/cnbi-*.yaml | kubectl apply -f -`
 
 `make install` will deploy all our CRD, and `make run` to run the controller locally but connected to the cluster.
-
-## Known issues
-
-- Webhooks are currently disabled due to certificate issues

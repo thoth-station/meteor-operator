@@ -1,7 +1,0 @@
-apiVersion: meteor.zone/v1alpha1
-kind: MeteorConfig
-metadata:
-  name: meteorconfig-sample
-spec:
-  # Add fields here
-  foo: bar
