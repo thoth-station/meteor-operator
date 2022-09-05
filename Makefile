@@ -243,14 +243,14 @@ install-pipelines:
 KIND_CLUSTER_NAME ?= "meteor-cnbi"
 
 .PHONY: kind-create
-kind-create:
+kind-create: kind
 ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l))
 	@echo "Cluster already exists"
 else
 	@echo "Creating Cluster"
 	$(KIND) create cluster --name ${KIND_CLUSTER_NAME} --config hack/kind-config.yaml
 	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
-	kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/aio/deploy/recommended.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.6.1/aio/deploy/recommended.yaml
 	kubectl apply -f hack/dashboard-adminuser.yaml
 	kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.39.0/release.yaml
 	kubectl apply -f https://github.com/tektoncd/dashboard/releases/download/v0.28.0/tekton-dashboard-release.yaml
