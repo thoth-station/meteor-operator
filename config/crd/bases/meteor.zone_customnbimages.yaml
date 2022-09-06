@@ -52,8 +52,8 @@ spec:
                   for building
                 type: string
               fromImage:
-                description: FromUrl is the reference to the source image, used for
-                  import strategy
+                description: FromImage is the reference to the source image, used
+                  for import strategy
                 type: string
               packageVersions:
                 description: PackageVersion is a set of Packages including their Version

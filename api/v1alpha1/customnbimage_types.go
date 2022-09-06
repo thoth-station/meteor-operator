@@ -73,7 +73,7 @@ type BuildTypeSpec struct {
 	// +required
 	// +kubebuilder:Required
 	BuildType BuildType `json:"buildType"`
-	// FromUrl is the reference to the source image, used for import strategy
+	// FromImage is the reference to the source image, used for import strategy
 	// +optional
 	FromImage string `json:"fromImage,omitempty"`
 	// BuilderImage is the reference to the base image, used for building

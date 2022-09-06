@@ -263,5 +263,5 @@ kind-load-img: docker-build kind-create
 	$(KIND) load docker-image ${IMG} --name ${KIND_CLUSTER_NAME}
 
 .PHONY: kind-delete
-kind-delete:
+kind-delete: kind
 	$(KIND) delete cluster --name ${KIND_CLUSTER_NAME}
