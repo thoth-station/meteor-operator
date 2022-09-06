@@ -76,9 +76,9 @@ type BuildTypeSpec struct {
 	// FromImage is the reference to the source image, used for import strategy
 	// +optional
 	FromImage string `json:"fromImage,omitempty"`
-	// BuilderImage is the reference to the base image, used for building
+	// BaseImage is the reference to the base image, used for building
 	// +optional
-	BuilderImage string `json:"builderImage,omitempty"`
+	BaseImage string `json:"baseImage,omitempty"`
 	// Repository is the URL of the git repository, used for building
 	// +optional
 	Repository string `json:"repository,omitempty"`
@@ -95,9 +95,6 @@ type CustomNBImageRuntimeSpec struct {
 	// OSVersion is the Version of the Operating System to use
 	// +optional
 	OSVersion string `json:"osVersion,omitempty"`
-	// BuilderImage is an alternative the the three above fields
-	// +optional
-	BuilderImage string `json:"builderImage,omitempty"`
 }
 
 // CustomNBImageSpec defines the desired state of CustomNBImage

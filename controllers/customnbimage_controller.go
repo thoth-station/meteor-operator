@@ -203,12 +203,12 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 			if r.CNBi.Spec.BuildTypeSpec.BuildType == meteorv1alpha1.PackageList {
 
 				// if we have a BaseImage supplied, use it
-				if r.CNBi.Spec.RuntimeEnvironment.BuilderImage != "" {
+				if r.CNBi.Spec.BaseImage != "" {
 					params = append(params, pipelinev1beta1.Param{
 						Name: "baseImage",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CNBi.Spec.RuntimeEnvironment.BuilderImage,
+							StringVal: r.CNBi.Spec.BaseImage,
 						},
 					})
 				} else {

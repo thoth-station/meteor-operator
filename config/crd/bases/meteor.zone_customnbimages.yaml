@@ -40,16 +40,16 @@ spec:
           spec:
             description: CustomNBImageSpec defines the desired state of CustomNBImage
             properties:
+              baseImage:
+                description: BaseImage is the reference to the base image, used for
+                  building
+                type: string
               buildType:
                 description: BuildType is the strategy
                 enum:
                 - ImageImport
                 - PackageList
                 - GitRepository
-                type: string
-              builderImage:
-                description: BuilderImage is the reference to the base image, used
-                  for building
                 type: string
               fromImage:
                 description: FromImage is the reference to the source image, used
@@ -69,10 +69,6 @@ spec:
                 description: RuntimeEnvironment is the runtime environment to use
                   for the Custom Notebook Image
                 properties:
-                  builderImage:
-                    description: BuilderImage is an alternative the the three above
-                      fields
-                    type: string
                   osName:
                     description: OSName is the Name of the Operating System to use
                     type: string
