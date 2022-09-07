@@ -35,25 +35,34 @@ const (
 )
 
 var _ = Describe("CustomNBImage controller", func() {
-	Context("when a CustomNBImage object is created with a RuntimeEnvironment", func() {
+	uni8py38 := meteorv1alpha1.CustomNBImageRuntimeSpec{
+		PythonVersion: "3.8",
+		OSName:        "ubi",
+		OSVersion:     "8",
+	}
+
+	Context("when a CustomNBImage object is created with a RuntimeEnvironment and a PackageList", func() {
+		packages := []string{"numpy", "pandas", "scikit-learn"}
+
 		It("should have Status 'Preparing'", func() {
 			// TODO implement your test here
 			By("creating a CustomNBImage object")
+			build := meteorv1alpha1.BuildTypeSpec{
+				BuildType: meteorv1alpha1.PackageList,
+			}
 			cnbi := &meteorv1alpha1.CustomNBImage{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
-				ObjectMeta: metav1.ObjectMeta{Name: "custom-nbimage-1", Namespace: "default"},
+				ObjectMeta: metav1.ObjectMeta{Name: "test-1", Namespace: "default"},
 				Spec: meteorv1alpha1.CustomNBImageSpec{
-					RuntimeEnvironment: meteorv1alpha1.CustomNBImageRuntimeSpec{
-						PythonVersion: "3.8",
-						OSName:        "ubi",
-						OSVersion:     "8",
-					},
+					RuntimeEnvironment: uni8py38,
+					PackageVersion:     packages,
+					BuildTypeSpec:      build,
 				},
 				Status: meteorv1alpha1.CustomNBImageStatus{},
 			}
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
 
-			lookupKey := types.NamespacedName{Name: "custom-nbimage-1", Namespace: "default"}
+			lookupKey := types.NamespacedName{Name: "test-1", Namespace: "default"}
 			createdCNBi := &meteorv1alpha1.CustomNBImage{}
 
 			Consistently(func() bool {
@@ -64,31 +73,38 @@ var _ = Describe("CustomNBImage controller", func() {
 			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhasePreparing))
 		})
 	})
-	Context("when a CustomNBImage object is created with Import Strategy", func() {
+	Context("when a CustomNBImage object is created with ImportImage BuildType", func() {
 		It("should have Status 'Importing'", func() {
-			// TODO implement your test here
 			By("creating a CustomNBImage object")
+			build := meteorv1alpha1.BuildTypeSpec{
+				BuildType: meteorv1alpha1.ImportImage,
+				FromImage: "quay.io/thoth-station/s2i-custom-notebook:latest",
+			}
 			cnbi := &meteorv1alpha1.CustomNBImage{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
-				ObjectMeta: metav1.ObjectMeta{Name: "custom-nbimage-2", Namespace: "default"},
+				ObjectMeta: metav1.ObjectMeta{Name: "test-2", Namespace: "default"},
 				Spec: meteorv1alpha1.CustomNBImageSpec{
-					Strategy: meteorv1alpha1.CustomNBImageStrategy{
-						Type: "import",
-						From: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
-					},
+					RuntimeEnvironment: meteorv1alpha1.CustomNBImageRuntimeSpec{},
+					PackageVersion:     []string{},
+					BuildTypeSpec:      build,
 				},
 				Status: meteorv1alpha1.CustomNBImageStatus{},
 			}
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
 
-			lookupKey := types.NamespacedName{Name: "custom-nbimage-2", Namespace: "default"}
+			By("checking the CustomNBImage object has been created on the cluster")
+			// lets give the cluster a little time to start reconciling
+			time.Sleep(8 * time.Second)
+
+			lookupKey := types.NamespacedName{Name: "test-2", Namespace: "default"}
 			createdCNBi := &meteorv1alpha1.CustomNBImage{}
 
-			Consistently(func() bool {
+			Eventually(func() bool {
 				err := k8sClient.Get(ctx, lookupKey, createdCNBi)
 				return err == nil
 			}, timeout, interval).Should(BeTrue())
 
+			By("looking if the Controller started reconciling the CustomNBImage object")
 			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhaseImporting))
 		})
 	})

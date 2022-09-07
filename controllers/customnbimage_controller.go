@@ -78,7 +78,7 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// depending on the import Strategy, we reconcile a pipelinerun
 	// Check for the PipelineRun reconcilation, and update the status of the CustomNBImage resource
-	if r.CNBi.Spec.Strategy.Type == meteorv1alpha1.CNBiStrategyImageImport {
+	if r.CNBi.Spec.BuildTypeSpec.BuildType == meteorv1alpha1.ImportImage {
 		if err := r.ReconcilePipelineRun("import", &ctx, req); err != nil {
 			return r.UpdateStatusNow(ctx, err)
 		}
@@ -94,7 +94,7 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	 * if not, delete the PipelineRun and reconcile?
 	 */
 
-	logger.Info("Reconciled CustomNBImage", "self", r.CNBi)
+	logger.Info("Reconciled CustomNBImage", "spec", r.CNBi.Spec)
 	return r.UpdateStatusNow(ctx, nil)
 }
 
@@ -165,16 +165,7 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 		if errors.IsNotFound(err) {
 			logger.Info("Creating PipelineRun")
 
-			/*
-			   params:
-			     - name: baseImage
-			       description: Container image repository url
-			       type: string
-
-			*/
-
 			// let's put the mandatory annotations into the PipelineRun
-			// TODO a validator should govern this
 			params := []pipelinev1beta1.Param{
 				{
 					Name: "name",
@@ -199,25 +190,25 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				},
 			}
 
-			if r.CNBi.Spec.Strategy.Type == meteorv1alpha1.CNBiStrategyImageImport {
+			if r.CNBi.Spec.BuildTypeSpec.BuildType == meteorv1alpha1.ImportImage {
 				params = append(params, pipelinev1beta1.Param{
 					Name: "baseImage",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      "string",
-						StringVal: r.CNBi.Spec.Strategy.From,
+						StringVal: r.CNBi.Spec.BuildTypeSpec.FromImage,
 					}, // TODO we need a validator for this
 				})
 			}
 
-			if r.CNBi.Spec.Strategy.Type == meteorv1alpha1.CNBiStrategyBuildUsingPython {
+			if r.CNBi.Spec.BuildTypeSpec.BuildType == meteorv1alpha1.PackageList {
 
 				// if we have a BaseImage supplied, use it
-				if r.CNBi.Spec.RuntimeEnvironment.BaseImage != "" {
+				if r.CNBi.Spec.BaseImage != "" {
 					params = append(params, pipelinev1beta1.Param{
 						Name: "baseImage",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CNBi.Spec.RuntimeEnvironment.BaseImage,
+							StringVal: r.CNBi.Spec.BaseImage,
 						},
 					})
 				} else {

@@ -93,7 +93,7 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out -args -ginkgo.v
 
 ##@ Build
 
@@ -147,17 +147,19 @@ $(LOCALBIN):
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
+KIND ?= $(LOCALBIN)/kind
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.7
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
 ENVTEST_K8S_VERSION ?= 1.24
+KIND_VERSION ?= v0.15.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
-	test -s $(LOCALBIN)/kustomize || { curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN) }
+	test -s $(LOCALBIN)/kustomize || (curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN))
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
@@ -168,6 +170,12 @@ $(CONTROLLER_GEN): $(LOCALBIN)
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+.PHONY: kind
+kind: $(KIND) ## Download kind locally if necessary.
+$(KIND): $(LOCALBIN)
+	test -s $(LOCALBIN)/kind || (curl -Lo $(LOCALBIN)/kind https://kind.sigs.k8s.io/dl/v0.15.0/kind-linux-amd64 && chmod +x $(LOCALBIN)/kind)
+
 
 .PHONY: bundle
 bundle: manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
@@ -234,26 +242,26 @@ install-pipelines:
 # local testing
 KIND_CLUSTER_NAME ?= "meteor-cnbi"
 
-.PHONY: kind-start
-kind-start:
+.PHONY: kind-create
+kind-create: kind
 ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l))
 	@echo "Cluster already exists"
 else
 	@echo "Creating Cluster"
-	kind create cluster --name ${KIND_CLUSTER_NAME} --config hack/kind-config.yaml
+	$(KIND) create cluster --name ${KIND_CLUSTER_NAME} --config hack/kind-config.yaml
 	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
-	kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/aio/deploy/recommended.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.6.1/aio/deploy/recommended.yaml
 	kubectl apply -f hack/dashboard-adminuser.yaml
-	kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-	kubectl apply -f https://github.com/tektoncd/dashboard/releases/latest/download/tekton-dashboard-release.yaml
+	kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.39.0/release.yaml
+	kubectl apply -f https://github.com/tektoncd/dashboard/releases/download/v0.28.0/tekton-dashboard-release.yaml
 	curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/raw | sed -e s/Task/ClusterTask/ | kubectl apply -f -
 endif
 
 .PHONY: kind-load-img
-kind-load-img: docker-build kind-start
+kind-load-img: docker-build kind-create
 	@echo "Loading image into kind"
-	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME} -v
+	$(KIND) load docker-image ${IMG} --name ${KIND_CLUSTER_NAME}
 
 .PHONY: kind-delete
-kind-delete:
-	kind delete cluster --name ${KIND_CLUSTER_NAME}
+kind-delete: kind
+	$(KIND) delete cluster --name ${KIND_CLUSTER_NAME}

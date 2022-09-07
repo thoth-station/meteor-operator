@@ -75,12 +75,13 @@ func main() {
 	var err error
 
 	options := ctrl.Options{
-		Scheme:                 scheme,
-		MetricsBindAddress:     "127.0.0.1:8080",
-		Port:                   9443,
-		HealthProbeBindAddress: ":8081",
-		LeaderElection:         true,
-		LeaderElectionID:       "05b1bff9.meteor.zone",
+		Scheme:                  scheme,
+		MetricsBindAddress:      "127.0.0.1:8080",
+		Port:                    9443,
+		HealthProbeBindAddress:  ":8081",
+		LeaderElection:          true,
+		LeaderElectionID:        "05b1bff9.meteor.zone",
+		LeaderElectionNamespace: "cnbi-system",
 	}
 
 	/* FIXME #68 using this results in a
@@ -134,9 +135,9 @@ func main() {
 	}
 
 	/* Since we might want to run
-	the webhooks separately, or not run them when testing our controller
-	locally, we'll put them behind an environment variable.
-	We'll just make sure to set `ENABLE_WEBHOOKS=false` when we run locally.
+	   the webhooks separately, or not run them when testing our controller
+	   locally, we'll put them behind an environment variable.
+	   We'll just make sure to set `ENABLE_WEBHOOKS=false` when we run locally.
 	*/
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 		if err = (&meteorv1alpha1.CustomNBImage{}).SetupWebhookWithManager(mgr); err != nil {

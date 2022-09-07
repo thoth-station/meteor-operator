@@ -77,7 +77,7 @@ make deploy
 
 ## Testing locally with `envtest`
 
-see https://book.kubebuilder.io/reference/envtest.html for details, extract:
+see <https://book.kubebuilder.io/reference/envtest.html> for details, extract:
 
 ```sh
 export K8S_VERSION=1.21.2
@@ -97,9 +97,9 @@ Using `make kind-start` will set up a local Kubernetes cluster for testing, usin
 `export T=$(kubectl -n kubernetes-dashboard create token admin-user)` will get the admin user token for the
 Kubernetes dashboard.
 
-Run `kubectl proxy` to expose 8001 and access http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/ for the kubernetes dashboard.
+Run `kubectl proxy` to expose 8001 and access <http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/> for the kubernetes dashboard.
 
-Use `kubectl port-forward -n tekton-pipelines service/tekton-dashboard 9097:9097` to expose the tekton dashboard, visit it at http://localhost:9097/
+Use `kubectl port-forward -n tekton-pipelines service/tekton-dashboard 9097:9097` to expose the tekton dashboard, visit it at <http://localhost:9097/>
 
 ## Testing the operator against an existing cluster
 

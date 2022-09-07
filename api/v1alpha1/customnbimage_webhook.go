@@ -79,13 +79,13 @@ func (r *CustomNBImage) ValidateDelete() error {
 func (r *CustomNBImage) ValidateCustomNBImage() error {
 	var allErrs field.ErrorList
 
-	if err := r.validateCustomNBImageAnnotation(CNBiAnnotationName); err != nil {
+	if err := r.validateCustomNBImageAnnotation(CNBiNameAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	if err := r.validateCustomNBImageAnnotation(CNBiAnnotationDescription); err != nil {
+	if err := r.validateCustomNBImageAnnotation(CNBiDescriptionAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	if err := r.validateCustomNBImageAnnotation(CNBiAnnotationCreator); err != nil {
+	if err := r.validateCustomNBImageAnnotation(CNBiCreatorAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
 

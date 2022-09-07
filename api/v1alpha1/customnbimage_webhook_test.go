@@ -26,18 +26,24 @@ import (
 )
 
 var _ = Describe("CustomNBImage Webhook", func() {
+	build := BuildTypeSpec{
+		BuildType: PackageList,
+	}
+
 	Context("when a CustomNBImage object is created", func() {
 		It("should pass if all required annotations are present", func() {
 			By("creating a CustomNBImage object")
 			cnbi := &CustomNBImage{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
-				ObjectMeta: metav1.ObjectMeta{Name: "custom-nbimage-1", Namespace: "default"},
-				Spec:       CustomNBImageSpec{},
-				Status:     CustomNBImageStatus{},
+				ObjectMeta: metav1.ObjectMeta{Name: "webhook-1", Namespace: "default"},
+				Spec: CustomNBImageSpec{
+					BuildTypeSpec: build,
+				},
+				Status: CustomNBImageStatus{},
 			}
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiAnnotationName, "custom-nbimage-1")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiAnnotationDescription, "default")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiAnnotationCreator, "ginko+gomega")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-1")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiCreatorAnnotationKey, "ginko+gomega")
 
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
 
@@ -46,9 +52,11 @@ var _ = Describe("CustomNBImage Webhook", func() {
 			By("creating an inclomplte CustomNBImage object")
 			cnbi := &CustomNBImage{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
-				ObjectMeta: metav1.ObjectMeta{Name: "custom-nbimage-2", Namespace: "default"},
-				Spec:       CustomNBImageSpec{},
-				Status:     CustomNBImageStatus{},
+				ObjectMeta: metav1.ObjectMeta{Name: "webhook-2", Namespace: "default"},
+				Spec: CustomNBImageSpec{
+					BuildTypeSpec: build,
+				},
+				Status: CustomNBImageStatus{},
 			}
 
 			Expect(k8sClient.Create(context.Background(), cnbi)).ShouldNot(Succeed())
@@ -57,15 +65,17 @@ var _ = Describe("CustomNBImage Webhook", func() {
 			By("creating an inclomplte CustomNBImage object")
 			cnbi := &CustomNBImage{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
-				ObjectMeta: metav1.ObjectMeta{Name: "custom-nbimage-3", Namespace: "default"},
-				Spec:       CustomNBImageSpec{},
-				Status:     CustomNBImageStatus{},
+				ObjectMeta: metav1.ObjectMeta{Name: "webhook-3", Namespace: "default"},
+				Spec: CustomNBImageSpec{
+					BuildTypeSpec: build,
+				},
+				Status: CustomNBImageStatus{},
 			}
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiAnnotationName, "custom-nbimage-3")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-3")
 
 			err := k8sClient.Create(context.Background(), cnbi)
 			Expect(err).ShouldNot(Succeed())
-			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomNBImage.meteor.zone \"custom-nbimage-3\" is invalid: [metadata.annotations[opendatahub.io/notebook-image-desc]: Required value: annotation is required, metadata.annotations[opendatahub.io/notebook-image-creator]: Required value: annotation is required]"))
+			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomNBImage.meteor.zone \"webhook-3\" is invalid: [metadata.annotations[opendatahub.io/notebook-image-desc]: Required value: annotation is required, metadata.annotations[opendatahub.io/notebook-image-creator]: Required value: annotation is required]"))
 		})
 
 	})
