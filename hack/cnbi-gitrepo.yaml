@@ -14,15 +14,8 @@ spec:
     - name: ref
       type: string
       default: ""
-    - name: externalServices
-      type: string
-      default: "[]"
     - name: ownerReferences
       default: "[]"
-
-  results:
-    - name: url
-      value: "$(tasks.url-to-results.results.results)"
 
   workspaces:
     - name: data
@@ -57,23 +50,11 @@ spec:
         - name: url
           value: $(params.url)
 
-    - name: extract-jupyterhub-namespace
-      taskRef:
-        name: extract-external-service
-      params:
-        - name: externalServices
-          value: "$(params.externalServices)"
-        - name: serviceName
-          value: jupyterhub
-        - name: serviceProperty
-          value: namespace
-
     - name: buildah
       taskRef:
         name: buildah
       runAfter:
         - generate
-        - extract-jupyterhub-namespace
       workspaces:
         - name: data
           workspace: data
@@ -81,20 +62,18 @@ spec:
           workspace: sslcertdir
       params:
         - name: IMAGE
-          value: image-registry.openshift-image-registry.svc:5000/$(tasks.extract-jupyterhub-namespace.results.value)/$(context.pipelineRun.name)
+          value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
         - name: BASE_IMAGE
           value: $(tasks.generate.results.baseImage)
 
     - name: resolve-owner-reference
       taskRef:
         name: resolve-owner-reference
-      runAfter:
-        - extract-jupyterhub-namespace
       params:
         - name: ownerReferences
           value: $(params.ownerReferences)
         - name: namespace
-          value: $(tasks.extract-jupyterhub-namespace.results.value)
+          value: $(context.pipelineRun.namespace)
 
     - name: create-image-stream
       taskRef:
@@ -115,7 +94,7 @@ spec:
                 opendatahub.io/notebook-image-name: $(context.pipelineRun.name)
                 opendatahub.io/notebook-image-url: $(params.url)
               name: $(context.pipelineRun.name)
-              namespace: $(tasks.extract-jupyterhub-namespace.results.value)
+              namespace: $(context.pipelineRun.namespace)
               labels:
                 opendatahub.io/notebook-image: 'true'
             spec:
@@ -125,17 +104,7 @@ spec:
                 - name: latest
             EOM
 
-            oc patch -n $(tasks.extract-jupyterhub-namespace.results.value) imagestream/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'
-
-    - name: url-to-results
-      taskRef:
-        name: oc-actions
-      runAfter:
-        - buildah
-      params:
-        - name: script
-          value: |
-            echo "http://$(oc get route jupyterhub -n $(tasks.extract-jupyterhub-namespace.results.value) --template='{{"{{"}} {{"."}}spec.host {{"}}"}}')/hub/spawn#:~:text=$(context.pipelineRun.name)" > $(results.results.path)
+            oc patch -n $(context.pipelineRun.namespace) imagestream/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'
 
   finally:
     - name: push-metrics
@@ -436,42 +405,6 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: extract-external-service
-spec:
-  params:
-    - name: externalServices
-    - name: serviceName
-    - name: serviceProperty
-  results:
-    - name: value
-  steps:
-    - name: extract-external-service
-      image: quay.io/thoth-station/s2i-thoth-dev:latest
-      env:
-        - name: EXTERNAL_SERVICES
-          value: $(params.externalServices)
-        - name: SERVICE_NAME
-          value: $(params.serviceName)
-        - name: SERVICE_PROPERTY
-          value: $(params.serviceProperty)
-        - name: RESULT
-          value: $(results.value.path)
-      script: |
-        #!/opt/app-root/bin/python
-        import json
-        import os
-
-        EXTERNAL_SERVICES = json.loads(os.getenv("EXTERNAL_SERVICES"))
-        TARGET_SERVICE = next(
-            filter(lambda x: x["name"] == os.getenv("SERVICE_NAME"), EXTERNAL_SERVICES), {}
-        )
-
-        with open(os.getenv("RESULT"), "w") as f:
-            f.write(TARGET_SERVICE[os.getenv("SERVICE_PROPERTY")])
----
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
   name: generate-jupyterhub
 spec:
   params:
@@ -614,25 +547,6 @@ spec:
         --env=THOTH_PROVENANCE_CHECK=0 \
         --env=GIT_REPO_URL=$(params.url) \
         --env=GIT_REPO_NAME="$REPONAME"
----
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: oc-actions
-spec:
-  params:
-    - name: script
-  results:
-    - name: results
-  workspaces:
-    - name: data
-      optional: true
-  steps:
-    - name: oc
-      image: "image-registry.openshift-image-registry.svc:5000/openshift/cli:latest"
-      script: |
-        #!/usr/bin/env bash
-        $(params.script)
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
