@@ -29,6 +29,7 @@ spec:
 General pre-requisites:
 
 1. A Kubernetes or OpenShift cluster, with the local `KUBECONFIG` configured to access it in the preferred target namespace.
+
    - for OpenShift: `oc login`, and use `oc project XXX` to switch to the `XXX` target namespace
    - for a quick local Kubernetes cluster deployment, see the `kind` instructions below
 
@@ -92,7 +93,7 @@ make test SKIP_FETCH_TOOLS=1 KUBEBUILDER_ASSETS=/usr/local/kubebuilder ENABLE_WE
 
 ## Deploying a local cluster with `kind`
 
-Using `make kind-start` will set up a local Kubernetes cluster for testing, using [kind](https://kind.sigs.k8s.io/).
+Using `make kind-create` will set up a local Kubernetes cluster for testing, using [kind](https://kind.sigs.k8s.io/).
 `make kind-load-img` will build and load the operator container image into the cluster.
 
 `export T=$(kubectl -n kubernetes-dashboard create token admin-user)` will get the admin user token for the
