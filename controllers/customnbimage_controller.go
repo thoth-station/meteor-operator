@@ -173,21 +173,21 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				{
 					Name: "name",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      "string",
+						Type:      pipelinev1beta1.ParamTypeString,
 						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-name"],
 					},
 				},
 				{
 					Name: "creator",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      "string",
+						Type:      pipelinev1beta1.ParamTypeString,
 						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-creator"],
 					},
 				},
 				{
 					Name: "description",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      "string",
+						Type:      pipelinev1beta1.ParamTypeString,
 						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-desc"],
 					},
 				},
@@ -199,7 +199,7 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				params = append(params, pipelinev1beta1.Param{
 					Name: "baseImage",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      "string",
+						Type:      pipelinev1beta1.ParamTypeString,
 						StringVal: r.CNBi.Spec.BuildTypeSpec.FromImage,
 					}, // TODO we need a validator for this
 				})
@@ -249,13 +249,13 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				params = append(params, pipelinev1beta1.Param{
 					Name: "url",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      "string",
+						Type:      pipelinev1beta1.ParamTypeString,
 						StringVal: r.CNBi.Spec.BuildTypeSpec.Repository,
 					},
 				}, pipelinev1beta1.Param{
 					Name: "ref",
 					Value: pipelinev1beta1.ArrayOrString{
-						Type:      "string",
+						Type:      pipelinev1beta1.ParamTypeString,
 						StringVal: r.CNBi.Spec.BuildTypeSpec.GitRef,
 					},
 				})
@@ -329,7 +329,7 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 		if pipelineRun.Status.Conditions[0].Reason == "Succeeded" {
 			r.CNBi.Status.Pipelines[statusIndex].Ready = "True"
 			if len(pipelineRun.Status.PipelineResults) > 0 {
-				if pipelineRun.Status.PipelineResults[0].Value.Type == "string" {
+				if pipelineRun.Status.PipelineResults[0].Value.Type == pipelinev1beta1.ParamTypeString {
 					r.CNBi.Status.Pipelines[statusIndex].Url = pipelineRun.Status.PipelineResults[0].Value.StringVal
 				}
 			}
