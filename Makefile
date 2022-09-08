@@ -237,7 +237,6 @@ catalog-push: ## Push a catalog image.
 install-pipelines:
 	kubectl apply -f hack/cnbi-prepare.yaml
 	kubectl apply -f hack/cnbi-import.yaml
-	kubectl apply -f hack/cnbi-validate-task.yaml
 
 # local testing
 KIND_CLUSTER_NAME ?= "meteor-cnbi"

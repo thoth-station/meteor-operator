@@ -1,3 +1,4 @@
+---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
@@ -193,3 +194,173 @@ spec:
             EOM
 
             oc patch imagestream $(context.pipelineRun.name) -n $(context.pipelineRun.namespace) --type="merge" --patch-file patch-file.yaml
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: byon-validate-jupyterhub-image
+  labels:
+    app.kubernetes.io/created-by: byon
+spec:
+  params:
+    - name: url
+      description: Container image repository url
+      type: string
+  workspaces:
+    - name: data
+  steps:
+    - name: get-package-versions
+      image: $(params.url)
+      script: |
+        #!/usr/bin/env bash
+        # Check Python version
+        echo  "Analyzing image:"
+
+        touch /tmp/notebook-software.ndjson
+
+        # Check if Python was found, if not save that information to a message
+        if command -v python >/dev/null; then
+          version=$(python --version | cut -d ' ' -f 2)
+          echo "{\"name\":\"Python\",\"version\":\"$version\"}" >> /tmp/notebook-software.ndjson
+          echo "    Python:             $version"
+        else
+          echo "    Python:             Not available"
+          echo "{\"severity\":\"error\",\"message\":\"Python not found\"}" >> $(workspaces.data.path)/messages.ndjson
+        fi
+
+        # Check if Pip was found, if not save that information to a message
+        if command -v pip >/dev/null; then
+          pip list --disable-pip-version-check --not-required --format json | sed 's/\}/, "visible": true\}/g' > $(workspaces.data.path)/notebook-python-dependencies.json
+          echo -n "    Python packages:    "
+          echo $(pip list --disable-pip-version-check --not-required --format=freeze)
+        else
+          echo "    Python packages:    Not available"
+          echo "{\"severity\":\"error\",\"message\":\"Pip not found\"}" >> $(workspaces.data.path)/messages.ndjson
+        fi
+
+        if command -v R >/dev/null; then
+          version=$(R --version | head -1 | cut -d" " -f3)
+          echo "{\"name\":\"R\",\"version\":\"$version\"}" >> /tmp/notebook-software.ndjson
+          echo  "    R (optional):       $version"
+        else
+          echo  "    R (optional):       Not available"
+        fi
+
+        if command -v rstudio-server >/dev/null; then
+          version=$(rstudio-server version | cut -d"+" -f1)
+          echo "{\"name\":\"RStudio\",\"version\":\"$version\"}" >> /tmp/notebook-software.ndjson
+          echo  "    RStudio (optional): $version"
+        else
+          echo  "    RStudio (optional): Not available"
+        fi
+
+        echo -n "[$(sed ':a;N;$!ba;s/\n/,/g' /tmp/notebook-software.ndjson)]" > $(workspaces.data.path)/notebook-software.json
+
+    - name: minimal-requirements
+      image: $(params.url)
+      script: |
+        #!/usr/bin/env bash
+        echo "Validating minimal requirements:"
+
+        function ok {
+          echo " ✅"
+        }
+        function skip {
+          echo " ⚠"
+        }
+
+        function fail {
+          echo " ❌"
+          echo "{\"severity\":\"$1\",\"message\":\"$2\"}" >> $(workspaces.data.path)/messages.ndjson
+        }
+
+        # Minimal python version
+        export MINIMAL_PYTHON_VERSION="3.8.0"
+        echo -n "    Python >= $MINIMAL_PYTHON_VERSION"
+        # Note: Version comparison is inversed here since we need to exit with 0 (False in Python) if version is satisfied and exit with 1 (True in Python) otherwise. That means the check should return True for python 3.6, so we exit with exit(1)
+        if python -c "from platform import python_version; from packaging.version import parse; from sys import exit; from os import getenv; exit(parse(python_version()) < parse(getenv('MINIMAL_PYTHON_VERSION')))" 2>/dev/null; then
+          ok
+        else
+          fail "error" "Python version does not meet minimal required version ('$MINIMAL_PYTHON_VERSION')"
+        fi
+
+        # Python packages "jupyterhub" and "jupyterlab" must be present
+        echo -n "    'jupyterhub' package is present"
+        if python -c "import jupyterhub" 2>/dev/null; then
+          ok
+        else
+          fail "error" "Missing 'jupyterhub' python package"
+        fi
+        echo -n "    'jupyterlab' package is present"
+        if python -c "import jupyterlab" 2>/dev/null; then
+          ok
+        else
+          fail "error" "Missing 'jupyterlab' python package"
+        fi
+
+        # HOME env var is present and points to writeable directory
+        echo -n "    \$HOME is writeable"
+        if [ -n "$HOME" ] && [ -w "$HOME" ]; then
+          ok
+        else
+          fail "error" "\$HOME has to be set and point to writeable directory"
+        fi
+
+        # start-singleuser.sh must be present and resolve to "jupyter labhub $@"
+
+        function jupyter {
+          echo "$@" > /tmp/entrypoint.txt
+        }
+        export -f jupyter
+        export JUPYTERHUB_API_TOKEN="test"
+
+        echo -n "    start-singleuser.sh is present "
+        if ! command -v start-singleuser.sh >/dev/null; then
+          fail "error" "start-singleuser.sh script must be present in $PATH and executable"
+        else
+          ok
+        fi
+
+        echo -n "    start-singleuser.sh must execute 'jupyter' "
+        if ! timeout 60 start-singleuser.sh --ip=0.0.0.0 --port=8080 >/dev/null 2>/dev/null; then
+            fail "error" "start-singleuser.sh script took too long to call 'jupyter labhub'"
+        else
+          if [ ! -f /tmp/entrypoint.txt ]; then
+            fail "error" "start-singleuser.sh script did not call 'jupyter'"
+          else
+            ok
+          fi
+        fi
+
+        echo -n "    start-singleuser.sh must start 'labhub' environment "
+        if [ ! -f /tmp/entrypoint.txt ]; then
+          # This error is already raised by a previous check
+          skip
+        else
+          if grep -v "^labhub" /tmp/entrypoint.txt >/dev/null 2>/dev/null; then
+            fail "error" "start-singleuser.sh script did not call 'jupyter labhub'"
+          else
+            ok
+          fi
+        fi
+
+        echo -n "    start-singleuser.sh must accept runtime args or pass a config file "
+        if [ ! -f /tmp/entrypoint.txt ]; then
+          # This error is already raised by a previous check
+          skip
+        else
+          if grep "\$@" /tmp/entrypoint.txt >/dev/null 2>/dev/null; then
+            ok
+          else
+            if grep -- "--port=8080" /tmp/entrypoint.txt >/dev/null 2>/dev/null; then
+              ok
+            else
+              config=$(grep -oP "(?<=--config=)\S*" /tmp/entrypoint.txt 2>/dev/null)
+              if [ -n "$config" ]; then
+                fail "error" "start-singleuser.sh script has to either use runtime arguments via '\$@' or specify '--port=8080' or it needs to specify a custom config file."
+              else
+                ok
+              fi
+            fi
+          fi
+        fi
