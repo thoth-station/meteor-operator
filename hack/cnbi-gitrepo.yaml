@@ -14,8 +14,6 @@ spec:
     - name: ref
       type: string
       default: ""
-    - name: ownerReferences
-      default: "[]"
 
   workspaces:
     - name: data
@@ -66,22 +64,12 @@ spec:
         - name: BASE_IMAGE
           value: $(tasks.generate.results.baseImage)
 
-    - name: resolve-owner-reference
-      taskRef:
-        name: resolve-owner-reference
-      params:
-        - name: ownerReferences
-          value: $(params.ownerReferences)
-        - name: namespace
-          value: $(context.pipelineRun.namespace)
-
     - name: create-image-stream
       taskRef:
         name: openshift-client
         kind: ClusterTask
       runAfter:
         - buildah
-        - resolve-owner-reference
       params:
         - name: SCRIPT
           value: |
@@ -103,8 +91,6 @@ spec:
               tags:
                 - name: latest
             EOM
-
-            oc patch -n $(context.pipelineRun.namespace) imagestream/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'
 
   finally:
     - name: push-metrics
@@ -547,40 +533,6 @@ spec:
         --env=THOTH_PROVENANCE_CHECK=0 \
         --env=GIT_REPO_URL=$(params.url) \
         --env=GIT_REPO_NAME="$REPONAME"
----
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: resolve-owner-reference
-spec:
-  params:
-    - name: ownerReferences
-    - name: namespace
-  results:
-    - name: patch
-  steps:
-    - name: resolve-owner-reference
-      image: quay.io/thoth-station/s2i-thoth-dev:latest
-      env:
-        - name: OWNER_REFERENCES
-          value: $(params.ownerReferences)
-        - name: NAMESPACE
-          value: $(params.namespace)
-        - name: RESULT
-          value: $(results.patch.path)
-      script: |
-        #!/opt/app-root/bin/python
-        import json
-        import os
-
-        OWNER_REFERENCES = json.loads(os.getenv("OWNER_REFERENCES"))
-        TARGET_REFERENCE = next(
-            filter(lambda x: x["namespace"] == os.getenv("NAMESPACE"), OWNER_REFERENCES), {}
-        )
-
-        PATCH = {"metadata": {"ownerReferences": [TARGET_REFERENCE]}}
-        with open(os.getenv("RESULT"), "w") as f:
-            json.dump(PATCH, f)
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
