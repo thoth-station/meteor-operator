@@ -77,10 +77,10 @@ metadata:
   labels:
     app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
   annotations:
-    opendatahub.io/notebook-image-name: elyra-aidevsecops-tutorial
+    opendatahub.io/notebook-image-name: Elyra DevSecOps Tutorial
     opendatahub.io/notebook-image-desc: Build from the Elyra Tutorial
     opendatahub.io/notebook-image-creator: codificat
 spec:
   buildType: GitRepository
-  baseImage: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2
   repository: https://github.com/AICoE/elyra-aidevsecops-tutorial
+  gitRef: master

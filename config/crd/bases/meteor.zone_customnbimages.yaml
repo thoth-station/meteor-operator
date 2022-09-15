@@ -55,6 +55,10 @@ spec:
                 description: FromImage is the reference to the source image, used
                   for import strategy
                 type: string
+              gitRef:
+                description: GitRef is the git reference within the Repository to
+                  use for building (e.g. "main")
+                type: string
               packageVersions:
                 description: PackageVersion is a set of Packages including their Version
                   Specifiers
