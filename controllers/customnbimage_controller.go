@@ -236,12 +236,12 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 				}
 
 				// if we have no PackageVersion specified, we are done...
-				if len(r.CNBi.Spec.PackageVersion) > 0 {
+				if len(r.CNBi.Spec.PackageVersions) > 0 {
 					params = append(params, pipelinev1beta1.Param{
 						Name: "packages",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:     pipelinev1beta1.ParamTypeArray,
-							ArrayVal: r.CNBi.Spec.PackageVersion,
+							ArrayVal: r.CNBi.Spec.PackageVersions,
 						},
 					})
 				}

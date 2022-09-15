@@ -89,6 +89,12 @@ func (r *CustomNBImage) ValidateCustomNBImage() error {
 		allErrs = append(allErrs, err)
 	}
 
+	if r.Spec.BuildType == PackageList {
+		if err := r.validateCustomNBImagePackageListBuildType(); err != nil {
+			allErrs = append(allErrs, err)
+		}
+	}
+
 	if len(allErrs) == 0 {
 		return nil
 	}
@@ -105,6 +111,28 @@ func (r *CustomNBImage) validateCustomNBImageAnnotation(annotation string) *fiel
 
 	if _, ok := r.Annotations[annotation]; !ok {
 		return field.Required(field.NewPath("metadata.annotations").Key(annotation), "annotation is required")
+	}
+
+	return nil
+}
+
+func (r *CustomNBImage) validateCustomNBImagePackageListBuildType() *field.Error {
+	logf.Log.Info("validateCustomNBImagePackageListBuildType", "r", r)
+
+	if r.Spec.PackageVersions == nil {
+		return field.Required(field.NewPath("spec.packageVersions"), "packageVersions is required")
+	}
+
+	if len(r.Spec.PackageVersions) == 0 {
+		return field.Required(field.NewPath("spec.packageVersions"), "packageVersions is required")
+	}
+
+	if (r.Spec.BaseImage != "") && r.Spec.RuntimeEnvironment.isValid() {
+		return field.Invalid(field.NewPath("spec.baseImage"), r.Spec.BaseImage, "baseImage and runtimeEnvironment are mutually exclusive")
+	}
+
+	if (r.Spec.BaseImage == "") && !r.Spec.RuntimeEnvironment.isValid() {
+		return field.Required(field.NewPath("spec.baseImage"), "baseImage or runtimeEnvironment is required")
 	}
 
 	return nil

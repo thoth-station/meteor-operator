@@ -78,3 +78,33 @@ func TestIsReady(t *testing.T) {
 	}
 
 }
+func TestIsValid(t *testing.T) {
+	testCases := map[string]struct {
+		runtime        CustomNBImageRuntimeSpec
+		expectedOutput bool
+	}{
+		"validRuntime": {
+			runtime: CustomNBImageRuntimeSpec{
+				PythonVersion: "3.9",
+				OSName:        "ubi",
+				OSVersion:     "9",
+			},
+			expectedOutput: true,
+		},
+		"invalidRuntime": {
+			runtime: CustomNBImageRuntimeSpec{
+				PythonVersion: "",
+				OSName:        "",
+				OSVersion:     "",
+			},
+			expectedOutput: false,
+		},
+	}
+
+	for tcName, tc := range testCases {
+		if output := tc.runtime.isValid(); output != tc.expectedOutput {
+			t.Errorf("%s Got %t while expecting %t", tcName, output, tc.expectedOutput)
+		}
+	}
+
+}
