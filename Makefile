@@ -173,7 +173,6 @@ kind: $(KIND) ## Download kind locally if necessary.
 $(KIND): $(LOCALBIN)
 	test -s $(LOCALBIN)/kind || (curl -Lo $(LOCALBIN)/kind https://kind.sigs.k8s.io/dl/v0.15.0/kind-linux-amd64 && chmod +x $(LOCALBIN)/kind)
 
-
 .PHONY: bundle
 bundle: manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
 	operator-sdk generate kustomize manifests -q
