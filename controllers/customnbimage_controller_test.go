@@ -25,7 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
+	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
 )
 
 const (

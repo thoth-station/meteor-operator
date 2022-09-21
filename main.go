@@ -33,11 +33,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
-	"github.com/aicoe/meteor-operator/controllers"
-	common "github.com/aicoe/meteor-operator/controllers/common"
-	meteor "github.com/aicoe/meteor-operator/controllers/meteor"
-	shower "github.com/aicoe/meteor-operator/controllers/shower"
+	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
+	"github.com/thoth-station/meteor-operator/controllers"
+	common "github.com/thoth-station/meteor-operator/controllers/common"
+	meteor "github.com/thoth-station/meteor-operator/controllers/meteor"
+	shower "github.com/thoth-station/meteor-operator/controllers/shower"
 )
 
 var (

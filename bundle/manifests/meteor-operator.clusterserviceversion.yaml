@@ -68,8 +68,8 @@ metadata:
       projects
     operators.operatorframework.io/builder: operator-sdk-unknown
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-    repository: https://github.com/AICoE/meteor-operator
-  name: meteor-operator.v0.0.1
+    repository: https://github.com/thoth-station/meteor-operator
+  name: meteor-operator.v0.1.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -788,13 +788,13 @@ spec:
     - name: Meteor
       url: https://github.com/aicoe/meteor
     - name: Meteor Operator
-      url: https://github.com/aicoe/meteor-operator
+      url: https://github.com/thoth-station/meteor-operator
     - name: Public deployment
       url: https://shower.meteor.zone
   maintainers:
-    - name: Open Services @ Red Hat
+    - name: Project Thoth
   maturity: alpha
   provider:
     name: Red Hat
     url: https://next.redhat.com
-  version: 0.0.1
+  version: 0.1.0

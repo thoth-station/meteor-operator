@@ -37,7 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
+	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
 )
 
 // CustomNBImageReconciler reconciles a CustomNBImage object
