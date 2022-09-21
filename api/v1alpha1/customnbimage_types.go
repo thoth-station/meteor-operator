@@ -82,6 +82,9 @@ type BuildTypeSpec struct {
 	// Repository is the URL of the git repository, used for building
 	// +optional
 	Repository string `json:"repository,omitempty"`
+	// GitRef is the git reference within the Repository to use for building (e.g. "main")
+	// +optional
+	GitRef string `json:"gitRef,omitempty"`
 }
 
 // CustomNBImageRuntimeSpec defines a Runtime Environment, aka 'the Python version used'

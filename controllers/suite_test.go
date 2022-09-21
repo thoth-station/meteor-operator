@@ -36,7 +36,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
+	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to

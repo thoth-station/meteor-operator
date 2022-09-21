@@ -1,4 +1,4 @@
-module github.com/aicoe/meteor-operator
+module github.com/thoth-station/meteor-operator
 
 go 1.18
 
