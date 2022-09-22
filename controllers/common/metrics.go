@@ -1,8 +1,8 @@
 package common
 
 import (
-	meteorv1alpha1 "github.com/aicoe/meteor-operator/api/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
+	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 

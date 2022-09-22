@@ -28,9 +28,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/aicoe/meteor-operator/api/v1alpha1"
-	"github.com/aicoe/meteor-operator/version"
 	routev1 "github.com/openshift/api/route/v1"
+	"github.com/thoth-station/meteor-operator/api/v1alpha1"
+	"github.com/thoth-station/meteor-operator/version"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -46,7 +46,7 @@ type ShowerReconciler struct {
 
 const (
 	RequeueAfter     = 10 * time.Second
-	DefaultImageBase = "quay.io/aicoe/meteor-shower:v"
+	DefaultImageBase = "quay.io/thoth-station/meteor-shower:v"
 )
 
 //+kubebuilder:rbac:groups=meteor.zone,resources=showers,verbs=get;list;watch;create;update;patch;delete

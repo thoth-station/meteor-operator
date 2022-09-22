@@ -2,14 +2,12 @@
 
 approvers:
   - codificat
-  - durandom
+  - goern
+  - harshad16
+
+reviewers:
+  - codificat
   - goern
   - harshad16
   - tumido
   - HumairAK
-
-reviewers:
-  - codificat
-  - durandom
-  - goern
-  - harshad16

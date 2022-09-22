@@ -26,10 +26,7 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
 # IMAGE_TAG_BASE defines the docker.io namespace and part of the image name for remote images.
 # This variable is used to construct full image tags for bundle and catalog images.
-#
-# For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
-# quay.io/aicoe/meteor-operator-bundle:$VERSION and quay.io/aicoe/meteor-operator-catalog:$VERSION.
-IMAGE_TAG_BASE ?= quay.io/aicoe/meteor-operator
+IMAGE_TAG_BASE ?= quay.io/thoth-station/meteor-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
@@ -93,7 +90,7 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out -args -ginkgo.v
 
 ##@ Build
 
@@ -147,26 +144,34 @@ $(LOCALBIN):
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
+KIND ?= $(LOCALBIN)/kind
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.7
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
+ENVTEST_K8S_VERSION ?= 1.24
+KIND_VERSION ?= v0.15.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
-	curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN)
+	test -s $(LOCALBIN)/kustomize || (curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN))
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
 $(CONTROLLER_GEN): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+	test -s $(LOCALBIN)/controller-gen || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 
 .PHONY: envtest
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+.PHONY: kind
+kind: $(KIND) ## Download kind locally if necessary.
+$(KIND): $(LOCALBIN)
+	test -s $(LOCALBIN)/kind || (curl -Lo $(LOCALBIN)/kind https://kind.sigs.k8s.io/dl/v0.15.0/kind-linux-amd64 && chmod +x $(LOCALBIN)/kind)
 
 .PHONY: bundle
 bundle: manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
@@ -223,3 +228,36 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+.PHONY: install-pipelines
+install-pipelines:
+	kubectl apply -f hack/cnbi-prepare.yaml
+	kubectl apply -f hack/cnbi-import.yaml
+	kubectl apply -f hack/cnbi-gitrepo.yaml
+
+# local testing
+KIND_CLUSTER_NAME ?= "meteor-cnbi"
+
+.PHONY: kind-create
+kind-create: kind
+ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l))
+	@echo "Cluster already exists"
+else
+	@echo "Creating Cluster"
+	$(KIND) create cluster --name ${KIND_CLUSTER_NAME} --config hack/kind-config.yaml
+	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.6.1/aio/deploy/recommended.yaml
+	kubectl apply -f hack/dashboard-adminuser.yaml
+	kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.39.0/release.yaml
+	kubectl apply -f https://github.com/tektoncd/dashboard/releases/download/v0.28.0/tekton-dashboard-release.yaml
+	curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/raw | sed -e s/Task/ClusterTask/ | kubectl apply -f -
+endif
+
+.PHONY: kind-load-img
+kind-load-img: docker-build kind-create
+	@echo "Loading image into kind"
+	$(KIND) load docker-image ${IMG} --name ${KIND_CLUSTER_NAME}
+
+.PHONY: kind-delete
+kind-delete: kind
+	$(KIND) delete cluster --name ${KIND_CLUSTER_NAME}

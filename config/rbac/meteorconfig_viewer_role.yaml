@@ -1,0 +1,20 @@
+# permissions for end users to view meteorconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: meteorconfig-viewer-role
+rules:
+- apiGroups:
+  - meteor.zone
+  resources:
+  - meteorconfigs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - meteor.zone
+  resources:
+  - meteorconfigs/status
+  verbs:
+  - get
