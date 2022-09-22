@@ -2,16 +2,27 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
+    cert-manager.io/inject-ca-from: aicoe-meteor/meteor-operator-serving-cert
     controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
-  name: meteors.meteor.zone
+  name: customnbimages.meteor.zone
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: meteor-operator-webhook-service
+          namespace: aicoe-meteor
+          path: /convert
+      conversionReviewVersions:
+      - v1
   group: meteor.zone
   names:
-    kind: Meteor
-    listKind: MeteorList
-    plural: meteors
-    singular: meteor
+    kind: CustomNBImage
+    listKind: CustomNBImageList
+    plural: customnbimages
+    singular: customnbimage
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -19,15 +30,10 @@ spec:
       jsonPath: .status.phase
       name: Phase
       type: string
-    - description: Repository URL
-      jsonPath: .spec.url
-      name: Url
-      type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Meteor resource represents a repository build. It defines which
-          pipelines are executed and what is the livespan of the produced resources
+        description: CustomNBImage is the Schema for the customnbimages API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -42,76 +48,58 @@ spec:
           metadata:
             type: object
           spec:
-            description: MeteorSpec defines the desired state of Meteor
+            description: CustomNBImageSpec defines the desired state of CustomNBImage
             properties:
-              pipelines:
-                default:
-                - jupyterhub
-                - jupyterbook
-                description: List of pipelines to initiate for this meteor
+              baseImage:
+                description: BaseImage is the reference to the base image, used for
+                  building
+                type: string
+              buildType:
+                description: BuildType is the strategy
+                enum:
+                - ImageImport
+                - PackageList
+                - GitRepository
+                type: string
+              fromImage:
+                description: FromImage is the reference to the source image, used
+                  for import strategy
+                type: string
+              gitRef:
+                description: GitRef is the git reference within the Repository to
+                  use for building (e.g. "main")
+                type: string
+              packageVersions:
+                description: PackageVersion is a set of Packages including their Version
+                  Specifiers
                 items:
                   type: string
                 type: array
-              ref:
-                description: Branch or tag or commit reference within the repository.
+              repository:
+                description: Repository is the URL of the git repository, used for
+                  building
                 type: string
-              ttl:
-                description: Time to live after the resource was created.
-                format: int64
-                type: integer
-              url:
-                description: Url points to the source repository.
-                pattern: ^https?:\/\/.+$
-                type: string
+              runtimeEnvironment:
+                description: RuntimeEnvironment is the runtime environment to use
+                  for the Custom Notebook Image
+                properties:
+                  osName:
+                    description: OSName is the Name of the Operating System to use
+                    type: string
+                  osVersion:
+                    description: OSVersion is the Version of the Operating System
+                      to use
+                    type: string
+                  pythonVersion:
+                    description: PythonVersion is the version of Python to use
+                    type: string
+                type: object
             required:
-            - pipelines
-            - ref
-            - url
+            - buildType
             type: object
           status:
-            description: MeteorStatus defines the observed state of Meteor
+            description: CustomNBImageStatus defines the observed state of CustomNBImage
             properties:
-              comas:
-                description: List of comas owned in different namespaces
-                items:
-                  properties:
-                    apiVersion:
-                      description: API version of the referent.
-                      type: string
-                    blockOwnerDeletion:
-                      description: If true, AND if the owner has the "foregroundDeletion"
-                        finalizer, then the owner cannot be deleted from the key-value
-                        store until this reference is removed. See https://kubernetes.io/docs/concepts/architecture/garbage-collection/#foreground-deletion
-                        for how the garbage collector interacts with this field and
-                        enforces the foreground deletion. Defaults to false. To set
-                        this field, a user needs "delete" permission of the owner,
-                        otherwise 422 (Unprocessable Entity) will be returned.
-                      type: boolean
-                    controller:
-                      description: If true, this reference points to the managing
-                        controller.
-                      type: boolean
-                    kind:
-                      description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-                      type: string
-                    name:
-                      description: 'Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names'
-                      type: string
-                    namespace:
-                      description: Namespace of the resource
-                      type: string
-                    uid:
-                      description: 'UID of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#uids'
-                      type: string
-                  required:
-                  - apiVersion
-                  - kind
-                  - name
-                  - namespace
-                  - uid
-                  type: object
-                  x-kubernetes-map-type: atomic
-                type: array
               conditions:
                 description: Current service state of Meteor.
                 items:
@@ -181,16 +169,19 @@ spec:
                   - type
                   type: object
                 type: array
-              expirationTimestamp:
-                description: Once created the expiration clock starts ticking.
-                format: date-time
-                type: string
-              observedGeneration:
-                description: Most recent observed generation of Meteor. Sanity check.
-                format: int64
-                type: integer
               phase:
-                description: Current condition of the Meteor.
+                description: Current condition of the Shower.
+                enum:
+                - Pending
+                - Failed
+                - Preparing
+                - CreatingRepository
+                - Resolving
+                - Running
+                - Building
+                - Importing
+                - Validating
+                - Ready
                 type: string
               pipelines:
                 description: Stores results from pipelines. Empty if neither pipeline
@@ -214,25 +205,6 @@ spec:
                   - pipelineRunName
                   type: object
                 type: array
-              stage:
-                description: State of individual pipelines
-                properties:
-                  failed:
-                    description: Component terminated with a failure
-                    items:
-                      type: string
-                    type: array
-                  running:
-                    description: Component is in running state
-                    items:
-                      type: string
-                    type: array
-                  succeeded:
-                    description: Component finished successfully
-                    items:
-                      type: string
-                    type: array
-                type: object
             type: object
         type: object
     served: true

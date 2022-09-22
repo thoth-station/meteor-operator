@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.1
+    controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
   name: showers.meteor.zone
 spec:
@@ -101,12 +101,14 @@ spec:
                       type: string
                     value:
                       description: 'Variable references $(VAR_NAME) are expanded using
-                        the previous defined environment variables in the container
+                        the previously defined environment variables in the container
                         and any service environment variables. If a variable cannot
                         be resolved, the reference in the input string will be unchanged.
-                        The $(VAR_NAME) syntax can be escaped with a double $$, ie:
-                        $$(VAR_NAME). Escaped references will never be expanded, regardless
-                        of whether the variable exists or not. Defaults to "".'
+                        Double $$ are reduced to a single $, which allows for escaping
+                        the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce the
+                        string literal "$(VAR_NAME)". Escaped references will never
+                        be expanded, regardless of whether the variable exists or
+                        not. Defaults to "".'
                       type: string
                     valueFrom:
                       description: Source for the environment variable's value. Cannot
@@ -129,6 +131,7 @@ spec:
                           required:
                           - key
                           type: object
+                          x-kubernetes-map-type: atomic
                         fieldRef:
                           description: 'Selects a field of the pod: supports metadata.name,
                             metadata.namespace, `metadata.labels[''<KEY>'']`, `metadata.annotations[''<KEY>'']`,
@@ -146,6 +149,7 @@ spec:
                           required:
                           - fieldPath
                           type: object
+                          x-kubernetes-map-type: atomic
                         resourceFieldRef:
                           description: 'Selects a resource of the container: only
                             resources limits and requests (limits.cpu, limits.memory,
@@ -170,6 +174,7 @@ spec:
                           required:
                           - resource
                           type: object
+                          x-kubernetes-map-type: atomic
                         secretKeyRef:
                           description: Selects a key of a secret in the pod's namespace
                           properties:
@@ -188,6 +193,7 @@ spec:
                           required:
                           - key
                           type: object
+                          x-kubernetes-map-type: atomic
                       type: object
                   required:
                   - name
@@ -197,21 +203,20 @@ spec:
                 description: Workspace PVC setting, defauilts to ReadWriteOnce 500Mi
                 properties:
                   accessModes:
-                    description: 'AccessModes contains the desired access modes the
+                    description: 'accessModes contains the desired access modes the
                       volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1'
                     items:
                       type: string
                     type: array
                   dataSource:
-                    description: 'This field can be used to specify either: * An existing
-                      VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
-                      * An existing PVC (PersistentVolumeClaim) * An existing custom
-                      resource that implements data population (Alpha) In order to
-                      use custom resource types that implement data population, the
-                      AnyVolumeDataSource feature gate must be enabled. If the provisioner
+                    description: 'dataSource field can be used to specify either:
+                      * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
+                      * An existing PVC (PersistentVolumeClaim) If the provisioner
                       or an external controller can support the specified data source,
                       it will create a new volume based on the contents of the specified
-                      data source.'
+                      data source. If the AnyVolumeDataSource feature gate is enabled,
+                      this field will always have the same contents as the DataSourceRef
+                      field.'
                     properties:
                       apiGroup:
                         description: APIGroup is the group for the resource being
@@ -229,9 +234,51 @@ spec:
                     - kind
                     - name
                     type: object
+                    x-kubernetes-map-type: atomic
+                  dataSourceRef:
+                    description: 'dataSourceRef specifies the object from which to
+                      populate the volume with data, if a non-empty volume is desired.
+                      This may be any local object from a non-empty API group (non
+                      core object) or a PersistentVolumeClaim object. When this field
+                      is specified, volume binding will only succeed if the type of
+                      the specified object matches some installed volume populator
+                      or dynamic provisioner. This field will replace the functionality
+                      of the DataSource field and as such if both fields are non-empty,
+                      they must have the same value. For backwards compatibility,
+                      both fields (DataSource and DataSourceRef) will be set to the
+                      same value automatically if one of them is empty and the other
+                      is non-empty. There are two important differences between DataSource
+                      and DataSourceRef: * While DataSource only allows two specific
+                      types of objects, DataSourceRef allows any non-core object,
+                      as well as PersistentVolumeClaim objects. * While DataSource
+                      ignores disallowed values (dropping them), DataSourceRef preserves
+                      all values, and generates an error if a disallowed value is
+                      specified. (Beta) Using this field requires the AnyVolumeDataSource
+                      feature gate to be enabled.'
+                    properties:
+                      apiGroup:
+                        description: APIGroup is the group for the resource being
+                          referenced. If APIGroup is not specified, the specified
+                          Kind must be in the core API group. For any other third-party
+                          types, APIGroup is required.
+                        type: string
+                      kind:
+                        description: Kind is the type of resource being referenced
+                        type: string
+                      name:
+                        description: Name is the name of resource being referenced
+                        type: string
+                    required:
+                    - kind
+                    - name
+                    type: object
+                    x-kubernetes-map-type: atomic
                   resources:
-                    description: 'Resources represents the minimum resources the volume
-                      should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                    description: 'resources represents the minimum resources the volume
+                      should have. If RecoverVolumeExpansionFailure feature is enabled
+                      users are allowed to specify resource requirements that are
+                      lower than previous value but must still be higher than capacity
+                      recorded in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                     properties:
                       limits:
                         additionalProperties:
@@ -257,7 +304,8 @@ spec:
                         type: object
                     type: object
                   selector:
-                    description: A label query over volumes to consider for binding.
+                    description: selector is a label query over volumes to consider
+                      for binding.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
@@ -300,9 +348,10 @@ spec:
                           "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   storageClassName:
-                    description: 'Name of the StorageClass required by the claim.
-                      More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                    description: 'storageClassName is the name of the StorageClass
+                      required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
                     type: string
                   volumeMode:
                     description: volumeMode defines what type of volume is required
@@ -310,7 +359,7 @@ spec:
                       in claim spec.
                     type: string
                   volumeName:
-                    description: VolumeName is the binding reference to the PersistentVolume
+                    description: volumeName is the binding reference to the PersistentVolume
                       backing this claim.
                     type: string
                 type: object
@@ -326,13 +375,12 @@ spec:
                   description: "Condition contains details for one aspect of the current
                     state of this API Resource. --- This struct is intended for direct
                     use as an array at the field path .status.conditions.  For example,
-                    type FooStatus struct{     // Represents the observations of a
-                    foo's current state.     // Known .status.conditions.type are:
-                    \"Available\", \"Progressing\", and \"Degraded\"     // +patchMergeKey=type
-                    \    // +patchStrategy=merge     // +listType=map     // +listMapKey=type
-                    \    Conditions []metav1.Condition `json:\"conditions,omitempty\"
-                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
-                    \n     // other fields }"
+                    type FooStatus struct{ // Represents the observations of a foo's
+                    current state. // Known .status.conditions.type are: \"Available\",
+                    \"Progressing\", and \"Degraded\" // +patchMergeKey=type // +patchStrategy=merge
+                    // +listType=map // +listMapKey=type Conditions []metav1.Condition
+                    `json:\"conditions,omitempty\" patchStrategy:\"merge\" patchMergeKey:\"type\"
+                    protobuf:\"bytes,1,rep,name=conditions\"` \n // other fields }"
                   properties:
                     lastTransitionTime:
                       description: lastTransitionTime is the last time the condition
@@ -414,5 +462,5 @@ status:
   acceptedNames:
     kind: ""
     plural: ""
-  conditions: []
-  storedVersions: []
+  conditions: null
+  storedVersions: null
