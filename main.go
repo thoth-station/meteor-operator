@@ -81,7 +81,7 @@ func main() {
 		HealthProbeBindAddress:  ":8081",
 		LeaderElection:          true,
 		LeaderElectionID:        "05b1bff9.meteor.zone",
-		LeaderElectionNamespace: "cnbi-system",
+		LeaderElectionNamespace: "aicoe-meteor",
 	}
 
 	/* FIXME #68 using this results in a
