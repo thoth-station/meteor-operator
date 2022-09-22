@@ -113,7 +113,7 @@ At the time of this writing (2022-09-07):
 - current versions of the Tekton operator require Kubernetes v1.22 or later ([apparently inheriting the requirement from knative](https://github.com/tektoncd/operator/blob/f09e32ac1e238aa1d235923735ea3db2f02f66fe/vendor/knative.dev/pkg/version/version.go#L36)?)
 - the development version of MicroShift is based on OpenShift 4.10, which meets the version requirements:
 
-```
+```shall
 $ oc version
 Client Version: 4.10.0-202207291637.p0.ge29d58e.assembly.stream-e29d58e
 Kubernetes Version: v1.23.1
@@ -136,7 +136,7 @@ sudo lvm vgcreate rhel /dev/vdb
 
 Assuming that your VM is `cnbi.example.com` and that the `cloud-user` user already has its client configured, you just need to copy the kubeconfig file locally:
 
-```
+```shell
 $ scp cloud-user@cnbi.example.net:.kube/config /tmp/microshift.config
 $ sed -i -e s/127.0.0.1/cnbi.example.net/ /tmp/microshift.config
 $ export KUBECONFIG=/tmp/microshift.config
@@ -158,8 +158,38 @@ curl -s https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.39.0
 curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/raw | sed -e s/Task/ClusterTask/ | oc apply -f-
 ```
 
+## Deploying Operator Lifecycle Manager (OLM)
+
+To test the meteor-operator with Operator Lifecycle Manager (OLM) we need to install it to OpenShift or Kubernetes.
+
+```shell
+kubectl create -f \
+https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/crds.yaml
+kubectl create -f \
+https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/olm.yaml
+```
+
+seeAlso <https://kubebyexample.com/learning-paths/operator-framework/operator-lifecycle-manager/adding-olm-kubernetes>
+
+Check for the status of OLM by `operator-sdk olm status`, installing the meteor operator itself is done via `run bundle`:
+
+```shell
+$ operator-sdk run bundle quay.io/thoth-station/meteor-operator-bundle:v0.1.0
+INFO[0005] Creating a File-Based Catalog of the bundle "quay.io/thoth-station/meteor-operator-bundle:v0.1.0"
+INFO[0006] Generated a valid File-Based Catalog
+INFO[0008] Created registry pod: quay-io-thoth-station-meteor-operator-bundle-v0-1-0
+INFO[0008] Created CatalogSource: meteor-operator-catalog
+INFO[0008] OperatorGroup "operator-sdk-og" created
+INFO[0008] Created Subscription: meteor-operator-v0-1-0-sub
+INFO[0010] Approved InstallPlan install-x5dls for the Subscription: meteor-operator-v0-1-0-sub
+INFO[0010] Waiting for ClusterServiceVersion "default/meteor-operator.v0.1.0" to reach 'Succeeded' phase
+INFO[0011]   Waiting for ClusterServiceVersion "default/meteor-operator.v0.1.0" to appear
+INFO[0023]   Found ClusterServiceVersion "default/meteor-operator.v0.1.0" phase: Pending
+...
+```
+
 ## Testing the operator against an existing cluster
 
 1. `make install-pipelines` will deploy the Tekton pipelines' manifests
-1. `make install` will deploy all our CRD
-2. `make run` will run the controller locally but connected to the cluster.
+2. `make install` will deploy all our CRD
+3. `make run` will run the controller locally but connected to the cluster.

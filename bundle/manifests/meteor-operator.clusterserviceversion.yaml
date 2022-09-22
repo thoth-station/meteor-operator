@@ -14,6 +14,121 @@ metadata:
         },
         {
           "apiVersion": "meteor.zone/v1alpha1",
+          "kind": "CustomNBImage",
+          "metadata": {
+            "annotations": {
+              "opendatahub.io/notebook-image-creator": "codificat",
+              "opendatahub.io/notebook-image-desc": "Build from the Elyra Tutorial",
+              "opendatahub.io/notebook-image-name": "Elyra DevSecOps Tutorial"
+            },
+            "labels": {
+              "app.kubernetes.io/created-by": "cpe-_a-meteor.zone-CNBi-v0.1.0"
+            },
+            "name": "elyra-aidevsecops-tutorial"
+          },
+          "spec": {
+            "buildType": "GitRepository",
+            "gitRef": "master",
+            "repository": "https://github.com/AICoE/elyra-aidevsecops-tutorial"
+          }
+        },
+        {
+          "apiVersion": "meteor.zone/v1alpha1",
+          "kind": "CustomNBImage",
+          "metadata": {
+            "annotations": {
+              "opendatahub.io/notebook-image-creator": "goern",
+              "opendatahub.io/notebook-image-desc": "minimal notebook image for python 3.8",
+              "opendatahub.io/notebook-image-name": "s2i-minimal-py38-notebook"
+            },
+            "labels": {
+              "app.kubernetes.io/created-by": "cpe-_a-meteor.zone-CNBi-v0.1.0"
+            },
+            "name": "s2i-minimal-py38-notebook-import"
+          },
+          "spec": {
+            "buildType": "ImageImport",
+            "fromImage": "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2"
+          }
+        },
+        {
+          "apiVersion": "meteor.zone/v1alpha1",
+          "kind": "CustomNBImage",
+          "metadata": {
+            "annotations": {
+              "opendatahub.io/notebook-image-creator": "codificat",
+              "opendatahub.io/notebook-image-desc": "Build using a S2I Python 3.8 image and a list of packages",
+              "opendatahub.io/notebook-image-name": "py38-1"
+            },
+            "labels": {
+              "app.kubernetes.io/created-by": "cpe-_a-meteor.zone-CNBi-v0.1.0"
+            },
+            "name": "s2i-minimal-py38-sample-1"
+          },
+          "spec": {
+            "baseImage": "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
+            "buildType": "PackageList",
+            "packageVersions": [
+              "pandas",
+              "boto3\u003e=1.24.0"
+            ]
+          }
+        },
+        {
+          "apiVersion": "meteor.zone/v1alpha1",
+          "kind": "CustomNBImage",
+          "metadata": {
+            "annotations": {
+              "opendatahub.io/notebook-image-creator": "goern",
+              "opendatahub.io/notebook-image-desc": "a Notebook with Python 3.8 and pandas and boto3",
+              "opendatahub.io/notebook-image-name": "ubi8-py38-sample-3"
+            },
+            "labels": {
+              "app.kubernetes.io/created-by": "cpe-_a-meteor.zone-CNBi-v0.1.0"
+            },
+            "name": "ubi8-py38-sample-2"
+          },
+          "spec": {
+            "buildType": "PackageList",
+            "packageVersions": [
+              "pandas",
+              "boto3\u003e=1.24.0"
+            ],
+            "runtimeEnvironment": {
+              "osName": "ubi",
+              "osVersion": "8",
+              "pythonVersion": "3.8"
+            }
+          }
+        },
+        {
+          "apiVersion": "meteor.zone/v1alpha1",
+          "kind": "CustomNBImage",
+          "metadata": {
+            "annotations": {
+              "opendatahub.io/notebook-image-creator": "codificat",
+              "opendatahub.io/notebook-image-desc": "Build using a list of packages, ontop a UBI9 Python 3.9 base image",
+              "opendatahub.io/notebook-image-name": "ubi9py39-1"
+            },
+            "labels": {
+              "app.kubernetes.io/created-by": "cpe-_a-meteor.zone-CNBi-v0.1.0"
+            },
+            "name": "ubi9-py39-sample-1"
+          },
+          "spec": {
+            "buildType": "PackageList",
+            "packageVersions": [
+              "pandas"
+            ],
+            "runtimeEnvironment": {
+              "osName": "rhel",
+              "osVersion": "9",
+              "pythonVersion": "3.9"
+            }
+          }
+        },
+        {
+          "apiVersion": "meteor.zone/v1alpha1",
           "kind": "Meteor",
           "metadata": {
             "name": "demo"
@@ -65,8 +180,8 @@ metadata:
     categories: AI/Machine Learning
     description:
       Project Meteor provides a single click deployment for data science
-      projects
-    operators.operatorframework.io/builder: operator-sdk-unknown
+      projects and a tooling to build Custome (Jupyter) Notebook Images (CNBi).
+    operators.operatorframework.io/builder: operator-sdk-v1.23.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/thoth-station/meteor-operator
   name: meteor-operator.v0.1.0
@@ -81,6 +196,30 @@ spec:
         displayName: Coma
         kind: Coma
         name: comas.meteor.zone
+        version: v1alpha1
+      - description: CustomNBImage is the Schema for the customnbimages API
+        displayName: Custom NBImage
+        kind: CustomNBImage
+        name: customnbimages.meteor.zone
+        statusDescriptors:
+          - description: Current service state of Meteor.
+            displayName: Conditions
+            path: conditions
+            x-descriptors:
+              - urn:alm:descriptor:io.kubernetes.conditions
+          - description: Current condition of the Shower.
+            displayName: Phase
+            path: phase
+            x-descriptors:
+              - urn:alm:descriptor:io.kubernetes.phase'
+          - description: Name of the corresponding PipelineRun resource
+            displayName: PipelineRun
+            path: pipelines[0].pipelineRunName
+            x-descriptors:
+              - urn:alm:descriptor:io.kubernetes:tekton.dev:v1beta1:PipelineRun
+        version: v1alpha1
+      - kind: MeteorConfig
+        name: meteorconfigs.meteor.zone
         version: v1alpha1
       - description:
           Meteor resource represents a repository build. It defines which
@@ -538,6 +677,32 @@ spec:
             - apiGroups:
                 - meteor.zone
               resources:
+                - customnbimages
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - patch
+                - update
+                - watch
+            - apiGroups:
+                - meteor.zone
+              resources:
+                - customnbimages/finalizers
+              verbs:
+                - update
+            - apiGroups:
+                - meteor.zone
+              resources:
+                - customnbimages/status
+              verbs:
+                - get
+                - patch
+                - update
+            - apiGroups:
+                - meteor.zone
+              resources:
                 - meteors
               verbs:
                 - create
@@ -687,7 +852,9 @@ spec:
                 - update
           serviceAccountName: meteor-operator-controller-manager
       deployments:
-        - name: meteor-operator-controller-manager
+        - label:
+            control-plane: controller-manager
+          name: meteor-operator-controller-manager
           spec:
             replicas: 1
             selector:
@@ -701,9 +868,7 @@ spec:
               spec:
                 containers:
                   - args:
-                      - --health-probe-bind-address=:8081
-                      - --metrics-bind-address=:8080
-                      - --leader-elect
+                      - --config=controller_manager_config.yaml
                     command:
                       - /manager
                     image: quay.io/thoth-station/meteor-operator:v0.1.0
@@ -716,6 +881,9 @@ spec:
                       periodSeconds: 20
                     name: manager
                     ports:
+                      - containerPort: 9443
+                        name: webhook-server
+                        protocol: TCP
                       - containerPort: 8080
                         name: http
                     readinessProbe:
@@ -733,10 +901,25 @@ spec:
                         memory: 100Mi
                     securityContext:
                       allowPrivilegeEscalation: false
+                    volumeMounts:
+                      - mountPath: /tmp/k8s-webhook-server/serving-certs
+                        name: cert
+                        readOnly: true
+                      - mountPath: /controller_manager_config.yaml
+                        name: manager-config
+                        subPath: controller_manager_config.yaml
                 securityContext:
                   runAsNonRoot: true
                 serviceAccountName: meteor-operator-controller-manager
                 terminationGracePeriodSeconds: 10
+                volumes:
+                  - name: cert
+                    secret:
+                      defaultMode: 420
+                      secretName: webhook-server-cert
+                  - configMap:
+                      name: meteor-operator-manager-config
+                    name: manager-config
       permissions:
         - rules:
             - apiGroups:
@@ -773,9 +956,9 @@ spec:
           serviceAccountName: meteor-operator-controller-manager
     strategy: deployment
   installModes:
-    - supported: true
+    - supported: false
       type: OwnNamespace
-    - supported: true
+    - supported: false
       type: SingleNamespace
     - supported: false
       type: MultiNamespace
@@ -788,13 +971,65 @@ spec:
     - name: Meteor
       url: https://github.com/aicoe/meteor
     - name: Meteor Operator
-      url: https://github.com/thoth-station/meteor-operator
+      url: https://github.com/aicoe/meteor-operator
     - name: Public deployment
       url: https://shower.meteor.zone
   maintainers:
-    - name: Project Thoth
+    - name: Open Services @ Red Hat
   maturity: alpha
   provider:
     name: Red Hat
     url: https://next.redhat.com
-  version: 0.1.0
+  version: 0.0.0
+  webhookdefinitions:
+    - admissionReviewVersions:
+        - v1
+      containerPort: 443
+      conversionCRDs:
+        - customnbimages.meteor.zone
+      deploymentName: meteor-operator-controller-manager
+      generateName: ccustomnbimages.kb.io
+      sideEffects: None
+      targetPort: 9443
+      type: ConversionWebhook
+      webhookPath: /convert
+    - admissionReviewVersions:
+        - v1
+      containerPort: 443
+      deploymentName: meteor-operator-controller-manager
+      failurePolicy: Fail
+      generateName: mcustomnbimage.kb.io
+      rules:
+        - apiGroups:
+            - meteor.zone
+          apiVersions:
+            - v1alpha1
+          operations:
+            - CREATE
+            - UPDATE
+          resources:
+            - customnbimages
+      sideEffects: None
+      targetPort: 9443
+      type: MutatingAdmissionWebhook
+      webhookPath: /mutate-meteor-zone-v1alpha1-customnbimage
+    - admissionReviewVersions:
+        - v1
+      containerPort: 443
+      deploymentName: meteor-operator-controller-manager
+      failurePolicy: Fail
+      generateName: vcustomnbimage.kb.io
+      rules:
+        - apiGroups:
+            - meteor.zone
+          apiVersions:
+            - v1alpha1
+          operations:
+            - CREATE
+            - UPDATE
+          resources:
+            - customnbimages
+      sideEffects: None
+      targetPort: 9443
+      type: ValidatingAdmissionWebhook
+      webhookPath: /validate-meteor-zone-v1alpha1-customnbimage

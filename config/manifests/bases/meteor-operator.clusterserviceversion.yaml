@@ -5,10 +5,12 @@ metadata:
     alm-examples: '[{"apiVersion":"meteor.zone/v1alpha","kind":"Meteor","metadata":{"name":"example-meteor"},"spec":{"url":"https://github.com/aicoe-aiops/meteor-demo","ref":"main","ttl":5000}}]'
     alm-examples-metadata: '{"example-meteor":{"description":"Example Meteor"}}'
     capabilities: Basic Install
-    categories: AI/Machine Learning
+    categories: AI/Machine Learning, Data Science, Developer Tools, Jupyter Notebook
     description:
       Project Meteor provides a single click deployment for data science
-      projects
+      projects and an easy to use tooling to build Custom (JupyterHub) Notebook Images (CNBi).
+
+      For a detailed description of what CNBi is, have a look at (Open Data Hub's CNBi)[https://github.com/thoth-station/opendatahub-cnbi].
     repository: https://github.com/thoth-station/meteor-operator
   name: meteor-operator.v0.1.0
   namespace: placeholder
@@ -22,6 +24,27 @@ spec:
         displayName: Coma
         kind: Coma
         name: comas.meteor.zone
+        version: v1alpha1
+      - description: CustomNBImage is the Schema for the customnbimages API
+        displayName: Custom NBImage
+        kind: CustomNBImage
+        name: customnbimages.meteor.zone
+        statusDescriptors:
+          - description: Current service state of Meteor.
+            displayName: Conditions
+            path: conditions
+            x-descriptors:
+              - urn:alm:descriptor:io.kubernetes.conditions
+          - description: Current condition of the Shower.
+            displayName: Phase
+            path: phase
+            x-descriptors:
+              - urn:alm:descriptor:io.kubernetes.phase'
+          - description: Name of the corresponding PipelineRun resource
+            displayName: PipelineRun
+            path: pipelines[0].pipelineRunName
+            x-descriptors:
+              - urn:alm:descriptor:io.kubernetes:tekton.dev:v1beta1:PipelineRun
         version: v1alpha1
       - description:
           Meteor resource represents a repository build. It defines which
@@ -125,7 +148,7 @@ spec:
         version: v1alpha1
   description: |
     Project Meteor provides a single click deployment model for data science
-    projects
+    projects and an easy to use tooling to build Custom (JupyterHub) Notebook Images (CNBi).
 
     Public instance available at: https://shower.meteor.zone
 
@@ -391,9 +414,9 @@ spec:
       deployments: null
     strategy: ""
   installModes:
-    - supported: true
+    - supported: false
       type: OwnNamespace
-    - supported: true
+    - supported: false
       type: SingleNamespace
     - supported: false
       type: MultiNamespace
@@ -402,17 +425,18 @@ spec:
   keywords:
     - data science
     - jupyterhub
+    - machine learning
   links:
     - name: Meteor
       url: https://github.com/aicoe/meteor
     - name: Meteor Operator
-      url: https://github.com/aicoe/meteor-operator
+      url: https://github.com/thoth-station/meteor-operator
     - name: Public deployment
       url: https://shower.meteor.zone
   maintainers:
-    - name: Open Services @ Red Hat
+    - name: Project Thoth
   maturity: alpha
   provider:
     name: Red Hat
     url: https://next.redhat.com
-  version: 0.0.0
+  version: 0.1.0
