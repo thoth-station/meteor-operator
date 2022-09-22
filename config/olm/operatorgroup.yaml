@@ -3,7 +3,7 @@ apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   name: meteor-operator
-  namespace: meteor-system
+  namespace: aicoe-meteor
 spec:
   targetNamespaces:
     - aicoe-meteor
