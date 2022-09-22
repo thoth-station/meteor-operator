@@ -6,4 +6,4 @@ metadata:
   namespace: meteor-system
 spec:
   targetNamespaces:
-    - meteor-system
+    - aicoe-meteor
