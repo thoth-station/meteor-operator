@@ -57,7 +57,7 @@ Install `dlv` via `go get -u github.com/go-delve/delve/cmd/dlv`
 
 ## Quick build and deploy to a cluster
 
-The following commands will build the image, push it to the container registry, and deploy the operator to the `meteor-system` namespace of your currently configured cluster (as per your `$KUBECONFIG`):
+The following commands will build the image, push it to the container registry, and deploy the operator to the `aicoe-meteor` namespace of your currently configured cluster (as per your `$KUBECONFIG`):
 
 If you want to use a custom image name/version:
 
