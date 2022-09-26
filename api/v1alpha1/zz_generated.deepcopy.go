@@ -242,8 +242,8 @@ func (in *CustomNBImageRuntimeSpec) DeepCopy() *CustomNBImageRuntimeSpec {
 func (in *CustomNBImageSpec) DeepCopyInto(out *CustomNBImageSpec) {
 	*out = *in
 	out.RuntimeEnvironment = in.RuntimeEnvironment
-	if in.PackageVersion != nil {
-		in, out := &in.PackageVersion, &out.PackageVersion
+	if in.PackageVersions != nil {
+		in, out := &in.PackageVersions, &out.PackageVersions
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
