@@ -24,7 +24,7 @@ spec:
   ttl: 100000 # Time to live in seconds, defaults to 24h
 ```
 
-# Development
+## Development
 
 General pre-requisites:
 

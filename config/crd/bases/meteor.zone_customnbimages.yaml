@@ -9,9 +9,13 @@ metadata:
 spec:
   group: meteor.zone
   names:
+    categories:
+    - opendatahub
     kind: CustomNBImage
     listKind: CustomNBImageList
     plural: customnbimages
+    shortNames:
+    - cnbi
     singular: customnbimage
   scope: Namespaced
   versions:
