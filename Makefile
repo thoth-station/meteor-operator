@@ -150,7 +150,7 @@ KIND ?= $(LOCALBIN)/kind
 KUSTOMIZE_VERSION ?= v4.5.7
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
 ENVTEST_K8S_VERSION ?= 1.24
-KIND_VERSION ?= v0.15.0
+KIND_VERSION ?= v0.16.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -171,7 +171,7 @@ $(ENVTEST): $(LOCALBIN)
 .PHONY: kind
 kind: $(KIND) ## Download kind locally if necessary.
 $(KIND): $(LOCALBIN)
-	test -s $(LOCALBIN)/kind || (curl -Lo $(LOCALBIN)/kind https://kind.sigs.k8s.io/dl/v0.15.0/kind-linux-amd64 && chmod +x $(LOCALBIN)/kind)
+	test -s $(LOCALBIN)/kind || (curl -Lo $(LOCALBIN)/kind https://kind.sigs.k8s.io/dl/$(KIND_VERSION)/kind-linux-amd64 && chmod +x $(LOCALBIN)/kind)
 
 .PHONY: bundle
 bundle: manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
