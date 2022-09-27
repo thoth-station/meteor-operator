@@ -24,7 +24,7 @@ spec:
   ttl: 100000 # Time to live in seconds, defaults to 24h
 ```
 
-# Development
+## Development
 
 General pre-requisites:
 
@@ -88,7 +88,6 @@ sudo mkdir /usr/local/kubebuilder
 sudo chown $(whoami) /usr/local/kubebuilder
 tar -C /usr/local/kubebuilder --strip-components=1 -zvxf envtest-bins.tar.gz
 make test SKIP_FETCH_TOOLS=1 KUBEBUILDER_ASSETS=/usr/local/kubebuilder ENABLE_WEBHOOKS=false
-
 ```
 
 ## Deploying a local cluster with `kind`
@@ -113,7 +112,7 @@ At the time of this writing (2022-09-07):
 - current versions of the Tekton operator require Kubernetes v1.22 or later ([apparently inheriting the requirement from knative](https://github.com/tektoncd/operator/blob/f09e32ac1e238aa1d235923735ea3db2f02f66fe/vendor/knative.dev/pkg/version/version.go#L36)?)
 - the development version of MicroShift is based on OpenShift 4.10, which meets the version requirements:
 
-```
+```shell
 $ oc version
 Client Version: 4.10.0-202207291637.p0.ge29d58e.assembly.stream-e29d58e
 Kubernetes Version: v1.23.1
@@ -136,10 +135,10 @@ sudo lvm vgcreate rhel /dev/vdb
 
 Assuming that your VM is `cnbi.example.com` and that the `cloud-user` user already has its client configured, you just need to copy the kubeconfig file locally:
 
-```
-$ scp cloud-user@cnbi.example.net:.kube/config /tmp/microshift.config
-$ sed -i -e s/127.0.0.1/cnbi.example.net/ /tmp/microshift.config
-$ export KUBECONFIG=/tmp/microshift.config
+```shell
+scp cloud-user@cnbi.example.net:.kube/config /tmp/microshift.config
+sed -i -e s/127.0.0.1/cnbi.example.net/ /tmp/microshift.config
+export KUBECONFIG=/tmp/microshift.config
 ```
 
 ### Deploying the required components on MicroShift
@@ -162,4 +161,4 @@ curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/
 
 1. `make install-pipelines` will deploy the Tekton pipelines' manifests
 1. `make install` will deploy all our CRD
-2. `make run` will run the controller locally but connected to the cluster.
+1. `make run` will run the controller locally but connected to the cluster.
