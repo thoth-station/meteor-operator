@@ -3,9 +3,8 @@ module github.com/thoth-station/meteor-operator
 go 1.18
 
 require (
-	github.com/onsi/ginkgo/v2 v2.1.6
+	github.com/onsi/ginkgo/v2 v2.2.0
 	github.com/onsi/gomega v1.20.2
-
 	github.com/openshift/api v0.0.0-20220818135244-55ceb195d29a
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.58.0
 	github.com/prometheus/client_golang v1.13.0
