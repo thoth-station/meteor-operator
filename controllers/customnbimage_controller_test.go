@@ -55,7 +55,7 @@ var _ = Describe("CustomNBImage controller", func() {
 				ObjectMeta: metav1.ObjectMeta{Name: "test-1", Namespace: "default"},
 				Spec: meteorv1alpha1.CustomNBImageSpec{
 					RuntimeEnvironment: uni8py38,
-					PackageVersion:     packages,
+					PackageVersions:    packages,
 					BuildTypeSpec:      build,
 				},
 				Status: meteorv1alpha1.CustomNBImageStatus{},
@@ -85,7 +85,7 @@ var _ = Describe("CustomNBImage controller", func() {
 				ObjectMeta: metav1.ObjectMeta{Name: "test-2", Namespace: "default"},
 				Spec: meteorv1alpha1.CustomNBImageSpec{
 					RuntimeEnvironment: meteorv1alpha1.CustomNBImageRuntimeSpec{},
-					PackageVersion:     []string{},
+					PackageVersions:    []string{},
 					BuildTypeSpec:      build,
 				},
 				Status: meteorv1alpha1.CustomNBImageStatus{},

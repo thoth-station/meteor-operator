@@ -64,8 +64,8 @@ spec:
                   use for building (e.g. "main")
                 type: string
               packageVersions:
-                description: PackageVersion is a set of Packages including their Version
-                  Specifiers
+                description: PackageVersions is a set of Packages including their
+                  Version Specifiers
                 items:
                   type: string
                 type: array
