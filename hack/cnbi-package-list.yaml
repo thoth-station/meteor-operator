@@ -1,0 +1,164 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: cnbi-package-list
+  annotations:
+    meteor.zone/pipeline: "true"
+    shower.meteor.zone/button-label: Run code in JupyterHub
+spec:
+  description: Build a notebook image from a package list
+  params:
+    - name: packages
+      type: array
+
+  workspaces:
+    - name: packages-to-install
+
+  tasks:
+    - name: resolve-dependencies
+      workspaces:
+        - name: pinned-packages
+          workspace: packages-to-install
+      taskRef:
+        name: get-package-versions-list
+    ####### Below this line, should be shared between all types of sources
+    - name: get-base-image
+      # TBD
+    - name: build-image
+      taskRef:
+        name: buildah-requirements
+        kind: Task
+      runAfter:
+        - resolve-dependencies
+        - get-base-image
+      workspaces:
+        - name: requirements
+          workspace: packages-to-install
+      params:
+        - name: IMAGE
+          value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+        - name: BASE_IMAGE
+          value: $(tasks.get-base-image.results.baseImage)
+    - name: create-image-stream # TBD
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: buildah-requirements
+spec:
+  params:
+    - name: BASE_IMAGE
+      type: string
+    - description: Reference of the image buildah will produce.
+      name: IMAGE
+      type: string
+    - default: >-
+        registry.redhat.io/rhel8/buildah@sha256:6a68ece207bc5fd8db2dd5cc2d0b53136236fb5178eb5b71eebe5d07a3c33d13
+      description: The location of the buildah builder image.
+      name: BUILDER_IMAGE
+      type: string
+    - default: vfs
+      description: Set buildah storage driver
+      name: STORAGE_DRIVER
+      type: string
+    - default: "true"
+      description: >-
+        Verify the TLS on the registry endpoint (for push/pull to a non-TLS
+        registry)
+      name: TLSVERIFY
+      type: string
+    - default: oci
+      description: "The format of the built container, oci or docker"
+      name: FORMAT
+      type: string
+  workspaces:
+    - name: requirements
+      readonly: true
+      description: the list of pinned python package we install in the produced image 
+  volumes:
+    - name: containerfile
+      emptyDir:
+        medium: memory
+    - name: /var/lib/containers
+      emptyDir: {}
+  steps:
+    - name: generate-containerfile
+      image: $(params.BUILDER_IMAGE)
+      args:
+        - cat 
+        - |
+          $(workspaces.containerfile.path)/Containerfile
+          FROM $(params.BASE_IMAGE)
+
+          USER root
+          COPY requirements-pinned.txt /tmp/
+          RUN chown -R 1001:0 /tmp/requirements-pinned.txt
+          USER 1001
+      volumesMount:
+        - name: containerfile
+          mountPath: /output/
+      stdoutConfig:
+        path: /output/Containerfile
+    - name: build-image
+      args:
+        - buildah
+        - --storage-driver=$(params.STORAGE_DRIVER)
+        - bud
+        - --format=$(params.FORMAT)
+        - --tls-verify=$(params.TLSVERIFY)
+        - --no-cache
+        - -f
+        - /input/Containerfile
+        - -t
+        - $(param.IMAGE)
+        - $(workspaces.requirements.path)
+      volumeMounts:
+        - name: containerfile
+          mountPath: /input/
+        - name: containers
+          mountPath: /var/lib/containers
+    - name: push-image
+      image: $(params.BUILDER_IMAGE)
+      args:
+        - buildah
+        - --storage-driver=$(params.STORAGE_DRIVER)
+        - push
+        - $(param.IMAGE)
+      volumeMounts:
+        - name: containers
+          mountPath: /var/lib/containers
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-package-versions-list
+spec:
+  volumes:
+    - name: unpinned-packages
+      emptyDir:
+        medium: memory
+  workspaces:
+    - name: pinned-packages
+  steps:
+    - image: <API_CLIENT>
+      args:
+        - kubectl
+        - get
+        - cnbi
+        - --output=jsonpath={.spec.packageVersions[]}
+        - $(context.pipelineRun.name) #assuming PipelineRun shares a name with CNBi CR ?
+      stdoutConfig:
+        path: /scratchspace/requirements.in
+      volumeMounts:
+        - name: unpinned-packages
+          mountPath: /scratchspace
+    - image: <PIP-TOOLS>
+      args:
+        - pip-compile
+        - /scratchspace/requirements.in
+      volumeMounts:
+        - name: unpinned-packages
+          mountPath: /scratchspace
+      stdoutConfig:
+        path: $(workspace.pinned-packages.path)/requirements.txt
