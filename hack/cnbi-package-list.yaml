@@ -83,11 +83,11 @@ spec:
   workspaces:
     - name: requirements
       readonly: true
-      description: the list of pinned python package we install in the produced image 
+      description: the list of pinned python package we install in the produced image
   volumes:
     - name: containerfile
-      emptyDir:
-        medium: memory
+      configMap:
+        name: containerfile
     - name: /var/lib/containers
       emptyDir: {}
   steps:
@@ -117,13 +117,17 @@ spec:
         - --tls-verify=$(params.TLSVERIFY)
         - --no-cache
         - -f
-        - /input/Containerfile
+        - /static/Containerfile
+        - --from
+        - $(params.BASE_IMAGE)
         - -t
         - $(param.IMAGE)
         - $(workspaces.requirements.path)
       volumeMounts:
         - name: containerfile
-          mountPath: /input/
+          mountPath: /static/Containerfile
+          subPath: Containerfile
+          readOnly: true
         - name: containers
           mountPath: /var/lib/containers
     - name: push-image
@@ -136,6 +140,7 @@ spec:
       volumeMounts:
         - name: containers
           mountPath: /var/lib/containers
+          readOnly: true
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
