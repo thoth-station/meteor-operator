@@ -24,7 +24,15 @@ spec:
         name: get-package-versions-list
     ####### Below this line, should be shared between all types of sources
     - name: get-base-image
-      # TBD
+      taskSpec:
+        results:
+          - name: baseImage
+        steps:
+          - stdoutConfig: $(results.baseImage.path)
+            args: # PLACEHOLDER
+              - echo
+              - quay.io/thoth-station/s2i-custom-notebook
+            image: alpine
     - name: build-image
       taskRef:
         name: buildah-requirements
