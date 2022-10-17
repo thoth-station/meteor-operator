@@ -66,6 +66,12 @@ const (
 	CNBiCreatorAnnotationKey     = "opendatahub.io/notebook-image-creator"
 )
 
+// ImagePullSecret is a secret that is used to pull images from a private registry
+type ImagePullSecret struct {
+	// Name is the name of the secret to be used
+	Name string `json:"name"`
+}
+
 // BuildTypeSpec is the strategy super-set of configurations for all strategies.
 type BuildTypeSpec struct {
 	// BuildType is the strategy
@@ -84,6 +90,9 @@ type BuildTypeSpec struct {
 	// GitRef is the git reference within the Repository to use for building (e.g. "main")
 	// +optional
 	GitRef string `json:"gitRef,omitempty"`
+	// ImagePullSecret is the name of the secret to use for pulling the base image
+	// +optional
+	ImagePullSecret ImagePullSecret `json:"imagePullSecret,inline,omitempty"`
 }
 
 // CustomNBImageRuntimeSpec defines a Runtime Environment, aka 'the Python version used'
@@ -208,6 +217,17 @@ func (r *CustomNBImageRuntimeSpec) isValid() bool {
 	}
 	if r.OSVersion == "" {
 		return false
+	}
+
+	return true
+}
+
+// hasValidImagePullSecret checks if the ImagePullSecret is valid, eg name is not empty
+func (b *BuildTypeSpec) hasValidImagePullSecret() bool {
+	if b.ImagePullSecret != (ImagePullSecret{}) {
+		if b.ImagePullSecret.Name == "" {
+			return false
+		}
 	}
 
 	return true
