@@ -108,3 +108,31 @@ func TestIsValid(t *testing.T) {
 	}
 
 }
+
+func TestHasValidImagePullSecretAName(t *testing.T) {
+	testCases := map[string]struct {
+		spec           BuildTypeSpec
+		expectedOutput bool
+	}{
+		"hasImagePullSecretName": {
+			spec: BuildTypeSpec{
+				BuildType:       ImportImage,
+				ImagePullSecret: ImagePullSecret{Name: "test"},
+			},
+			expectedOutput: true,
+		},
+		"noImagePullSecret": {
+			spec: BuildTypeSpec{
+				BuildType: ImportImage,
+			},
+			expectedOutput: true,
+		},
+	}
+
+	for tcName, tc := range testCases {
+		if output := tc.spec.hasValidImagePullSecret(); output != tc.expectedOutput {
+			t.Errorf("%s Got %t while expecting %t", tcName, output, tc.expectedOutput)
+		}
+	}
+
+}
