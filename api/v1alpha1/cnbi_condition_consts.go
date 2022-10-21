@@ -27,4 +27,22 @@ const (
 
 	// ErrorPipelineRunCreate indicates that the Tekton pipeline run creation failed
 	ErrorPipelineRunCreate ConditionType = "ErrorPipelineRunCreate"
+
+	// ValidatingImportedImage indicates that the imported image is being validated by a Tekton PipelineRun's Step
+	ValidatingImportedImage ConditionType = "ValidatingImportedImage"
+
+	// PreparingImageBuild indicates that the image build is being prepared by a Tekton PipelineRun's Step
+	PreparingImageBuild ConditionType = "PreparingImageBuild"
+
+	// ErrorPreparingImageBuild indicates that the image build preparation failed
+	ErrorPreparingImageBuild ConditionType = "ErrorPreparingImageBuild"
+
+	// ErrorResolvingDependencies indicates that the dependency resolution failed during preparation of the image build
+	ErrorResolvingDependencies ConditionType = "ErrorResolvingDependencies"
+
+	// BuildingImage indicates that the image is being built by a Tekton PipelineRun
+	BuildingImage ConditionType = "BuildingImage"
+
+	// ErrorBuildingImage indicates that the image build failed
+	ErrorBuildingImage ConditionType = "ErrorBuildingImage"
 )

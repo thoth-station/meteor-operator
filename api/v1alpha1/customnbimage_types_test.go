@@ -248,6 +248,32 @@ func TestAggregatePhase(t *testing.T) {
 			},
 			expectedOutput: CNBiPhaseImporting,
 		},
+		"validating": {
+			cnbi: CustomNBImage{
+				Spec: CustomNBImageSpec{
+					PackageVersions: []string{},
+					BuildTypeSpec: BuildTypeSpec{
+						BuildType: ImportImage,
+						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
+					},
+				},
+				Status: CustomNotebookImageStatus{
+					Conditions: []Condition{
+						{
+							Type:   PipelineRunCreated,
+							Status: corev1.ConditionTrue,
+							Reason: "ImportPipelineRunCreated",
+						},
+						{
+							Type:   ValidatingImportedImage,
+							Status: corev1.ConditionTrue,
+							Reason: "ValidatingImportedImage",
+						},
+					},
+				},
+			},
+			expectedOutput: CNBiPhaseValidating,
+		},
 	}
 
 	for tcName, tc := range testCases {
