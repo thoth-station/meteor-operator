@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"testing"
 
-	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -38,7 +38,7 @@ func TestIsReady(t *testing.T) {
 				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
-						Status: corev1.ConditionTrue,
+						Status: metav1.ConditionTrue,
 						Reason: "Succeeded",
 					},
 				},
@@ -50,7 +50,7 @@ func TestIsReady(t *testing.T) {
 				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
-						Status: corev1.ConditionFalse,
+						Status: metav1.ConditionFalse,
 						Reason: "CouldntGetPipeline",
 					},
 				},
@@ -62,7 +62,7 @@ func TestIsReady(t *testing.T) {
 				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
-						Status: corev1.ConditionUnknown,
+						Status: metav1.ConditionUnknown,
 						Reason: "Running",
 					},
 				},
@@ -159,7 +159,7 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: CNBiPhasePending,
 		},
 
-		"ok": {
+		"pipeline-created": {
 			cnbi: CustomNBImage{
 				Spec: CustomNBImageSpec{
 					PackageVersions: []string{},
@@ -171,14 +171,14 @@ func TestAggregatePhase(t *testing.T) {
 				Status: CustomNotebookImageStatus{
 					Conditions: []Condition{
 						{
-							Type:   "PipelineRunPrepare",
-							Status: corev1.ConditionTrue,
+							Type:   PipelineRunCreated,
+							Status: metav1.ConditionTrue,
 							Reason: "Succeeded",
 						},
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseSucceeded,
+			expectedOutput: CNBiPhaseRunning,
 		},
 		"failed": {
 			cnbi: CustomNBImage{
@@ -193,7 +193,7 @@ func TestAggregatePhase(t *testing.T) {
 					Conditions: []Condition{
 						{
 							Type:   ErrorPipelineRunCreate,
-							Status: corev1.ConditionTrue,
+							Status: metav1.ConditionTrue,
 							Reason: "ErrorCreatingPipelineRun",
 						},
 					},
@@ -214,13 +214,13 @@ func TestAggregatePhase(t *testing.T) {
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
-							Status: corev1.ConditionTrue,
+							Status: metav1.ConditionTrue,
 							Reason: "ImportPipelineRunCreated",
 						},
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseImporting,
+			expectedOutput: CNBiPhaseRunning,
 		},
 		"importing_missing_secret": {
 			cnbi: CustomNBImage{
@@ -235,18 +235,18 @@ func TestAggregatePhase(t *testing.T) {
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
-							Status: corev1.ConditionTrue,
+							Status: metav1.ConditionTrue,
 							Reason: "ImportPipelineRunCreated",
 						},
 						{
 							Type:   RequiredSecretMissing,
-							Status: corev1.ConditionTrue,
+							Status: metav1.ConditionTrue,
 							Reason: "ImapgePullSecretMissing",
 						},
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseImporting,
+			expectedOutput: CNBiPhaseRunning,
 		},
 		"validating": {
 			cnbi: CustomNBImage{
@@ -261,18 +261,18 @@ func TestAggregatePhase(t *testing.T) {
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
-							Status: corev1.ConditionTrue,
+							Status: metav1.ConditionTrue,
 							Reason: "ImportPipelineRunCreated",
 						},
 						{
 							Type:   ValidatingImportedImage,
-							Status: corev1.ConditionTrue,
+							Status: metav1.ConditionTrue,
 							Reason: "ValidatingImportedImage",
 						},
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseValidating,
+			expectedOutput: CNBiPhaseRunning,
 		},
 	}
 
