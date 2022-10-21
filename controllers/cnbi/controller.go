@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package cnbi
 
 import (
 	"context"
@@ -22,11 +22,8 @@ import (
 	"time"
 
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -80,15 +77,15 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// Check for the PipelineRun reconcilation, and update the status of the CustomNBImage resource
 	switch buildType := r.CNBi.Spec.BuildTypeSpec.BuildType; buildType {
 	case meteorv1alpha1.ImportImage:
-		if err := r.ReconcilePipelineRun("import", &ctx, req); err != nil {
+		if err := r.reconcilePipelineRun("import", &ctx, req); err != nil {
 			return r.UpdateStatusNow(ctx, err)
 		}
 	case meteorv1alpha1.GitRepository:
-		if err := r.ReconcilePipelineRun("gitrepo", &ctx, req); err != nil {
+		if err := r.reconcilePipelineRun("gitrepo", &ctx, req); err != nil {
 			return r.UpdateStatusNow(ctx, err)
 		}
 	case meteorv1alpha1.PackageList:
-		if err := r.ReconcilePipelineRun("prepare", &ctx, req); err != nil {
+		if err := r.reconcilePipelineRun("prepare", &ctx, req); err != nil {
 			return r.UpdateStatusNow(ctx, err)
 		}
 	}
@@ -126,28 +123,14 @@ func (r *CustomNBImageReconciler) UpdateStatusNow(ctx context.Context, originalE
 	}
 }
 
-// Set status condition helper
-func (r *CustomNBImageReconciler) SetCondition(kind, name string, status metav1.ConditionStatus, reason, message string) {
-	meta.SetStatusCondition(&r.CNBi.Status.Conditions, metav1.Condition{
-		Type:    kind + cases.Title(language.Und).String(name),
-		Status:  status,
-		Reason:  reason,
-		Message: message,
-	})
-}
-
-// ReconcilePipelineRun will reconcile the pipeline run for the CustomNBImage.
-func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context.Context, req ctrl.Request) error {
+// reconcilePipelineRun will reconcile the pipeline run for the CustomNBImage.
+func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx *context.Context, req ctrl.Request) error {
 	pipelineRun := &pipelinev1beta1.PipelineRun{}
 	resourceName := fmt.Sprintf("cnbi-%s-%s", r.CNBi.GetName(), name)
 	pipelineReferenceName := fmt.Sprintf("cnbi-%s", name)
 	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
 
 	logger := log.FromContext(*ctx).WithValues("pipelinerun", namespacedName)
-
-	updateStatus := func(status metav1.ConditionStatus, reason, message string) {
-		r.SetCondition("PipelineRun", name, status, reason, message)
-	}
 
 	statusIndex := func() int {
 		for i, pr := range r.CNBi.Status.Pipelines {
@@ -305,15 +288,17 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 
 			if err := r.Create(*ctx, pipelineRun); err != nil {
 				logger.Error(err, "Unable to create PipelineRun")
-				updateStatus(metav1.ConditionTrue, "ErrorPipelineRunCreate", fmt.Sprintf("Unable to create PipelineRun. %s", err))
+				r.setConditionCreatePipelineRunError(ctx, r.CNBi)
+
 				return err
 			}
-			updateStatus(metav1.ConditionTrue, "SuccessPipelineRunCreate", "Tekton PipelineRun was created.")
+			r.setConditionPipelineRunCreated(ctx, r.CNBi)
 			return nil
 		}
-		logger.Error(err, "Error fetching PipelineRun")
 
-		updateStatus(metav1.ConditionFalse, "ErrorPipelineRun", fmt.Sprintf("Reconcile resulted in error. %s", err))
+		logger.Error(err, "Error fetching PipelineRun")
+		r.setConditionGenericPipelineError(ctx, r.CNBi)
+
 		return err
 	}
 
@@ -322,11 +307,15 @@ func (r *CustomNBImageReconciler) ReconcilePipelineRun(name string, ctx *context
 			logger.Error(nil, "Tekton reported multiple conditions")
 		}
 		condition := pipelineRun.Status.Conditions[0]
-		updateStatus(metav1.ConditionStatus(condition.Status), condition.Reason, condition.Message)
+
+		if !r.containsCondition(ctx, r.CNBi, string(meteorv1alpha1.PipelineRunCreated)) {
+			return AppendCondition(ctx, r.Client, r.CNBi, meteorv1alpha1.PipelineRunCreated, metav1.ConditionTrue,
+				string(condition.Reason), string(condition.Message))
+		}
 	}
 
 	if pipelineRun.Status.CompletionTime != nil {
-		if pipelineRun.Status.Conditions[0].Reason == "Succeeded" {
+		if pipelineRun.Status.Conditions[0].Reason == "Succeeded" { // FIXME this feels dangerous, is it really the 1st one? all the time?
 			r.CNBi.Status.Pipelines[statusIndex].Ready = "True"
 			if len(pipelineRun.Status.PipelineResults) > 0 {
 				if pipelineRun.Status.PipelineResults[0].Value.Type == pipelinev1beta1.ParamTypeString {
