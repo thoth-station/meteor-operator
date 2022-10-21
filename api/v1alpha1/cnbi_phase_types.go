@@ -19,18 +19,13 @@ limitations under the License.
 package v1alpha1
 
 // CNBiPhase describes the phase of the CustomNBImage
-// +kubebuilder:validation:Enum=Pending;Failed;Preparing;CreatingRepository;Resolving;Running;Building;Importing;Validating;Ready
+// +kubebuilder:validation:Enum=Pending;Failed;Running;Succeeded;Unknown
 type CNBiPhase string
 
 const (
-	CNBiPhasePending            = CNBiPhase("Pending")
-	CNBiPhaseFailed             = CNBiPhase("Failed")
-	CNBiPhasePreparing          = CNBiPhase("Preparing")
-	CNBiPhaseCreatingRepository = CNBiPhase("CreatingRepository")
-	CNBiPhaseResolving          = CNBiPhase("Resolving")
-	CNBiPhaseRunning            = CNBiPhase("Running")
-	CNBiPhaseBuilding           = CNBiPhase("Building")
-	CNBiPhaseImporting          = CNBiPhase("Importing")
-	CNBiPhaseValidating         = CNBiPhase("Validating")
-	CNBiPhaseOk                 = CNBiPhase("Ready")
+	CNBiPhasePending   = CNBiPhase("Pending")
+	CNBiPhaseFailed    = CNBiPhase("Failed")
+	CNBiPhaseRunning   = CNBiPhase("Running")
+	CNBiPhaseSucceeded = CNBiPhase("Succeeded")
+	CNBiPhaseUnknown   = CNBiPhase("Unknown")
 )
