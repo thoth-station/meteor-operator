@@ -185,24 +185,23 @@ spec:
     - name: CNBI_PACKAGE_LIST
       type: string
   steps:
-    - image: image-registry.openshift-image-registry.svc:5000/openshift/cli
+    - image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
       args:
         - oc
         - get
         - cnbi
-        - --output=jsonpath={.spec.packageVersions[]}
+        - --output=jsonpath={.spec.packageVersions[]}  # TODO: account for runtime env
         - $(params.CNBI_PACKAGE_LIST)
       stdoutConfig:
         path: /scratchspace/requirements.in
       volumeMounts:
         - name: unpinned-packages
           mountPath: /scratchspace
-    - image: <PIP-TOOLS>
-      args:
-        - pip-compile
-        - /scratchspace/requirements.in
+    - image: registry.access.redhat.com/ubi8/python-38:latest
+      script: |
+        #!/bin/sh -e
+        pip install pip-tools # use image with pre-installed pip-tools (or other resolver)
+        pip-compile --generate-hashes /scratchspace/requirements.in > $(workspace.pinned-packages.path)/requirements.txt
       volumeMounts:
         - name: unpinned-packages
           mountPath: /scratchspace
-      stdoutConfig:
-        path: $(workspace.pinned-packages.path)/requirements.txt
