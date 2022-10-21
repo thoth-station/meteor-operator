@@ -171,7 +171,7 @@ func (cnbi *CustomNBImage) AggregatePhase() CNBiPhase {
 		}
 	}
 
-	return CNBiPhaseOk
+	return CNBiPhaseSucceeded
 }
 
 // IsReady returns true the Ready condition status is True

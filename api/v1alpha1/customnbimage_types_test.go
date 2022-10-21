@@ -178,7 +178,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseOk,
+			expectedOutput: CNBiPhaseSucceeded,
 		},
 		"failed": {
 			cnbi: CustomNBImage{
