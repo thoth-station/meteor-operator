@@ -135,19 +135,20 @@ spec:
                   - type
                   type: object
                 type: array
+              observedGeneration:
+                description: ObservedGeneration is the most recent generation observed.
+                  It corresponds to the Object's generation, which is updated on mutation
+                  by the API Server.
+                format: int64
+                type: integer
               phase:
-                description: Current condition of the Shower.
+                description: Current condition of the Custom Notebook Image
                 enum:
                 - Pending
                 - Failed
-                - Preparing
-                - CreatingRepository
-                - Resolving
                 - Running
-                - Building
-                - Importing
-                - Validating
-                - Ready
+                - Succeeded
+                - Unknown
                 type: string
               pipelines:
                 description: Stores results from pipelines. Empty if neither pipeline

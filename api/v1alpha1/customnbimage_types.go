@@ -19,10 +19,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"strings"
-
-	corev1 "k8s.io/api/core/v1"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -107,9 +103,14 @@ type CustomNBImageSpec struct {
 	BuildTypeSpec `json:",inline"`
 }
 
+//+kubebuilder:object:generate=true
 // CustomNotebookImageStatus defines the observed state of CustomNBImage
 type CustomNotebookImageStatus struct {
-	// Current condition of the Shower.
+	// ObservedGeneration is the most recent generation observed. It corresponds to the
+	// Object's generation, which is updated on mutation by the API Server.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+	// Current condition of the Custom Notebook Image
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Phase",xDescriptors={"urn:alm:descriptor:io.kubernetes.phase'"}
 	//+optional
 	Phase CNBiPhase `json:"phase,omitempty"`
@@ -147,37 +148,46 @@ type CustomNBImageList struct {
 
 // Aggregate phase from conditions
 func (cnbi *CustomNBImage) AggregatePhase() CNBiPhase {
+	pipelineRunCreated := false
+	importNotReady := false
+
 	if len(cnbi.Status.Conditions) == 0 {
 		return CNBiPhasePending
 	}
 
 	for _, c := range cnbi.Status.Conditions {
-		/*
-			if c.Status == corev1.ConditionFalse {
-				return CNBiPhaseFailed
-			}
-		*/
-
-		if c.Type == ErrorPipelineRunCreate && c.Status == corev1.ConditionTrue {
+		if c.Type == ErrorPipelineRunCreate && c.Status == metav1.ConditionTrue {
 			return CNBiPhaseFailed
 		}
 
-		if c.Type == PipelineRunCreated && c.Status == corev1.ConditionTrue {
-			if strings.HasPrefix(c.Reason, "ImportPipeline") {
-				return CNBiPhaseImporting
-			} else {
-				return CNBiPhaseBuilding
-			}
+		if c.Type == PipelineRunCreated && c.Status == metav1.ConditionTrue {
+			pipelineRunCreated = true
+			continue
+		}
+
+		if c.Type == ImageImportReady && c.Status == metav1.ConditionTrue {
+			return CNBiPhaseSucceeded
+		} else if c.Type == ImageImportReady && c.Status == metav1.ConditionFalse {
+			importNotReady = true
+			continue
+		}
+
+		if c.Type == ImageImportInvalid && c.Status == metav1.ConditionTrue && importNotReady {
+			return CNBiPhaseFailed
 		}
 	}
 
-	return CNBiPhaseSucceeded
+	if pipelineRunCreated {
+		return CNBiPhaseRunning
+	}
+
+	return CNBiPhasePending
 }
 
 // IsReady returns true the Ready condition status is True
 func (status CustomNotebookImageStatus) IsReady() bool {
 	for _, condition := range status.Conditions {
-		if condition.Status == corev1.ConditionTrue {
+		if condition.Status == metav1.ConditionTrue {
 			return true
 		}
 	}
@@ -215,16 +225,10 @@ func (b *BuildTypeSpec) hasValidImagePullSecret() bool {
 	return true
 }
 
-// GetConditions returns the set of conditions for this object.
-func (c *CustomNBImage) GetConditions() Conditions {
-	return c.Status.Conditions
+func (cnbi *CustomNBImage) GetConditions() []Condition {
+	return cnbi.Status.Conditions
 }
 
-// SetConditions sets the conditions on this object.
-func (c *CustomNBImage) SetConditions(conditions Conditions) {
-	c.Status.Conditions = conditions
-}
-
-func (c ConditionType) hasPrefix(prefix string) bool {
-	return strings.HasPrefix(string(c), prefix)
+func (cnbi *CustomNBImage) SetConditions(conditions []Condition) {
+	cnbi.Status.Conditions = conditions
 }

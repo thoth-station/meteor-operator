@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
+	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -33,7 +33,7 @@ type Condition struct {
 	Type ConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=CNBiConditionType"`
 	// Status is the status of the condition.
 	// Can be True, False, Unknown.
-	Status corev1.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=ConditionStatus"`
+	Status metav1.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=ConditionStatus"`
 	// Last time the condition transitioned from one status to another.
 	// +optional
 	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,3,opt,name=lastTransitionTime"`
@@ -47,3 +47,7 @@ type Condition struct {
 
 // Conditions provide observations of the operational state of a Custom Notebook Image resource.
 type Conditions []Condition
+
+func (c ConditionType) hasPrefix(prefix string) bool {
+	return strings.HasPrefix(string(c), prefix)
+}

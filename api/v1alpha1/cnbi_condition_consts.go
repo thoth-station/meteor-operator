@@ -19,30 +19,42 @@ limitations under the License.
 package v1alpha1
 
 const (
-	// RequredSecretMissing indicates that the secret required for authentication to the container image registry is missing
-	RequiredSecretMissing ConditionType = "RequiredSecretMissing"
-
 	// PipelineRunCreated indicates that the Tekton pipeline run was created
-	PipelineRunCreated ConditionType = "PipelineRunCreated"
+	PipelineRunCreated = ConditionType("PipelineRunCreated")
 
 	// ErrorPipelineRunCreate indicates that the Tekton pipeline run creation failed
-	ErrorPipelineRunCreate ConditionType = "ErrorPipelineRunCreate"
+	ErrorPipelineRunCreate = ConditionType("ErrorPipelineRunCreate")
+
+	// ImportingImage indicates that the image is being imported from a remote registry
+	ImportingImage = ConditionType("ImportingImage")
+
+	// RequredSecretMissing indicates that the secret required for authentication to the container image registry is missing
+	RequiredSecretMissing = ConditionType("RequiredSecretMissing")
 
 	// ValidatingImportedImage indicates that the imported image is being validated by a Tekton PipelineRun's Step
-	ValidatingImportedImage ConditionType = "ValidatingImportedImage"
+	ValidatingImportedImage = ConditionType("ValidatingImportedImage")
+
+	// ImageImportReady indicates that the imported image is ready to be used
+	ImageImportReady = ConditionType("ImageImportReady")
+
+	// ImageImportInvalid indicates that the imported image is invalid
+	ImageImportInvalid = ConditionType("ImageImportInvalid")
 
 	// PreparingImageBuild indicates that the image build is being prepared by a Tekton PipelineRun's Step
-	PreparingImageBuild ConditionType = "PreparingImageBuild"
+	PreparingImageBuild = ConditionType("PreparingImageBuild")
 
 	// ErrorPreparingImageBuild indicates that the image build preparation failed
-	ErrorPreparingImageBuild ConditionType = "ErrorPreparingImageBuild"
+	ErrorPreparingImageBuild = ConditionType("ErrorPreparingImageBuild")
 
 	// ErrorResolvingDependencies indicates that the dependency resolution failed during preparation of the image build
-	ErrorResolvingDependencies ConditionType = "ErrorResolvingDependencies"
+	ErrorResolvingDependencies = ConditionType("ErrorResolvingDependencies")
 
 	// BuildingImage indicates that the image is being built by a Tekton PipelineRun
-	BuildingImage ConditionType = "BuildingImage"
+	BuildingImage = ConditionType("BuildingImage")
 
 	// ErrorBuildingImage indicates that the image build failed
-	ErrorBuildingImage ConditionType = "ErrorBuildingImage"
+	ErrorBuildingImage = ConditionType("ErrorBuildingImage")
+
+	// GenericPipelineError indicates that the pipeline failed with an error
+	GenericPipelineError = ConditionType("GenericPipelineError")
 )

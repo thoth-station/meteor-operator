@@ -45,7 +45,7 @@ var _ = Describe("CustomNBImage controller", func() {
 	Context("when a CustomNBImage object is created with a RuntimeEnvironment and a PackageList", func() {
 		packages := []string{"numpy", "pandas", "scikit-learn"}
 
-		It("should have Status 'Preparing'", func() {
+		It("should be in Phase 'Pending'", func() {
 			By("creating a CustomNBImage object")
 			build := meteorv1alpha1.BuildTypeSpec{
 				BuildType: meteorv1alpha1.PackageList,
@@ -61,6 +61,7 @@ var _ = Describe("CustomNBImage controller", func() {
 				Status: meteorv1alpha1.CustomNotebookImageStatus{},
 			}
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
+			time.Sleep(20 * time.Second)
 
 			lookupKey := types.NamespacedName{Name: "test-1", Namespace: "default"}
 			createdCNBi := &meteorv1alpha1.CustomNBImage{}
@@ -70,91 +71,84 @@ var _ = Describe("CustomNBImage controller", func() {
 				return err == nil
 			}, timeout, interval).Should(BeTrue())
 
-			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhasePreparing))
+			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhasePending))
 		})
 	})
-	Context("when a CustomNBImage object is created with ImportImage BuildType", func() {
-		It("should have Status 'Importing'", func() {
-			By("creating a CustomNBImage object")
-			build := meteorv1alpha1.BuildTypeSpec{
-				BuildType: meteorv1alpha1.ImportImage,
-				FromImage: "quay.io/thoth-station/s2i-custom-notebook:latest",
-			}
-			cnbi := &meteorv1alpha1.CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
-				ObjectMeta: metav1.ObjectMeta{Name: "test-2", Namespace: "default"},
-				Spec: meteorv1alpha1.CustomNBImageSpec{
-					RuntimeEnvironment: meteorv1alpha1.CustomNBImageRuntimeSpec{},
-					PackageVersions:    []string{},
-					BuildTypeSpec:      build,
-				},
-				Status: meteorv1alpha1.CustomNotebookImageStatus{},
-			}
-			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
+	/*
+		Context("when a CustomNBImage object is created with ImportImage BuildType", func() {
+			It("should have Condition 'Importing'", func() {
+				By("creating a CustomNBImage object")
+				build := meteorv1alpha1.BuildTypeSpec{
+					BuildType: meteorv1alpha1.ImportImage,
+					FromImage: "quay.io/thoth-station/s2i-custom-notebook:latest",
+				}
+				cnbi := &meteorv1alpha1.CustomNBImage{
+					TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
+					ObjectMeta: metav1.ObjectMeta{Name: "test-2", Namespace: "default"},
+					Spec: meteorv1alpha1.CustomNBImageSpec{
+						RuntimeEnvironment: meteorv1alpha1.CustomNBImageRuntimeSpec{},
+						PackageVersions:    []string{},
+						BuildTypeSpec:      build,
+					},
+					Status: meteorv1alpha1.CustomNotebookImageStatus{},
+				}
+				Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
 
-			By("checking the CustomNBImage object has been created on the cluster")
-			// lets give the cluster a little time to start reconciling
-			time.Sleep(8 * time.Second)
+				By("checking the CustomNBImage object has been created on the cluster")
+				// lets give the cluster a little time to start reconciling
+				time.Sleep(20 * time.Second)
 
-			lookupKey := types.NamespacedName{Name: "test-2", Namespace: "default"}
-			createdCNBi := &meteorv1alpha1.CustomNBImage{}
+				lookupKey := types.NamespacedName{Name: "test-2", Namespace: "default"}
+				createdCNBi := &meteorv1alpha1.CustomNBImage{}
 
-			Eventually(func() bool {
-				err := k8sClient.Get(ctx, lookupKey, createdCNBi)
-				return err == nil
-			}, timeout, interval).Should(BeTrue())
+				Eventually(func() bool {
+					err := k8sClient.Get(ctx, lookupKey, createdCNBi)
+					return err == nil
+				}, timeout, interval).Should(BeTrue())
 
-			By("looking if the Controller started reconciling the CustomNBImage object")
-			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhaseImporting))
-		})
-		It("should have Condition 'RequiredSecretMissing' if the import is from a repo that reqs auth and Secret is not ready", func() {
-			By("creating a CustomNBImage object for an import from a private repository")
-			cnbi_name := "import-private-repository"
+				By("looking if the Controller started reconciling the CustomNBImage object")
+				Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhaseRunning))
+				Expect(createdCNBi.Status.Conditions).ShouldNot(BeEmpty())
+				Expect(createdCNBi.Status.Conditions[0].Type).Should(Equal(meteorv1alpha1.ImportingImage))
+			})
+			It("should have Condition 'RequiredSecretMissing' if the import is from a repo that reqs auth and Secret is not ready", func() {
+				By("creating a CustomNBImage object for an import from a private repository")
+				cnbi_name := "import-private-repository"
 
-			importFromPrivate := meteorv1alpha1.BuildTypeSpec{
-				BuildType: meteorv1alpha1.ImportImage,
-				FromImage: "quay.io/thoth-station/s2i-custom-notebook:latest",
-				ImagePullSecret: meteorv1alpha1.ImagePullSecret{
-					Name: "private-repository-credentials",
-				},
-			}
-			cnbi := &meteorv1alpha1.CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "cnbi"},
-				ObjectMeta: metav1.ObjectMeta{Name: cnbi_name, Namespace: "default"},
-				Spec: meteorv1alpha1.CustomNBImageSpec{
-					RuntimeEnvironment: meteorv1alpha1.CustomNBImageRuntimeSpec{},
-					BuildTypeSpec:      importFromPrivate,
-				},
-				Status: meteorv1alpha1.CustomNotebookImageStatus{},
-			}
-			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
+				importFromPrivate := meteorv1alpha1.BuildTypeSpec{
+					BuildType: meteorv1alpha1.ImportImage,
+					FromImage: "quay.io/thoth-station/s2i-custom-notebook:latest",
+					ImagePullSecret: meteorv1alpha1.ImagePullSecret{
+						Name: "private-repository-credentials",
+					},
+				}
+				cnbi := &meteorv1alpha1.CustomNBImage{
+					TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "cnbi"},
+					ObjectMeta: metav1.ObjectMeta{Name: cnbi_name, Namespace: "default"},
+					Spec: meteorv1alpha1.CustomNBImageSpec{
+						RuntimeEnvironment: meteorv1alpha1.CustomNBImageRuntimeSpec{},
+						BuildTypeSpec:      importFromPrivate,
+					},
+					Status: meteorv1alpha1.CustomNotebookImageStatus{},
+				}
+				Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
 
-			By("checking the CustomNBImage object has been created on the cluster")
-			// lets give the cluster a little time to start reconciling
-			time.Sleep(8 * time.Second)
+				By("checking the CustomNBImage object has been created on the cluster")
+				// lets give the cluster a little time to start reconciling
+				time.Sleep(8 * time.Second)
 
-			lookupKey := types.NamespacedName{Name: cnbi_name, Namespace: "default"}
-			createdCNBi := &meteorv1alpha1.CustomNBImage{}
+				lookupKey := types.NamespacedName{Name: cnbi_name, Namespace: "default"}
+				createdCNBi := &meteorv1alpha1.CustomNBImage{}
 
-			Eventually(func() bool {
-				err := k8sClient.Get(ctx, lookupKey, createdCNBi)
-				return err == nil
-			}, timeout, interval).Should(BeTrue())
+				Eventually(func() bool {
+					err := k8sClient.Get(ctx, lookupKey, createdCNBi)
+					return err == nil
+				}, timeout, interval).Should(BeTrue())
 
-			By("looking if the Controller started reconciling the CustomNBImage object")
-			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhaseImporting))
-
-			By("looking for the Conditions on the CustomNBImage object")
-			// Conditions should be set to RequiredSecretMissing
-			/*
-				expected_condition :=
-					meteorv1alpha1.Condition{
-						Type:    meteorv1alpha1.RequiredSecretMissing,
-						Status:  corev1.ConditionTrue,
-						Reason:  "CantGetRequiredSecret",
-						Message: "Secret " + importFromPrivate.ImagePullSecret.Name + " not found, it is required to authenticate to the private repository",
-					}
-			*/
-		})
-	})
+				By("looking if the Controller started reconciling the CustomNBImage object")
+				Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhaseRunning))
+				Expect(createdCNBi.Status.Conditions).ShouldNot(BeEmpty())
+				Expect(createdCNBi.Status.Conditions[0].Type).Should(Equal(meteorv1alpha1.RequiredSecretMissing))
+			})
+		}) */
 })
