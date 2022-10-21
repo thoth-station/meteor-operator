@@ -9,8 +9,8 @@ metadata:
 spec:
   description: Build a notebook image from a package list
   params:
-    - name: packages
-      type: array
+    - name: cnbi-package-list-name
+      type: string
 
   workspaces:
     - name: packages-to-install
@@ -22,7 +22,10 @@ spec:
           workspace: packages-to-install
       taskRef:
         name: get-package-versions-list
-    ####### Below this line, should be shared between all types of sources
+      params:
+        - name: CNBI_PACKAGE_LIST
+          value: $(params.cnbi-package-list-name)
+    ####### TODO: the rest of the tasks sould be shared between all types of sources
     - name: get-base-image
       taskSpec:
         results:
@@ -153,14 +156,17 @@ spec:
         medium: memory
   workspaces:
     - name: pinned-packages
+  params:
+    - name: CNBI_PACKAGE_LIST
+      type: string
   steps:
-    - image: <API_CLIENT>
+    - image: image-registry.openshift-image-registry.svc:5000/openshift/cli
       args:
-        - kubectl
+        - oc
         - get
         - cnbi
         - --output=jsonpath={.spec.packageVersions[]}
-        - $(context.pipelineRun.name) #assuming PipelineRun shares a name with CNBi CR ?
+        - $(params.CNBI_PACKAGE_LIST)
       stdoutConfig:
         path: /scratchspace/requirements.in
       volumeMounts:
