@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"testing"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -30,15 +30,15 @@ const (
 // TestIsReady tests IsReady condition status function
 func TestIsReady(t *testing.T) {
 	testCases := map[string]struct {
-		status         CustomNBImageStatus
+		status         CustomNotebookImageStatus
 		expectedOutput bool
 	}{
 		"readySucceeded": {
-			status: CustomNBImageStatus{
-				Conditions: []metav1.Condition{
+			status: CustomNotebookImageStatus{
+				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
-						Status: metav1.ConditionTrue,
+						Status: corev1.ConditionTrue,
 						Reason: "Succeeded",
 					},
 				},
@@ -46,11 +46,11 @@ func TestIsReady(t *testing.T) {
 			expectedOutput: true,
 		},
 		"notReadyCouldntGetPipeline": {
-			status: CustomNBImageStatus{
-				Conditions: []metav1.Condition{
+			status: CustomNotebookImageStatus{
+				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
-						Status: metav1.ConditionFalse,
+						Status: corev1.ConditionFalse,
 						Reason: "CouldntGetPipeline",
 					},
 				},
@@ -58,11 +58,11 @@ func TestIsReady(t *testing.T) {
 			expectedOutput: false,
 		},
 		"notReadyRunning": {
-			status: CustomNBImageStatus{
-				Conditions: []metav1.Condition{
+			status: CustomNotebookImageStatus{
+				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
-						Status: metav1.ConditionUnknown,
+						Status: corev1.ConditionUnknown,
 						Reason: "Running",
 					},
 				},
@@ -135,4 +135,124 @@ func TestHasValidImagePullSecretAName(t *testing.T) {
 		}
 	}
 
+}
+
+// TestAggregatePhase tests if condition are aggregated into the correct phase
+func TestAggregatePhase(t *testing.T) {
+	testCases := map[string]struct {
+		cnbi           CustomNBImage
+		expectedOutput CNBiPhase
+	}{
+		"pending": {
+			cnbi: CustomNBImage{
+				Spec: CustomNBImageSpec{
+					PackageVersions: []string{},
+					BuildTypeSpec: BuildTypeSpec{
+						BuildType: ImportImage,
+						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
+					},
+				},
+				Status: CustomNotebookImageStatus{
+					Conditions: []Condition{},
+				},
+			},
+			expectedOutput: CNBiPhasePending,
+		},
+
+		"ok": {
+			cnbi: CustomNBImage{
+				Spec: CustomNBImageSpec{
+					PackageVersions: []string{},
+					BuildTypeSpec: BuildTypeSpec{
+						BuildType: ImportImage,
+						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
+					},
+				},
+				Status: CustomNotebookImageStatus{
+					Conditions: []Condition{
+						{
+							Type:   "PipelineRunPrepare",
+							Status: corev1.ConditionTrue,
+							Reason: "Succeeded",
+						},
+					},
+				},
+			},
+			expectedOutput: CNBiPhaseOk,
+		},
+		"failed": {
+			cnbi: CustomNBImage{
+				Spec: CustomNBImageSpec{
+					PackageVersions: []string{},
+					BuildTypeSpec: BuildTypeSpec{
+						BuildType: ImportImage,
+						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
+					},
+				},
+				Status: CustomNotebookImageStatus{
+					Conditions: []Condition{
+						{
+							Type:   ErrorPipelineRunCreate,
+							Status: corev1.ConditionTrue,
+							Reason: "ErrorCreatingPipelineRun",
+						},
+					},
+				},
+			},
+			expectedOutput: CNBiPhaseFailed,
+		},
+		"importing": {
+			cnbi: CustomNBImage{
+				Spec: CustomNBImageSpec{
+					PackageVersions: []string{},
+					BuildTypeSpec: BuildTypeSpec{
+						BuildType: ImportImage,
+						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
+					},
+				},
+				Status: CustomNotebookImageStatus{
+					Conditions: []Condition{
+						{
+							Type:   PipelineRunCreated,
+							Status: corev1.ConditionTrue,
+							Reason: "ImportPipelineRunCreated",
+						},
+					},
+				},
+			},
+			expectedOutput: CNBiPhaseImporting,
+		},
+		"importing_missing_secret": {
+			cnbi: CustomNBImage{
+				Spec: CustomNBImageSpec{
+					PackageVersions: []string{},
+					BuildTypeSpec: BuildTypeSpec{
+						BuildType: ImportImage,
+						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
+					},
+				},
+				Status: CustomNotebookImageStatus{
+					Conditions: []Condition{
+						{
+							Type:   PipelineRunCreated,
+							Status: corev1.ConditionTrue,
+							Reason: "ImportPipelineRunCreated",
+						},
+						{
+							Type:   RequiredSecretMissing,
+							Status: corev1.ConditionTrue,
+							Reason: "ImapgePullSecretMissing",
+						},
+					},
+				},
+			},
+			expectedOutput: CNBiPhaseImporting,
+		},
+	}
+
+	for tcName, tc := range testCases {
+		if output := tc.cnbi.AggregatePhase(); output != tc.expectedOutput {
+			t.Errorf("%s Got %s while expecting %s", tcName, output, tc.expectedOutput)
+		}
+	}
 }

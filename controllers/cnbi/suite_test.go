@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package cnbi
 
 import (
 	"context"
@@ -50,7 +50,7 @@ var (
 	cancel    context.CancelFunc
 )
 
-func TestAPIs(t *testing.T) {
+func TestCNBiController(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	RunSpecs(t, "Controller Suite")
@@ -68,8 +68,8 @@ var _ = BeforeSuite(func() {
 
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
-			filepath.Join("..", "config", "crd", "bases"),
-			filepath.Join("..", "config", "crd", "test")},
+			filepath.Join("..", "..", "config", "crd", "bases"),
+			filepath.Join("..", "..", "config", "crd", "test")},
 		ErrorIfCRDPathMissing: true,
 	}
 
