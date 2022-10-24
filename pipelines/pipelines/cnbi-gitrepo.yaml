@@ -1,0 +1,127 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: cnbi-gitrepo
+  annotations:
+    meteor.zone/pipeline: "true"
+    shower.meteor.zone/button-label: Run code in JupyterHub
+spec:
+  description: Build an image suitable for experiments in JupyterHub, including all dependencies resolved by Thoth Station
+  params:
+    - name: url
+      type: string
+    - name: ref
+      type: string
+      default: ""
+    - name: externalServices
+      type: string
+      default: "[]"
+    - name: ownerReferences
+      default: "[]"
+
+  results:
+    - name: url
+      value: "$(tasks.url-to-results.results.results)"
+
+  workspaces:
+    - name: data
+    - name: sslcertdir
+      optional: true
+
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      workspaces:
+        - name: output
+          workspace: data
+      params:
+        - name: url
+          value: $(params.url)
+        - name: revision
+          value: $(params.ref)
+        - name: subdirectory
+          value: repo
+
+    - name: generate
+      taskRef:
+        name: generate-jupyterhub
+      runAfter:
+        - git-clone
+      workspaces:
+        - name: data
+          workspace: data
+      params:
+        - name: url
+          value: $(params.url)
+
+    - name: extract-jupyterhub-namespace
+      taskRef:
+        name: extract-external-service
+      params:
+        - name: externalServices
+          value: "$(params.externalServices)"
+        - name: serviceName
+          value: jupyterhub
+        - name: serviceProperty
+          value: namespace
+
+    - name: buildah
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      runAfter:
+        - generate
+        - extract-jupyterhub-namespace
+      workspaces:
+        - name: data
+          workspace: data
+        - name: sslcertdir
+          workspace: sslcertdir
+      params:
+        - name: IMAGE
+          value: image-registry.openshift-image-registry.svc:5000/$(tasks.extract-jupyterhub-namespace.results.value)/$(context.pipelineRun.name)
+
+    - name: resolve-owner-reference
+      taskRef:
+        name: resolve-owner-reference
+      runAfter:
+        - extract-jupyterhub-namespace
+      params:
+        - name: ownerReferences
+          value: $(params.ownerReferences)
+        - name: namespace
+          value: $(tasks.extract-jupyterhub-namespace.results.value)
+
+    - name: create-image-stream
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      runAfter:
+        - buildah
+        - resolve-owner-reference
+      params:
+        - name: SCRIPT
+          value: |
+            cat <<EOM | oc apply -f -
+            ---
+            kind: ImageStream
+            apiVersion: image.openshift.io/v1
+            metadata:
+              annotations:
+                opendatahub.io/notebook-image-name: $(context.pipelineRun.name)
+                opendatahub.io/notebook-image-url: $(params.url)
+              name: $(context.pipelineRun.name)
+              namespace: $(tasks.extract-jupyterhub-namespace.results.value)
+              labels:
+                opendatahub.io/notebook-image: 'true'
+            spec:
+              lookupPolicy:
+                local: true
+              tags:
+                - name: latest
+            EOM
+
+            oc patch -n $(tasks.extract-jupyterhub-namespace.results.value) imagestream/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'

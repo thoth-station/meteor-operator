@@ -1,0 +1,145 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: generate-jupyterhub
+spec:
+  params:
+    - name: DEFAULT_PYTHON_VERSION
+      description: Which Python version to use as a default base image if unable to infer better
+      default: "3.8"
+    - name: url
+
+  results:
+    - name: baseImage
+
+  workspaces:
+    - name: data
+
+  steps:
+    - name: get-base-image
+      image: quay.io/thoth-station/s2i-thoth-dev:latest
+      workingDir: $(workspaces.data.path)/repo
+      env:
+        - name: DEFAULT_VERSION
+          value: $(params.DEFAULT_PYTHON_VERSION)
+        - name: BASE_IMAGE_RESULT
+          value: $(results.baseImage.path)
+      script: |
+        #!/opt/app-root/bin/python
+        import os
+        import json
+        import yaml
+        import sys
+
+        from pipfile import Pipfile
+
+        # List all supported base images here ordered by priority (most favoured on top)
+        IMAGE_LIST = [
+            ("3.8-elyra", "quay.io/thoth-station/s2i-elyra-custom-notebook", "latest"),
+            ("3.8", "quay.io/operate-first/s2i-sre-notebook", "latest"),
+            ("3.8", "quay.io/thoth-station/s2i-custom-py38-notebook", "latest"),
+            ("3.6", "quay.io/thoth-station/s2i-custom-notebook", "latest"),
+        ]
+
+        DEFAULT_IMAGE = next(
+            iter(f"{i}:{t}" for v, i, t in IMAGE_LIST if v == os.getenv("DEFAULT_VERSION")), ""
+        )
+
+
+        def python_from_pipfile(path):
+            pipfile_path = os.path.join(path, "Pipfile")
+            if not os.path.isfile(pipfile_path):
+                return ""
+
+            parsed = Pipfile.load(filename=pipfile_path)
+            version = parsed.data["_meta"].get("requires", {}).get("python_version", "")
+
+            if "elyra" in parsed.data["default"]:
+                return version + "-elyra"
+            else:
+                return version
+
+
+        def analyze_overlay(overlay, root):
+            print(f'Analyzed overlay \'{overlay.get("name", "")}\'')
+            version = python_from_pipfile(os.path.join(root, overlay.get("name", "")))
+            base_image = overlay.get("build", {}).get("base-image")
+
+            print(f" - Python version used:   {version}")
+            print(f" - Preferred base image:  {base_image}")
+
+            return version, base_image
+
+
+        def guess_best_match(analyzed_overlays):
+            for version, base, tag in IMAGE_LIST:
+                match = f"{base}:{tag}"
+                for o in analyzed_overlays:
+                    if base in o[1].split(":")[0]:
+                        return o[1]
+                        break
+                if version in [o[0] for o in analyzed_overlays]:
+                    return match
+                    break
+
+            return DEFAULT_IMAGE
+
+
+        def write_output(answer):
+            print("\nBest matching base image: " + answer)
+            with open(os.getenv("BASE_IMAGE_RESULT"), "w+") as output:
+                output.write(answer)
+
+
+        def fallback():
+            print("Missing or empty aicoe-ci.yaml, analyzing Pipfile only.")
+            version = python_from_pipfile(".")
+            answer = guess_best_match([(version, "", "")])
+            write_output(answer)
+            sys.exit(0)
+
+
+        if not os.path.isfile(".aicoe-ci.yaml"):
+            fallback()
+
+        with open(".aicoe-ci.yaml", "r") as stream:
+            conf = yaml.safe_load(stream)
+
+        if not isinstance(conf, dict):
+            fallback()
+        elif conf.get("overlays"):
+            overlays, root = (conf.get("overlays"), conf.get("overlays_dir"))
+        elif conf.get("build"):
+            overlays, root = ([conf], "")
+        else:
+            fallback()
+
+        accumulator = [analyze_overlay(overlay, root) for overlay in overlays]
+        answer = guess_best_match(accumulator)
+        write_output(answer)
+
+    - name: generate
+      image: quay.io/openshift-pipeline/s2i:nightly
+      workingDir: $(workspaces.data.path)
+      script: |
+        REPONAME=$(basename $(params.url) .git)
+        BASE_IMAGE=$(cat $(results.baseImage.path))
+
+        /usr/local/bin/s2i \
+        --loglevel=0 \
+        build \
+        ./repo \
+        "$BASE_IMAGE" \
+        --as-dockerfile \
+        ./Dockerfile \
+        --scripts-url="image:///opt/app-root/builder" \
+        --env=UPGRADE_PIP_TO_LATEST=1 \
+        --env=THAMOS_RUNTIME_ENVIRONMENT="" \
+        --env=THOTH_ADVISE=0 \
+        --env=THOTH_ERROR_FALLBACK=1 \
+        --env=THOTH_DRY_RUN=1 \
+        --env=THAMOS_DEBUG=0 \
+        --env=THAMOS_VERBOSE=1 \
+        --env=THOTH_PROVENANCE_CHECK=0 \
+        --env=GIT_REPO_URL=$(params.url) \
+        --env=GIT_REPO_NAME="$REPONAME"
