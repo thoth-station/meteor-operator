@@ -73,7 +73,7 @@ spec:
 apiVersion: meteor.zone/v1alpha1
 kind: CustomNBImage
 metadata:
-  name: s2i-minimal-py38-notebook-import # TODO
+  name: s2i-minimal-py38-notebook-import-with-secret # TODO
   labels:
     app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
   annotations:

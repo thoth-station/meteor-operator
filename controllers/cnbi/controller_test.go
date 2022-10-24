@@ -61,7 +61,7 @@ var _ = Describe("CustomNBImage controller", func() {
 				Status: meteorv1alpha1.CustomNotebookImageStatus{},
 			}
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
-			time.Sleep(20 * time.Second)
+			// time.Sleep(20 * time.Second)
 
 			lookupKey := types.NamespacedName{Name: "test-1", Namespace: "default"}
 			createdCNBi := &meteorv1alpha1.CustomNBImage{}
@@ -71,7 +71,8 @@ var _ = Describe("CustomNBImage controller", func() {
 				return err == nil
 			}, timeout, interval).Should(BeTrue())
 
-			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhasePending))
+			Expect(createdCNBi.Status.Conditions).ShouldNot(BeEmpty())
+			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhaseRunning))
 		})
 	})
 	/*

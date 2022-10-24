@@ -149,36 +149,47 @@ type CustomNBImageList struct {
 // Aggregate phase from conditions
 func (cnbi *CustomNBImage) AggregatePhase() CNBiPhase {
 	pipelineRunCreated := false
-	importNotReady := false
+	pipelineRunSuccesseded := false
+	importReady := false
 
 	if len(cnbi.Status.Conditions) == 0 {
 		return CNBiPhasePending
 	}
 
 	for _, c := range cnbi.Status.Conditions {
+		if c.Type == PipelineRunCompleted && c.Status == metav1.ConditionTrue {
+			pipelineRunSuccesseded = true
+		}
+
 		if c.Type == ErrorPipelineRunCreate && c.Status == metav1.ConditionTrue {
 			return CNBiPhaseFailed
 		}
 
 		if c.Type == PipelineRunCreated && c.Status == metav1.ConditionTrue {
 			pipelineRunCreated = true
-			continue
 		}
 
-		if c.Type == ImageImportReady && c.Status == metav1.ConditionTrue {
-			return CNBiPhaseSucceeded
-		} else if c.Type == ImageImportReady && c.Status == metav1.ConditionFalse {
-			importNotReady = true
-			continue
+		if c.Type == ImageImportReady {
+			if c.Status == metav1.ConditionTrue {
+				importReady = true
+			}
 		}
 
-		if c.Type == ImageImportInvalid && c.Status == metav1.ConditionTrue && importNotReady {
+		if c.Type == ImageImportInvalid && c.Status == metav1.ConditionTrue {
 			return CNBiPhaseFailed
 		}
 	}
 
 	if pipelineRunCreated {
 		return CNBiPhaseRunning
+	}
+
+	if pipelineRunSuccesseded {
+		if importReady {
+			return CNBiPhaseSucceeded
+		} else {
+			return CNBiPhaseFailed
+		}
 	}
 
 	return CNBiPhasePending
