@@ -245,7 +245,7 @@ kind-create: | $(KIND)
 	curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/raw | sed -e s/Task/ClusterTask/ | kubectl apply -f -
 
 .PHONY: kind-load-img
-kind-load-img: docker-build kind-create
+kind-load-img: docker-build docker-push kind-create
 	@echo "Loading image into kind"
 	$(KIND) load docker-image $(IMG) --name $(KIND_CLUSTER_NAME)
 

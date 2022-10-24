@@ -71,7 +71,7 @@ spec:
   fromImage: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2
 ---
 apiVersion: meteor.zone/v1alpha1
-kind: cnbi
+kind: CustomNBImage
 metadata:
   name: s2i-minimal-py38-notebook-import # TODO
   labels:
@@ -89,10 +89,9 @@ spec:
 ---
 apiVersion: v1
 data:
-  .dockerconfigjson: ewogICAiYXV0aHMiOnsKICAgICAgIm0iOnsKICAgICAgIsKICAgICAgICAgImF1dGgiOiJiM0JsYj0iLAogICAgICAgICAiZW1haWwiOiJ5b3VAZXhhbXBsZS5jb20iCiAgICAgIH0KICAgfQp9Cg==
+  .dockerconfigjson: eyJhdXRocyI6eyJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOnsidXNlcm5hbWUiOiJ0ZXN0IiwicGFzc3dvcmQiOiJ0ZXN0IiwiYXV0aCI6ImRHVnpkRHAwWlhOMCJ9fX0=
 kind: Secret
 metadata:
-  creationTimestamp: ""
   name: private-registry-credentials
 type: kubernetes.io/dockerconfigjson
 ---
