@@ -57,4 +57,7 @@ const (
 
 	// GenericPipelineError indicates that the pipeline failed with an error
 	GenericPipelineError = ConditionType("GenericPipelineError")
+
+	// PipelineRunCompleted indicates that the Tekton pipeline run completed
+	PipelineRunCompleted = ConditionType("PipelineRunCompleted")
 )
