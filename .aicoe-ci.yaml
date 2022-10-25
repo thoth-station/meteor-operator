@@ -1,2 +1,10 @@
 ---
-check: []
+check:
+  - thoth-build
+build:
+  build-stratergy: Dockerfile  # Allowed values: Source, Dockerfile, Containerfile (default: Source)
+  dockerfile-path: Dockerfile
+  registry: "quay.io"
+  registry-org: "thoth-station"
+  registry-project: "meteor-operator"
+  registry-secret: "thoth-station-thoth-pusher-secret"
