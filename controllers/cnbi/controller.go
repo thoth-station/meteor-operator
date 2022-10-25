@@ -343,6 +343,8 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 			if pipelineRun.Status.Conditions[0].Status == v1.ConditionFalse && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
 				logger.Info("Import pipeline failed")
 				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionFalse, "ImageImportNotReady", "Import failed")
+				setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed")
+				removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
 			}
 		}
 
