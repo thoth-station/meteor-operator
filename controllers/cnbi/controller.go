@@ -337,18 +337,15 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 			logger.Error(nil, "Tekton reported multiple conditions")
 		}
 
-		logger.Info("check what happened", "condition", pipelineRun.Status.Conditions[0])
-
 		if pipelineRun.Labels["cnbi.thoth-station.ninja/pipeline"] == "import" {
 			if pipelineRun.Status.Conditions[0].Status == v1.ConditionFalse && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
 				logger.Info("Import pipeline failed")
-				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionFalse, "ImageImportNotReady", "Import failed")
-				setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed")
+				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionFalse, "ImageImportNotReady", "Import failed, this could be due to the repository to import from does not exist or is not accessible")
+				setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed, Image is importend")
 				removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
 			}
 		}
 
-		logger.Info("PipelineRun is running...")
 		return newStatus
 
 	}
