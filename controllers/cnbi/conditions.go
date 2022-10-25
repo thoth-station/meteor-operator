@@ -57,3 +57,13 @@ func addCondition(cnbiStatus *meteorv1alpha1.CustomNotebookImageStatus, ctype me
 	}
 	cnbiStatus.Conditions = append(cnbiStatus.Conditions, c)
 }
+
+func removeCondition(cnbiStatus *meteorv1alpha1.CustomNotebookImageStatus, ctype meteorv1alpha1.ConditionType) {
+	var newConditions []meteorv1alpha1.Condition
+	for _, c := range cnbiStatus.Conditions {
+		if c.Type != ctype {
+			newConditions = append(newConditions, c)
+		}
+	}
+	cnbiStatus.Conditions = newConditions
+}

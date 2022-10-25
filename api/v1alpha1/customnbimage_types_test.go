@@ -316,10 +316,23 @@ func TestAggregatePhase(t *testing.T) {
 				},
 				Status: CustomNotebookImageStatus{
 					Conditions: []Condition{
+						/*
+						  - lastTransitionTime: "2022-10-25T12:55:46Z"
+						    message: import PipelineRun created successfully
+						    reason: PipelineRunCreated
+						    status: "True"
+						    type: PipelineRunCreated
+						  - lastTransitionTime: "2022-10-25T12:56:34Z"
+						    message: Import failed
+						    reason: ImageImportNotReady
+						    status: "False"
+						    type: ImageImportReady
+
+						*/
 						{
 							Type:   ImageImportReady,
 							Status: metav1.ConditionFalse,
-							Reason: "ImageImportReady",
+							Reason: "ImageImportNotReady",
 						},
 						{
 							Type:   PipelineRunCompleted,
