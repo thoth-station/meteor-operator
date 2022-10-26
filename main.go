@@ -84,15 +84,6 @@ func main() {
 		LeaderElectionNamespace: "aicoe-meteor",
 	}
 
-	/* FIXME #68 using this results in a
-	```
-	ERROR setup unable to load the config file {"error": "could not decode file into runtime.Object"}
-	main.main
-	/workspace/main.go:101
-	runtime.main
-	/usr/local/go/src/runtime/proc.go:250
-	```
-	*/
 	if configFile != "" {
 		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))
 
