@@ -85,6 +85,19 @@ func TestSetCondition(t *testing.T) {
 			},
 			expectedSize: 2,
 		},
+		"two": {
+			status: meteorv1alpha1.CustomNotebookImageStatus{
+				Conditions: []meteorv1alpha1.Condition{
+					{
+						Type:    meteorv1alpha1.ConditionType("test2"),
+						Status:  metav1.ConditionFalse,
+						Reason:  "test2",
+						Message: "test2",
+					},
+				},
+			},
+			expectedSize: 1,
+		},
 		"eine": { // if we got one on True, we reset it to False
 			status: meteorv1alpha1.CustomNotebookImageStatus{
 				Conditions: []meteorv1alpha1.Condition{
