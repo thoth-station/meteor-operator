@@ -31,10 +31,10 @@ spec:
         results:
           - name: baseImage
         steps:
-          - stdoutConfig: $(results.baseImage.path)
-            args: # PLACEHOLDER
-              - echo
-              - quay.io/thoth-station/s2i-custom-notebook
+          - script: | # PLACEHOLDER
+              echo
+              quay.io/thoth-station/s2i-custom-notebook
+              > $(results.baseImage.path)
             image: alpine
     - name: build-image
       taskRef:
@@ -186,14 +186,13 @@ spec:
       type: string
   steps:
     - image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
-      args:
-        - oc
-        - get
-        - cnbi
-        - --output=jsonpath={.spec.packageVersions[]}  # TODO: account for runtime env
-        - $(params.CNBI_PACKAGE_LIST)
-      stdoutConfig:
-        path: /scratchspace/requirements.in
+      script: |
+        oc
+        get
+        cnbi
+        --output=jsonpath={.spec.packageVersions[]}  # TODO: account for runtime env
+        $(params.CNBI_PACKAGE_LIST)
+        > /scratchspace/requirements.in
       volumeMounts:
         - name: unpinned-packages
           mountPath: /scratchspace
