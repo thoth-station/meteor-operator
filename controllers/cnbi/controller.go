@@ -333,7 +333,7 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 	}
 
 	if len(pipelineRun.Status.Conditions) > 0 {
-		if len(pipelineRun.Status.Conditions) != 1 {
+		if len(pipelineRun.Status.Conditions) != 1 { // TODO observe tekton project if they stay with just one condition all the time
 			logger.Error(nil, "Tekton reported multiple conditions")
 		}
 

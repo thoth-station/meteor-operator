@@ -72,7 +72,7 @@ var _ = Describe("CustomNBImage controller", func() {
 			}, timeout, interval).Should(BeTrue())
 
 			Expect(createdCNBi.Status.Conditions).ShouldNot(BeEmpty())
-			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.CNBiPhaseRunning))
+			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.PhaseRunning))
 		})
 	})
 	/*

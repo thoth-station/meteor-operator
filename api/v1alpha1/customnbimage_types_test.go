@@ -141,7 +141,7 @@ func TestHasValidImagePullSecretAName(t *testing.T) {
 func TestAggregatePhase(t *testing.T) {
 	testCases := map[string]struct {
 		cnbi           CustomNBImage
-		expectedOutput CNBiPhase
+		expectedOutput Phase
 	}{
 		"pending": {
 			cnbi: CustomNBImage{
@@ -156,7 +156,7 @@ func TestAggregatePhase(t *testing.T) {
 					Conditions: []Condition{},
 				},
 			},
-			expectedOutput: CNBiPhasePending,
+			expectedOutput: PhasePending,
 		},
 
 		"pipeline-created": {
@@ -178,7 +178,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseRunning,
+			expectedOutput: PhaseRunning,
 		},
 		"pipeline-create-failed": {
 			cnbi: CustomNBImage{
@@ -199,7 +199,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseFailed,
+			expectedOutput: PhaseFailed,
 		},
 		"importing": {
 			cnbi: CustomNBImage{
@@ -225,7 +225,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseRunning,
+			expectedOutput: PhaseRunning,
 		},
 		"importing_missing_secret": {
 			cnbi: CustomNBImage{
@@ -251,7 +251,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseRunning,
+			expectedOutput: PhaseRunning,
 		},
 		"validating": {
 			cnbi: CustomNBImage{
@@ -277,7 +277,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseRunning,
+			expectedOutput: PhaseRunning,
 		},
 		"import-successful": {
 			cnbi: CustomNBImage{
@@ -303,7 +303,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseSucceeded,
+			expectedOutput: PhaseSucceeded,
 		},
 		"import-failed": {
 			cnbi: CustomNBImage{
@@ -342,7 +342,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: CNBiPhaseFailed,
+			expectedOutput: PhaseFailed,
 		},
 	}
 
