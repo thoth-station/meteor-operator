@@ -340,7 +340,7 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 		if pipelineRun.Labels["cnbi.thoth-station.ninja/pipeline"] == "import" {
 			if pipelineRun.Status.Conditions[0].Status == v1.ConditionFalse && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
 				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionFalse, "ImageImportNotReady", "Import failed, this could be due to the repository to import from does not exist or is not accessible")
-				setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed, Image is importend")
+				setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed, but the Image could not be imported!")
 				removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
 			} else if pipelineRun.Status.Conditions[0].Status == v1.ConditionTrue && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
 				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionTrue, "ImageImportReady", "Import succeeded, the image is ready to be used")
