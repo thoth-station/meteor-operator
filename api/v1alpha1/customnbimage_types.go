@@ -113,7 +113,7 @@ type CustomNotebookImageStatus struct {
 	// Current condition of the Custom Notebook Image
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Phase",xDescriptors={"urn:alm:descriptor:io.kubernetes.phase'"}
 	//+optional
-	Phase CNBiPhase `json:"phase,omitempty"`
+	Phase Phase `json:"phase,omitempty"`
 	// Current service state of Meteor.
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Conditions",xDescriptors={"urn:alm:descriptor:io.kubernetes.conditions"}
 	//+optional
@@ -147,13 +147,13 @@ type CustomNBImageList struct {
 }
 
 // Aggregate phase from conditions
-func (cnbi *CustomNBImage) AggregatePhase() CNBiPhase {
+func (cnbi *CustomNBImage) AggregatePhase() Phase {
 	pipelineRunCreated := false
 	pipelineRunSuccesseded := false
 	importReady := false
 
 	if len(cnbi.Status.Conditions) == 0 {
-		return CNBiPhasePending
+		return PhasePending
 	}
 
 	for _, c := range cnbi.Status.Conditions {
@@ -162,7 +162,7 @@ func (cnbi *CustomNBImage) AggregatePhase() CNBiPhase {
 		}
 
 		if c.Type == ErrorPipelineRunCreate && c.Status == metav1.ConditionTrue {
-			return CNBiPhaseFailed
+			return PhaseFailed
 		}
 
 		if c.Type == PipelineRunCreated && c.Status == metav1.ConditionTrue {
@@ -176,23 +176,23 @@ func (cnbi *CustomNBImage) AggregatePhase() CNBiPhase {
 		}
 
 		if c.Type == ImageImportInvalid && c.Status == metav1.ConditionTrue {
-			return CNBiPhaseFailed
+			return PhaseFailed
 		}
 	}
 
 	if pipelineRunCreated {
-		return CNBiPhaseRunning
+		return PhaseRunning
 	}
 
 	if pipelineRunSuccesseded {
 		if importReady {
-			return CNBiPhaseSucceeded
+			return PhaseSucceeded
 		} else {
-			return CNBiPhaseFailed
+			return PhaseFailed
 		}
 	}
 
-	return CNBiPhasePending
+	return PhasePending
 }
 
 // IsReady returns true the Ready condition status is True

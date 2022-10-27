@@ -16,10 +16,15 @@ limitations under the License.
 
 package v1alpha1
 
+// Phase describes the phase of the CustomNBImage
+// +kubebuilder:validation:Enum=Pending;Failed;Running;Succeeded;Unknown
+type Phase string
+
 const (
-	PhasePending   = "Pending"
-	PhaseFailed    = "Failed"
-	PhaseResolving = "Resolving"
-	PhaseBuilding  = "Building"
-	PhaseOk        = "Ready"
+	PhasePending   = Phase("Pending")
+	PhaseFailed    = Phase("Failed")
+	PhaseRunning   = Phase("Running")
+	PhaseBuilding  = Phase("Building")
+	PhaseSucceeded = Phase("Succeeded")
+	PhaseUnknown   = Phase("Unknown")
 )
