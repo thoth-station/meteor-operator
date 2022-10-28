@@ -1,9 +1,0 @@
-# This file is mostly s2i-python with a static assemble script (pip install)
-FROM PLACEHOLDER_NOT_AN_IMAGE
-# This will systematically be replaced by buidah `--from` option
-
-USER root
-COPY requirements-pinned.txt /tmp/
-RUN chown 1001:0 /tmp/requirements-pinned.txt
-USER 1001
-RUN pip install --require-hashes -r /tmp/requirements-pinned.txt

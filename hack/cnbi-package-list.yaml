@@ -113,62 +113,25 @@ spec:
       readonly: true
       description: the list of pinned python package we install in the produced image
   volumes:
-    - name: containerfile
-      configMap:
-        name: containerfile
     - name: /var/lib/containers
       emptyDir: {}
   steps:
-    - name: generate-containerfile
-      image: $(params.BUILDER_IMAGE)
-      args:
-        - cat 
-        - |
-          $(workspaces.containerfile.path)/Containerfile
-          FROM $(params.BASE_IMAGE)
-
-          USER root
-          COPY requirements-pinned.txt /tmp/
-          RUN chown -R 1001:0 /tmp/requirements-pinned.txt
-          USER 1001
-      volumesMount:
-        - name: containerfile
-          mountPath: /output/
-      stdoutConfig:
-        path: /output/Containerfile
     - name: build-image
-      args:
-        - buildah
-        - --storage-driver=$(params.STORAGE_DRIVER)
-        - bud
-        - --format=$(params.FORMAT)
-        - --tls-verify=$(params.TLSVERIFY)
-        - --no-cache
-        - -f
-        - /static/Containerfile
-        - --from
-        - $(params.BASE_IMAGE)
-        - -t
-        - $(param.IMAGE)
-        - $(workspaces.requirements.path)
-      volumeMounts:
-        - name: containerfile
-          mountPath: /static/Containerfile
-          subPath: Containerfile
-          readOnly: true
-        - name: containers
-          mountPath: /var/lib/containers
-    - name: push-image
       image: $(params.BUILDER_IMAGE)
-      args:
-        - buildah
-        - --storage-driver=$(params.STORAGE_DRIVER)
-        - push
-        - $(param.IMAGE)
+      env:
+        - name: STORAGE_DRIVER
+          value: $(params.STORAGE_DRIVER)
+        - name: BUILDAH_FORMAT
+          value: $(params.FORMAT)
+      script:
+        container = $(buildah from --tls-verify=$(params.TLSVERIFY) docker://$(params.BASE_IMAGE))
+        buildah copy $container $(workspaces.requirements.path)/requirements-pinned.txt /tmp/
+        buildah run $container -- /usr/bin/pip install -r /tmp/requirements-pinned.txt
+        buildah commit $container $(params.IMAGE)
+        buildah push --tls-verify=$(params.TLSVERIFY) $(params.IMAGE)
       volumeMounts:
         - name: containers
           mountPath: /var/lib/containers
-          readOnly: true
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
