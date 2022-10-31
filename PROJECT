@@ -39,7 +39,7 @@ resources:
     controller: true
     domain: zone
     group: meteor
-    kind: CustomNBImage
+    kind: CustomRuntimeEnvironment
     path: github.com/thoth-station/meteor-operator/api/v1alpha1
     version: v1alpha1
     webhooks:

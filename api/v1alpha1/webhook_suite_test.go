@@ -104,7 +104,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&CustomNBImage{}).SetupWebhookWithManager(mgr)
+	err = (&CustomRuntimeEnvironment{}).SetupWebhookWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:webhook

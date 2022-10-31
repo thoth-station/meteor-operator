@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cnbi
+// SPDX-License-Identifier: Apache-2.0
+
+package cre
 
 import (
 	"context"
@@ -92,7 +94,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).ToNot(HaveOccurred())
 
-	err = (&CustomNBImageReconciler{
+	err = (&CustomRuntimeEnvironmentReconciler{
 		Client: k8sManager.GetClient(),
 		Scheme: k8sManager.GetScheme(),
 	}).SetupWithManager(k8sManager)

@@ -16,7 +16,7 @@ limitations under the License.
 
 // SPDX-License-Identifier: Apache-2.0
 
-package cnbi
+package cre
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,7 +24,7 @@ import (
 	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
 )
 
-func setCondition(cnbiStatus *meteorv1alpha1.CustomNBImageStatus, ctype meteorv1alpha1.ConditionType, status metav1.ConditionStatus, reason, message string) {
+func setCondition(cnbiStatus *meteorv1alpha1.CustomRuntimeEnvironmentStatus, ctype meteorv1alpha1.ConditionType, status metav1.ConditionStatus, reason, message string) {
 	var c *meteorv1alpha1.Condition
 	for i := range cnbiStatus.Conditions {
 		if cnbiStatus.Conditions[i].Type == ctype {
@@ -46,7 +46,7 @@ func setCondition(cnbiStatus *meteorv1alpha1.CustomNBImageStatus, ctype meteorv1
 	}
 }
 
-func addCondition(cnbiStatus *meteorv1alpha1.CustomNBImageStatus, ctype meteorv1alpha1.ConditionType, status metav1.ConditionStatus, reason, message string) {
+func addCondition(cnbiStatus *meteorv1alpha1.CustomRuntimeEnvironmentStatus, ctype meteorv1alpha1.ConditionType, status metav1.ConditionStatus, reason, message string) {
 	now := metav1.Now()
 	c := meteorv1alpha1.Condition{
 		Type:               ctype,
@@ -58,7 +58,7 @@ func addCondition(cnbiStatus *meteorv1alpha1.CustomNBImageStatus, ctype meteorv1
 	cnbiStatus.Conditions = append(cnbiStatus.Conditions, c)
 }
 
-func removeCondition(cnbiStatus *meteorv1alpha1.CustomNBImageStatus, ctype meteorv1alpha1.ConditionType) {
+func removeCondition(cnbiStatus *meteorv1alpha1.CustomRuntimeEnvironmentStatus, ctype meteorv1alpha1.ConditionType) {
 	var newConditions []meteorv1alpha1.Condition
 	for _, c := range cnbiStatus.Conditions {
 		if c.Type != ctype {

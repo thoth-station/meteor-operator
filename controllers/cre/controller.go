@@ -14,11 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cnbi
+// SPDX-License-Identifier: Apache-2.0
+
+package cre
 
 import (
 	"context"
 	"fmt"
+	"time"
 
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	v1 "k8s.io/api/core/v1"
@@ -38,27 +41,27 @@ import (
 	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
 )
 
-// CustomNBImageReconciler reconciles a CustomNBImage object
-type CustomNBImageReconciler struct {
+// CustomRuntimeEnvironmentReconciler reconciles a CustomRuntimeEnvironment object
+type CustomRuntimeEnvironmentReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
-	CNBi   *meteorv1alpha1.CustomNBImage
+	CRE    *meteorv1alpha1.CustomRuntimeEnvironment
 }
 
-//+kubebuilder:rbac:groups=meteor.zone,resources=customnbimages,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=meteor.zone,resources=customnbimages/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=meteor.zone,resources=customnbimages/finalizers,verbs=update
+//+kubebuilder:rbac:groups=meteor.zone,resources=customtruntimeenvironment,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=meteor.zone,resources=customtruntimeenvironment/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=meteor.zone,resources=customtruntimeenvironment/finalizers,verbs=update
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *CustomRuntimeEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
-	r.CNBi = &meteorv1alpha1.CustomNBImage{}
+	r.CRE = &meteorv1alpha1.CustomRuntimeEnvironment{}
 
-	if err := r.Get(ctx, req.NamespacedName, r.CNBi); err != nil {
+	if err := r.Get(ctx, req.NamespacedName, r.CRE); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Info("Resource deleted")
 			return ctrl.Result{}, nil
@@ -67,17 +70,17 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{Requeue: true}, err
 	}
 
-	if !r.CNBi.ObjectMeta.DeletionTimestamp.IsZero() {
+	if !r.CRE.ObjectMeta.DeletionTimestamp.IsZero() {
 		logger.Info("Resource being delete, skipping further reconcile.")
 		return ctrl.Result{}, nil
 	}
 
-	r.CNBi.Status.Phase = r.CNBi.AggregatePhase()
+	r.CRE.Status.Phase = r.CRE.AggregatePhase()
 
 	// depending on the build type, we reconcile a pipelinerun
-	newStatus := &meteorv1alpha1.CustomNBImageStatus{}
+	newStatus := &meteorv1alpha1.CustomRuntimeEnvironmentStatus{}
 
-	switch buildType := r.CNBi.Spec.BuildTypeSpec.BuildType; buildType {
+	switch buildType := r.CRE.Spec.BuildTypeSpec.BuildType; buildType {
 	case meteorv1alpha1.ImportImage:
 		newStatus = r.reconcilePipelineRun("import", ctx, req)
 	case meteorv1alpha1.GitRepository:
@@ -87,35 +90,54 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// let's see if we can update the status
-	newStatus.ObservedGeneration = r.CNBi.Generation
-	if equality.Semantic.DeepEqual(newStatus, &r.CNBi.Status) {
-		err := r.updateStatus(ctx, req.NamespacedName, newStatus)
-		return ctrl.Result{}, err
+	newStatus.ObservedGeneration = r.CRE.Generation
+	if equality.Semantic.DeepEqual(newStatus, &r.CRE.Status) {
+		return r.UpdateStatusNow(ctx, newStatus, nil)
 	}
 
-	logger.Info("Reconciled CustomNotebookImage", "spec", r.CNBi.Spec, "status", r.CNBi.Status)
-	r.CNBi.Status.Phase = r.CNBi.AggregatePhase()
+	/* TODO check if the PipelineRun ran for the current runtime environment
+	 * if not, delete the PipelineRun and reconcile?
+	 */
+
+	logger.Info("Reconciled CustomNotebookImage", "spec", r.CRE.Spec, "status", r.CRE.Status)
+	r.CRE.Status.Phase = r.CRE.AggregatePhase()
 	err := r.updateStatus(ctx, req.NamespacedName, newStatus)
 	return ctrl.Result{}, err
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *CustomNBImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *CustomRuntimeEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// TODO setup index for PipelineRuns
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&meteorv1alpha1.CustomNBImage{}).
+		For(&meteorv1alpha1.CustomRuntimeEnvironment{}).
 		Owns(&pipelinev1beta1.PipelineRun{}).
 		Owns(&meteorv1alpha1.Meteor{}).
 		Complete(r)
 }
 
-func (r *CustomNBImageReconciler) updateStatus(ctx context.Context, nn types.NamespacedName, status *meteorv1alpha1.CustomNBImageStatus) error {
+// Force object status update. Returns a reconcile result
+func (r *CustomRuntimeEnvironmentReconciler) UpdateStatusNow(ctx context.Context, status *meteorv1alpha1.CustomRuntimeEnvironmentStatus, originalErr error) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
-	logger.Info(("updating status of CustomNotebookImage"), "status", r.CNBi.Status, "newStatus", status)
+	logger.Info(("updating status of CustomNotebookImage"), "status", r.CRE.Status, "newStatus", status)
 
+	status.DeepCopyInto(&r.CRE.Status)
+	logger.Info(("Updating status of CustomNotebookImage"), "status", r.CRE.Status, "newStatus", status)
+
+	if err := r.Status().Update(ctx, r.CRE); err != nil {
+		logger.WithValues("reason", err.Error()).Info("Unable to update status, retrying")
+		return ctrl.Result{Requeue: true}, nil
+	}
+	if originalErr != nil {
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, originalErr
+	} else {
+		return ctrl.Result{}, nil
+	}
+}
+
+func (r *CustomRuntimeEnvironmentReconciler) updateStatus(ctx context.Context, nn types.NamespacedName, status *meteorv1alpha1.CustomRuntimeEnvironmentStatus) error {
 	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		original := &meteorv1alpha1.CustomNBImage{}
+		original := &meteorv1alpha1.CustomRuntimeEnvironment{}
 		if err := r.Get(ctx, nn, original); err != nil {
 			return err
 		}
@@ -130,19 +152,19 @@ func (r *CustomNBImageReconciler) updateStatus(ctx context.Context, nn types.Nam
 	return nil
 }
 
-// reconcilePipelineRun will reconcile the pipeline run for the CustomNBImage.
-func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.Context, req ctrl.Request) *meteorv1alpha1.CustomNBImageStatus {
+// reconcilePipelineRun will reconcile the pipeline run for the CRE
+func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(name string, ctx context.Context, req ctrl.Request) *meteorv1alpha1.CustomRuntimeEnvironmentStatus {
 	pipelineRun := &pipelinev1beta1.PipelineRun{}
-	resourceName := fmt.Sprintf("cnbi-%s-%s", r.CNBi.GetName(), name)
-	pipelineReferenceName := fmt.Sprintf("cnbi-%s", name)
+	resourceName := fmt.Sprintf("cre-%s-%s", r.CRE.GetName(), name)
+	pipelineReferenceName := fmt.Sprintf("cre-%s", name)
 	namespacedName := types.NamespacedName{Name: resourceName, Namespace: req.NamespacedName.Namespace}
 
-	newStatus := r.CNBi.Status.DeepCopy()
+	newStatus := r.CRE.Status.DeepCopy()
 
 	logger := log.FromContext(ctx).WithValues("pipelinerun", namespacedName)
 
 	statusIndex := func() int {
-		for i, pr := range r.CNBi.Status.Pipelines {
+		for i, pr := range r.CRE.Status.Pipelines {
 			if pr.Name == name {
 				return i
 			}
@@ -152,8 +174,8 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 			Ready:           "False",
 			PipelineRunName: resourceName,
 		}
-		r.CNBi.Status.Pipelines = append(r.CNBi.Status.Pipelines, result)
-		return len(r.CNBi.Status.Pipelines) - 1
+		r.CRE.Status.Pipelines = append(r.CRE.Status.Pipelines, result)
+		return len(r.CRE.Status.Pipelines) - 1
 	}()
 
 	if err := r.Get(ctx, namespacedName, pipelineRun); err != nil {
@@ -166,43 +188,43 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 					Name: "name",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-name"],
+						StringVal: r.CRE.ObjectMeta.Annotations["opendatahub.io/notebook-image-name"],
 					},
 				},
 				{
 					Name: "creator",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-creator"],
+						StringVal: r.CRE.ObjectMeta.Annotations["opendatahub.io/notebook-image-creator"],
 					},
 				},
 				{
 					Name: "description",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CNBi.ObjectMeta.Annotations["opendatahub.io/notebook-image-desc"],
+						StringVal: r.CRE.ObjectMeta.Annotations["opendatahub.io/notebook-image-desc"],
 					},
 				},
 			}
 
 			// Add the parameters specific to each build type
-			switch buildType := r.CNBi.Spec.BuildTypeSpec.BuildType; buildType {
+			switch buildType := r.CRE.Spec.BuildTypeSpec.BuildType; buildType {
 			case meteorv1alpha1.ImportImage:
 				params = append(params, pipelinev1beta1.Param{
 					Name: "baseImage",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CNBi.Spec.BuildTypeSpec.FromImage,
+						StringVal: r.CRE.Spec.BuildTypeSpec.FromImage,
 					}, // TODO we need a validator for this
 				})
 			case meteorv1alpha1.PackageList:
 				// if we have a BaseImage supplied, use it
-				if r.CNBi.Spec.BaseImage != "" {
+				if r.CRE.Spec.BaseImage != "" {
 					params = append(params, pipelinev1beta1.Param{
 						Name: "baseImage",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CNBi.Spec.BaseImage,
+							StringVal: r.CRE.Spec.BaseImage,
 						},
 					})
 				} else {
@@ -210,30 +232,30 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 						Name: "osVersion",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CNBi.Spec.RuntimeEnvironment.OSVersion,
+							StringVal: r.CRE.Spec.RuntimeEnvironment.OSVersion,
 						},
 					}, pipelinev1beta1.Param{
 						Name: "osName",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CNBi.Spec.RuntimeEnvironment.OSName,
+							StringVal: r.CRE.Spec.RuntimeEnvironment.OSName,
 						},
 					}, pipelinev1beta1.Param{
 						Name: "pythonVersion",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CNBi.Spec.RuntimeEnvironment.PythonVersion,
+							StringVal: r.CRE.Spec.RuntimeEnvironment.PythonVersion,
 						},
 					})
 				}
 
 				// if we have no PackageVersion specified, we are done...
-				if len(r.CNBi.Spec.PackageVersions) > 0 {
+				if len(r.CRE.Spec.PackageVersions) > 0 {
 					params = append(params, pipelinev1beta1.Param{
 						Name: "packages",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:     pipelinev1beta1.ParamTypeArray,
-							ArrayVal: r.CNBi.Spec.PackageVersions,
+							ArrayVal: r.CRE.Spec.PackageVersions,
 						},
 					})
 				}
@@ -242,13 +264,13 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 					Name: "url",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CNBi.Spec.BuildTypeSpec.Repository,
+						StringVal: r.CRE.Spec.BuildTypeSpec.Repository,
 					},
 				}, pipelinev1beta1.Param{
 					Name: "ref",
 					Value: pipelinev1beta1.ArrayOrString{
 						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CNBi.Spec.BuildTypeSpec.GitRef,
+						StringVal: r.CRE.Spec.BuildTypeSpec.GitRef,
 					},
 				})
 			}
@@ -258,7 +280,7 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 					Name:      resourceName,
 					Namespace: req.NamespacedName.Namespace,
 					Labels: map[string]string{
-						"cnbi.thoth-station.ninja/pipeline": name,
+						"cre.thoth-station.ninja/pipeline": name,
 					},
 				},
 				Spec: pipelinev1beta1.PipelineRunSpec{
@@ -296,7 +318,7 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 					},
 				},
 			}
-			controllerutil.SetControllerReference(r.CNBi, pipelineRun, r.Scheme)
+			controllerutil.SetControllerReference(r.CRE, pipelineRun, r.Scheme)
 
 			if err := r.Create(ctx, pipelineRun); err != nil {
 				logger.Error(err, "Unable to create PipelineRun")
@@ -318,13 +340,15 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 			logger.Error(nil, "Tekton reported multiple conditions")
 		}
 
-		// Let's check if the PipelineRun is completed successfully or not, and conclude our new conditions
-		if pipelineRun.Status.Conditions[0].Status == v1.ConditionTrue && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
-			setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed successfully.")
-			removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
-
-			if pipelineRun.Labels["cnbi.thoth-station.ninja/pipeline"] == "import" {
-				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionTrue, "ImageImportReady", "Import succeeded, the image is ready to be used.")
+		if pipelineRun.Labels["cre.thoth-station.ninja/pipeline"] == "import" {
+			if pipelineRun.Status.Conditions[0].Status == v1.ConditionFalse && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
+				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionFalse, "ImageImportNotReady", "Import failed, this could be due to the repository to import from does not exist or is not accessible")
+				setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed, but the Image could not be imported!")
+				removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
+			} else if pipelineRun.Status.Conditions[0].Status == v1.ConditionTrue && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
+				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionTrue, "ImageImportReady", "Import succeeded, the image is ready to be used")
+				setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed, Image is importend")
+				removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
 			}
 			// TODO add other pipeline-specific success conditions
 		} else if pipelineRun.Status.Conditions[0].Status == v1.ConditionFalse && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
@@ -345,14 +369,14 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 
 	if pipelineRun.Status.CompletionTime != nil {
 		if pipelineRun.Status.Conditions[0].Reason == "Succeeded" { // FIXME this feels dangerous, is it really the 1st one? all the time?
-			r.CNBi.Status.Pipelines[statusIndex].Ready = "True"
+			r.CRE.Status.Pipelines[statusIndex].Ready = "True"
 			if len(pipelineRun.Status.PipelineResults) > 0 {
 				if pipelineRun.Status.PipelineResults[0].Value.Type == pipelinev1beta1.ParamTypeString {
-					r.CNBi.Status.Pipelines[statusIndex].Url = pipelineRun.Status.PipelineResults[0].Value.StringVal
+					r.CRE.Status.Pipelines[statusIndex].Url = pipelineRun.Status.PipelineResults[0].Value.StringVal
 				}
 			}
 		} else if pipelineRun.Status.Conditions[0].Reason == "Failed" {
-			r.CNBi.Status.Pipelines[statusIndex].Ready = "False"
+			r.CRE.Status.Pipelines[statusIndex].Ready = "False"
 		}
 	}
 
