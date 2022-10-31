@@ -30,11 +30,11 @@ const (
 // TestIsReady tests IsReady condition status function
 func TestIsReady(t *testing.T) {
 	testCases := map[string]struct {
-		status         CustomNBImageStatus
+		status         CustomRuntimeEnvironmentStatus
 		expectedOutput bool
 	}{
 		"readySucceeded": {
-			status: CustomNBImageStatus{
+			status: CustomRuntimeEnvironmentStatus{
 				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
@@ -46,7 +46,7 @@ func TestIsReady(t *testing.T) {
 			expectedOutput: true,
 		},
 		"notReadyCouldntGetPipeline": {
-			status: CustomNBImageStatus{
+			status: CustomRuntimeEnvironmentStatus{
 				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
@@ -58,7 +58,7 @@ func TestIsReady(t *testing.T) {
 			expectedOutput: false,
 		},
 		"notReadyRunning": {
-			status: CustomNBImageStatus{
+			status: CustomRuntimeEnvironmentStatus{
 				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
@@ -80,11 +80,11 @@ func TestIsReady(t *testing.T) {
 }
 func TestIsValid(t *testing.T) {
 	testCases := map[string]struct {
-		runtime        CustomNBImageRuntimeSpec
+		runtime        CustomRuntimeEnvironmentRuntimeSpec
 		expectedOutput bool
 	}{
 		"validRuntime": {
-			runtime: CustomNBImageRuntimeSpec{
+			runtime: CustomRuntimeEnvironmentRuntimeSpec{
 				PythonVersion: "3.9",
 				OSName:        "ubi",
 				OSVersion:     "9",
@@ -92,7 +92,7 @@ func TestIsValid(t *testing.T) {
 			expectedOutput: true,
 		},
 		"invalidRuntime": {
-			runtime: CustomNBImageRuntimeSpec{
+			runtime: CustomRuntimeEnvironmentRuntimeSpec{
 				PythonVersion: "",
 				OSName:        "",
 				OSVersion:     "",
@@ -140,19 +140,19 @@ func TestHasValidImagePullSecretAName(t *testing.T) {
 // TestAggregatePhase tests if condition are aggregated into the correct phase
 func TestAggregatePhase(t *testing.T) {
 	testCases := map[string]struct {
-		cnbi           CustomNBImage
+		cre            CustomRuntimeEnvironment
 		expectedOutput Phase
 	}{
 		"pending": {
-			cnbi: CustomNBImage{
-				Spec: CustomNBImageSpec{
+			cre: CustomRuntimeEnvironment{
+				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
 						BuildType: ImportImage,
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNBImageStatus{
+				Status: CustomRuntimeEnvironmentStatus{
 					Conditions: []Condition{},
 				},
 			},
@@ -160,15 +160,15 @@ func TestAggregatePhase(t *testing.T) {
 		},
 
 		"pipeline-created": {
-			cnbi: CustomNBImage{
-				Spec: CustomNBImageSpec{
+			cre: CustomRuntimeEnvironment{
+				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
 						BuildType: ImportImage,
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNBImageStatus{
+				Status: CustomRuntimeEnvironmentStatus{
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
@@ -181,15 +181,15 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseRunning,
 		},
 		"pipeline-create-failed": {
-			cnbi: CustomNBImage{
-				Spec: CustomNBImageSpec{
+			cre: CustomRuntimeEnvironment{
+				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
 						BuildType: ImportImage,
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNBImageStatus{
+				Status: CustomRuntimeEnvironmentStatus{
 					Conditions: []Condition{
 						{
 							Type:   ErrorPipelineRunCreate,
@@ -202,15 +202,15 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseFailed,
 		},
 		"importing": {
-			cnbi: CustomNBImage{
-				Spec: CustomNBImageSpec{
+			cre: CustomRuntimeEnvironment{
+				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
 						BuildType: ImportImage,
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNBImageStatus{
+				Status: CustomRuntimeEnvironmentStatus{
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
@@ -228,15 +228,15 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseRunning,
 		},
 		"importing-missing-secret": {
-			cnbi: CustomNBImage{
-				Spec: CustomNBImageSpec{
+			cre: CustomRuntimeEnvironment{
+				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
 						BuildType: ImportImage,
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNBImageStatus{
+				Status: CustomRuntimeEnvironmentStatus{
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
@@ -254,15 +254,15 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseRunning,
 		},
 		"validating": {
-			cnbi: CustomNBImage{
-				Spec: CustomNBImageSpec{
+			cre: CustomRuntimeEnvironment{
+				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
 						BuildType: ImportImage,
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNBImageStatus{
+				Status: CustomRuntimeEnvironmentStatus{
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
@@ -280,15 +280,15 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseRunning,
 		},
 		"import-successful": {
-			cnbi: CustomNBImage{
-				Spec: CustomNBImageSpec{
+			cre: CustomRuntimeEnvironment{
+				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
 						BuildType: ImportImage,
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNBImageStatus{
+				Status: CustomRuntimeEnvironmentStatus{
 					Conditions: []Condition{
 						{
 							Type:   ImageImportReady,
@@ -306,15 +306,15 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseSucceeded,
 		},
 		"import-failed": {
-			cnbi: CustomNBImage{
-				Spec: CustomNBImageSpec{
+			cre: CustomRuntimeEnvironment{
+				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
 						BuildType: ImportImage,
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNBImageStatus{
+				Status: CustomRuntimeEnvironmentStatus{
 					Conditions: []Condition{
 						/*
 						  - lastTransitionTime: "2022-10-25T12:55:46Z"
@@ -347,7 +347,7 @@ func TestAggregatePhase(t *testing.T) {
 	}
 
 	for tcName, tc := range testCases {
-		if output := tc.cnbi.AggregatePhase(); output != tc.expectedOutput {
+		if output := tc.cre.AggregatePhase(); output != tc.expectedOutput {
 			t.Errorf("%s Got %s while expecting %s", tcName, output, tc.expectedOutput)
 		}
 	}

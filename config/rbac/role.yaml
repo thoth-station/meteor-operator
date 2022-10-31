@@ -94,7 +94,7 @@ rules:
 - apiGroups:
   - meteor.zone
   resources:
-  - customnbimages
+  - customtruntimeenvironment
   verbs:
   - create
   - delete
@@ -106,13 +106,13 @@ rules:
 - apiGroups:
   - meteor.zone
   resources:
-  - customnbimages/finalizers
+  - customtruntimeenvironment/finalizers
   verbs:
   - update
 - apiGroups:
   - meteor.zone
   resources:
-  - customnbimages/status
+  - customtruntimeenvironment/status
   verbs:
   - get
   - patch

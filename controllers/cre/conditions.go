@@ -16,7 +16,7 @@ limitations under the License.
 
 // SPDX-License-Identifier: Apache-2.0
 
-package cnbi
+package cre
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,15 +24,15 @@ import (
 	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
 )
 
-func setCondition(cnbiStatus *meteorv1alpha1.CustomNBImageStatus, ctype meteorv1alpha1.ConditionType, status metav1.ConditionStatus, reason, message string) {
+func setCondition(creStatus *meteorv1alpha1.CustomRuntimeEnvironmentStatus, ctype meteorv1alpha1.ConditionType, status metav1.ConditionStatus, reason, message string) {
 	var c *meteorv1alpha1.Condition
-	for i := range cnbiStatus.Conditions {
-		if cnbiStatus.Conditions[i].Type == ctype {
-			c = &cnbiStatus.Conditions[i]
+	for i := range creStatus.Conditions {
+		if creStatus.Conditions[i].Type == ctype {
+			c = &creStatus.Conditions[i]
 		}
 	}
 	if c == nil {
-		addCondition(cnbiStatus, ctype, status, reason, message)
+		addCondition(creStatus, ctype, status, reason, message)
 	} else {
 		// check if the condition has changed
 		if c.Status == status && c.Reason == reason && c.Message == message {
@@ -46,7 +46,7 @@ func setCondition(cnbiStatus *meteorv1alpha1.CustomNBImageStatus, ctype meteorv1
 	}
 }
 
-func addCondition(cnbiStatus *meteorv1alpha1.CustomNBImageStatus, ctype meteorv1alpha1.ConditionType, status metav1.ConditionStatus, reason, message string) {
+func addCondition(creStatus *meteorv1alpha1.CustomRuntimeEnvironmentStatus, ctype meteorv1alpha1.ConditionType, status metav1.ConditionStatus, reason, message string) {
 	now := metav1.Now()
 	c := meteorv1alpha1.Condition{
 		Type:               ctype,
@@ -55,15 +55,15 @@ func addCondition(cnbiStatus *meteorv1alpha1.CustomNBImageStatus, ctype meteorv1
 		Reason:             reason,
 		Message:            message,
 	}
-	cnbiStatus.Conditions = append(cnbiStatus.Conditions, c)
+	creStatus.Conditions = append(creStatus.Conditions, c)
 }
 
-func removeCondition(cnbiStatus *meteorv1alpha1.CustomNBImageStatus, ctype meteorv1alpha1.ConditionType) {
+func removeCondition(creStatus *meteorv1alpha1.CustomRuntimeEnvironmentStatus, ctype meteorv1alpha1.ConditionType) {
 	var newConditions []meteorv1alpha1.Condition
-	for _, c := range cnbiStatus.Conditions {
+	for _, c := range creStatus.Conditions {
 		if c.Type != ctype {
 			newConditions = append(newConditions, c)
 		}
 	}
-	cnbiStatus.Conditions = newConditions
+	creStatus.Conditions = newConditions
 }
