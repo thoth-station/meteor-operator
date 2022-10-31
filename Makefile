@@ -242,18 +242,16 @@ KIND_CLUSTER_NAME ?= "meteor-cnbi"
 
 .PHONY: kind-create
 kind-create: kind
-ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l))
-	@echo "Cluster already exists"
-else
-	@echo "Creating Cluster"
-	$(KIND) create cluster --name ${KIND_CLUSTER_NAME} --config hack/kind-config.yaml
+	if [[ 1 -ne $$(kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l) ]]; \
+	then \
+	$(KIND) create cluster --name ${KIND_CLUSTER_NAME} --config hack/kind-config.yaml; \
+	fi
 	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.6.1/aio/deploy/recommended.yaml
 	kubectl apply -f hack/dashboard-adminuser.yaml
 	kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.39.0/release.yaml
 	kubectl apply -f https://github.com/tektoncd/dashboard/releases/download/v0.28.0/tekton-dashboard-release.yaml
 	curl -s https://api.hub.tekton.dev/v1/resource/tekton/task/openshift-client/0.2/raw | sed -e s/Task/ClusterTask/ | kubectl apply -f -
-endif
 
 .PHONY: kind-load-img
 kind-load-img: docker-build kind-create
