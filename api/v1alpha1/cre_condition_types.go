@@ -24,13 +24,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ConditionType is a valid value for CNBiCondition.Type
+// ConditionType is a valid value for Condition.Type
 type ConditionType string
 
-// Condition describes the state of an CNBi at a particular point
+// Condition describes the state of an Custom Runtime Environment at a particular point
 type Condition struct {
 	// Type is the type of the condition.
-	Type ConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=CNBiConditionType"`
+	Type ConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=ConditionType"`
 	// Status is the status of the condition.
 	// Can be True, False, Unknown.
 	Status metav1.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=ConditionStatus"`

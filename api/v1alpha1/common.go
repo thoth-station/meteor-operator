@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1alpha1
 
-// Phase describes the phase of the CustomNBImage
+// Phase describes the phase of any of the Custom Resources Defined by the meteor operator
 // +kubebuilder:validation:Enum=Pending;Failed;Running;Succeeded;Unknown
 type Phase string
 
