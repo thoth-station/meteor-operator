@@ -53,6 +53,8 @@ SHELL = /usr/bin/env bash -o pipefail
 .PHONY: all
 all: build
 
+## Location to install dependencies to
+LOCALBIN ?= $(CURDIR)/bin
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
@@ -153,9 +155,6 @@ undeploy: | $(KUSTOMIZE)## Undeploy controller from the K8s cluster specified in
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
 ##@ Build Dependencies
-
-## Location to install dependencies to
-LOCALBIN ?= ./bin
 
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
