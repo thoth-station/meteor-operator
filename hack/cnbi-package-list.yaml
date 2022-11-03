@@ -9,9 +9,11 @@ metadata:
 spec:
   description: Build a notebook image from a package list
   params:
-    - name: cnbi-package-list-name
+    - name: baseImage
       type: string
-
+    - name: packages
+      type: array
+  # TODO: baseImage selection with osVersion, osName, pythonVersion
   workspaces:
     - name: packages-to-install
 
@@ -23,8 +25,8 @@ spec:
       taskRef:
         name: get-package-versions-list
       params:
-        - name: CNBI_PACKAGE_LIST
-          value: $(params.cnbi-package-list-name)
+        - name: PACKAGES
+          value: $(params.packages)
     ####### TODO: the rest of the tasks sould be shared between all types of sources
     - name: get-base-image
       taskSpec:
@@ -133,6 +135,19 @@ spec:
         - name: containers
           mountPath: /var/lib/containers
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: get-package-script
+data:
+  get-packages: |
+    #!/bin/sh
+    result_file=$1
+    shift
+    for package in "$@"
+      do echo $package >> $result_file
+    done
+---
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -142,27 +157,30 @@ spec:
     - name: unpinned-packages
       emptyDir:
         medium: memory
+    - name: script
+      configMap:
+        name: get-packages-script
+        defaultMode: 755
   workspaces:
     - name: pinned-packages
   params:
-    - name: CNBI_PACKAGE_LIST
+    - name: PACKAGES
       type: string
   steps:
-    - image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
-      script: |
-        oc
-        get
-        cnbi
-        --output=jsonpath={.spec.packageVersions[]}  # TODO: account for runtime env
-        $(params.CNBI_PACKAGE_LIST)
-        > /scratchspace/requirements.in
+    - image: alpine
       volumeMounts:
         - name: unpinned-packages
           mountPath: /scratchspace
+        - name: script
+          mountPath: /scripts
+      args:
+        - /scripts/get-packages
+        - /scratchspace/requirements.in
+        - $(params.PACKAGES) # We need to use a script because of how array parameters expansion works in Tekton ( https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#substituting-array-parameters )
     - image: registry.access.redhat.com/ubi8/python-38:latest
       script: |
         #!/bin/sh -e
-        pip install pip-tools # use image with pre-installed pip-tools (or other resolver)
+        pip install pip-tools # TODO: use image with pre-installed pip-tools (or other resolver)
         pip-compile --generate-hashes /scratchspace/requirements.in > $(workspace.pinned-packages.path)/requirements.txt
       volumeMounts:
         - name: unpinned-packages
