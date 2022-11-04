@@ -45,7 +45,7 @@ var _ = Describe("CustomNBImage controller", func() {
 	Context("when a CustomNBImage object is created with a RuntimeEnvironment and a PackageList", func() {
 		packages := []string{"numpy", "pandas", "scikit-learn"}
 
-		It("should be in Phase 'Pending'", func() {
+		It("should be in Phase 'Running'", func() {
 			By("creating a CustomNBImage object")
 			build := meteorv1alpha1.BuildTypeSpec{
 				BuildType: meteorv1alpha1.PackageList,
@@ -61,7 +61,7 @@ var _ = Describe("CustomNBImage controller", func() {
 				Status: meteorv1alpha1.CustomNotebookImageStatus{},
 			}
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
-			time.Sleep(12 * time.Second) // FIXME 👻 smells like a race condition, please increase the timeout for slow clusters
+			time.Sleep(20 * time.Second) // FIXME 👻 smells like a race condition, please increase the timeout for slow clusters
 
 			lookupKey := types.NamespacedName{Name: "test-1", Namespace: "default"}
 			createdCNBi := &meteorv1alpha1.CustomNBImage{}
