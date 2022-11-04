@@ -1,3 +1,11 @@
+presets:
+  - env:
+      - name: XDG_CACHE_DIR
+        value: /tmp/.cache
+      - name: GOCACHE
+        value: /tmp/.cache/go-build
+      - name: HOME
+        value: /tmp/.cache
 presubmits:
   - name: pre-commit
     decorate: true
