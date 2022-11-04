@@ -26,7 +26,8 @@ spec:
         name: get-package-versions-list
       params:
         - name: PACKAGES
-          value: $(params.packages)
+          value:
+            - $(params.packages)
     ####### TODO: the rest of the tasks sould be shared between all types of sources
     - name: get-base-image
       taskSpec:
@@ -165,7 +166,7 @@ spec:
     - name: pinned-packages
   params:
     - name: PACKAGES
-      type: string
+      type: array
   steps:
     - image: alpine
       volumeMounts:
