@@ -23,14 +23,11 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net"
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
-	"github.com/onsi/ginkgo/v2/reporters"
-	"github.com/onsi/ginkgo/v2/types"
 	. "github.com/onsi/gomega"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
@@ -53,7 +50,7 @@ var testEnv *envtest.Environment
 var ctx context.Context
 var cancel context.CancelFunc
 
-func TestAPIs(t *testing.T) {
+func TestCREWebhooks(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	RunSpecs(t, "Webhook Suite")
@@ -134,11 +131,4 @@ var _ = AfterSuite(func() {
 	By("tearing down the test environment")
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
-})
-var _ = ReportAfterSuite("test suite reports", func(report types.Report) {
-	// FIXME I'm pretty sure this needs error handling...
-
-	_ = os.MkdirAll("../../reports", 0755)
-	reportsFilename := fmt.Sprintf("%s/%s", "../../reports", "webhook_suite_report.xml")
-	_ = reporters.GenerateJUnitReport(report, reportsFilename)
 })

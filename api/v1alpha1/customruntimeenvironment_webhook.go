@@ -79,18 +79,18 @@ func (r *CustomRuntimeEnvironment) ValidateDelete() error {
 func (r *CustomRuntimeEnvironment) ValidateCRE() error {
 	var allErrs field.ErrorList
 
-	if err := r.validateCustomeRuntimeEnvironmentAnnotation(ODHNameAnnotationKey); err != nil {
+	if err := r.validateCustomRuntimeEnvironmentAnnotation(ODHNameAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	if err := r.validateCustomeRuntimeEnvironmentAnnotation(ODHDescriptionAnnotationKey); err != nil {
+	if err := r.validateCustomRuntimeEnvironmentAnnotation(ODHDescriptionAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	if err := r.validateCustomeRuntimeEnvironmentAnnotation(ODHCreatorAnnotationKey); err != nil {
+	if err := r.validateCustomRuntimeEnvironmentAnnotation(ODHCreatorAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
 
 	if r.Spec.BuildType == PackageList {
-		if err := r.validateCustomeRuntimeEnvironmentPackageListBuildType(); err != nil {
+		if err := r.validateCustomRuntimeEnvironmentPackageListBuildType(); err != nil {
 			allErrs = append(allErrs, err)
 		}
 	}
@@ -100,11 +100,11 @@ func (r *CustomRuntimeEnvironment) ValidateCRE() error {
 	}
 
 	return apierrors.NewInvalid(
-		schema.GroupKind{Group: Group, Kind: "CustomeRuntimeEnvironment"},
+		schema.GroupKind{Group: Group, Kind: "CustomRuntimeEnvironment"},
 		r.Name, allErrs)
 }
 
-func (r *CustomRuntimeEnvironment) validateCustomeRuntimeEnvironmentAnnotation(annotation string) *field.Error {
+func (r *CustomRuntimeEnvironment) validateCustomRuntimeEnvironmentAnnotation(annotation string) *field.Error {
 	if r.Annotations == nil {
 		return field.Required(field.NewPath("metadata.annotations"), "annotation is required")
 	}
@@ -116,8 +116,8 @@ func (r *CustomRuntimeEnvironment) validateCustomeRuntimeEnvironmentAnnotation(a
 	return nil
 }
 
-func (r *CustomRuntimeEnvironment) validateCustomeRuntimeEnvironmentPackageListBuildType() *field.Error {
-	logf.Log.Info("validateCustomeRuntimeEnvironmentPackageListBuildType", "r", r)
+func (r *CustomRuntimeEnvironment) validateCustomRuntimeEnvironmentPackageListBuildType() *field.Error {
+	logf.Log.Info("validateCustomRuntimeEnvironmentPackageListBuildType", "r", r)
 
 	if r.Spec.PackageVersions == nil {
 		return field.Required(field.NewPath("spec.packageVersions"), "packageVersions is required")

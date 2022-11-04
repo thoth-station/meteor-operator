@@ -25,8 +25,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("CustomeRuntimeEnvironment Webhook", func() {
-	Context("when a CustomeRuntimeEnvironment object is created", func() {
+var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
+	Context("when a CustomRuntimeEnvironment object is created", func() {
 		build := BuildTypeSpec{
 			BuildType: PackageList,
 			BaseImage: "quay.io/thoth-station/s2i-custom-notebook:latest",
@@ -37,9 +37,9 @@ var _ = Describe("CustomeRuntimeEnvironment Webhook", func() {
 		}
 
 		It("should pass if all required annotations are present", func() {
-			By("creating a CustomeRuntimeEnvironment object")
+			By("creating a CustomRuntimeEnvironment object")
 			cre := &CustomRuntimeEnvironment{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomeRuntimeEnvironment"},
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-1", Namespace: "default"},
 				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:   build,
@@ -55,9 +55,9 @@ var _ = Describe("CustomeRuntimeEnvironment Webhook", func() {
 
 		})
 		It("should fail if annotations are missing completely", func() {
-			By("creating an inclomplte CustomeRuntimeEnvironment object")
+			By("creating an inclomplte CustomRuntimeEnvironment object")
 			cre := &CustomRuntimeEnvironment{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomeRuntimeEnvironment"},
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-2", Namespace: "default"},
 				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:   build,
@@ -69,9 +69,9 @@ var _ = Describe("CustomeRuntimeEnvironment Webhook", func() {
 			Expect(k8sClient.Create(context.Background(), cre)).ShouldNot(Succeed())
 		})
 		It("should fail if an annotation is missing", func() {
-			By("creating an inclomplte CustomeRuntimeEnvironment object")
+			By("creating an incomplete CustomRuntimeEnvironment object")
 			cre := &CustomRuntimeEnvironment{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomeRuntimeEnvironment"},
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-3", Namespace: "default"},
 				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:   build,
@@ -83,11 +83,11 @@ var _ = Describe("CustomeRuntimeEnvironment Webhook", func() {
 
 			err := k8sClient.Create(context.Background(), cre)
 			Expect(err).ShouldNot(Succeed())
-			Expect(err).Should(MatchError("admission webhook \"vcustomruntimeenvironment.kb.io\" denied the request: CustomeRuntimeEnvironment.meteor.zone \"webhook-3\" is invalid: [metadata.annotations[opendatahub.io/notebook-image-desc]: Required value: annotation is required, metadata.annotations[opendatahub.io/notebook-image-creator]: Required value: annotation is required]"))
+			Expect(err).Should(MatchError("admission webhook \"vcustomruntimeenvironment.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-3\" is invalid: [metadata.annotations[opendatahub.io/notebook-image-desc]: Required value: annotation is required, metadata.annotations[opendatahub.io/notebook-image-creator]: Required value: annotation is required]"))
 		})
 
 	})
-	Context("when a CustomeRuntimeEnvironment object is created with a buildType of PackageList", func() {
+	Context("when a CustomRuntimeEnvironment object is created with a buildType of PackageList", func() {
 		packageListNoRuntimeEnvironmentNorBaseImage := BuildTypeSpec{
 			BuildType: PackageList,
 		}
@@ -114,7 +114,7 @@ var _ = Describe("CustomeRuntimeEnvironment Webhook", func() {
 
 		It("should fail if neither runtimeEnvironment nor baseImage is present", func() {
 			cre := &CustomRuntimeEnvironment{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomeRuntimeEnvironment"},
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-4", Namespace: "default"},
 				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:   packageListNoRuntimeEnvironmentNorBaseImage,
@@ -130,13 +130,13 @@ var _ = Describe("CustomeRuntimeEnvironment Webhook", func() {
 			GinkgoWriter.Printf("cre: %v", cre)
 
 			Expect(err).ShouldNot(Succeed())
-			Expect(err).Should(MatchError("admission webhook \"vcustomruntimeenvironment.kb.io\" denied the request: CustomeRuntimeEnvironment.meteor.zone \"webhook-4\" is invalid: spec.baseImage: Required value: baseImage or runtimeEnvironment is required"))
+			Expect(err).Should(MatchError("admission webhook \"vcustomruntimeenvironment.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-4\" is invalid: spec.baseImage: Required value: baseImage or runtimeEnvironment is required"))
 
 		})
 
 		It("should pass if runtimeEnvironment is present", func() {
 			cre := &CustomRuntimeEnvironment{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomeRuntimeEnvironment"},
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-5", Namespace: "default"},
 				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:      packageListRuntimeEnvironment,
@@ -156,7 +156,7 @@ var _ = Describe("CustomeRuntimeEnvironment Webhook", func() {
 
 		It("should pass if baseImage is present", func() {
 			cre := &CustomRuntimeEnvironment{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomeRuntimeEnvironment"},
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-6", Namespace: "default"},
 				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:   packageListBaseImage,
@@ -170,12 +170,13 @@ var _ = Describe("CustomeRuntimeEnvironment Webhook", func() {
 
 			err := k8sClient.Create(context.Background(), cre)
 			Expect(err).Should(Succeed())
+			GinkgoWriter.Printf("cre: %v", cre)
 
 		})
 
 		It("should fail if runtimeEnvironment and baseImage is present", func() {
 			cre := &CustomRuntimeEnvironment{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomeRuntimeEnvironment"},
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-7", Namespace: "default"},
 				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:      packageListBaseImageAndRuntimeEnvironment,
@@ -190,7 +191,7 @@ var _ = Describe("CustomeRuntimeEnvironment Webhook", func() {
 
 			err := k8sClient.Create(context.Background(), cre)
 			Expect(err).ShouldNot(Succeed())
-			Expect(err).Should(MatchError("admission webhook \"vcustomruntimeenvironment.kb.io\" denied the request: CustomeRuntimeEnvironment.meteor.zone \"webhook-7\" is invalid: spec.baseImage: Invalid value: \"quay.io/thoth-station/s2i-custom-notebook:latest\": baseImage and runtimeEnvironment are mutually exclusive"))
+			Expect(err).Should(MatchError("admission webhook \"vcustomruntimeenvironment.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-7\" is invalid: spec.baseImage: Invalid value: \"quay.io/thoth-station/s2i-custom-notebook:latest\": baseImage and runtimeEnvironment are mutually exclusive"))
 
 		})
 	})

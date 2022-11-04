@@ -1,6 +1,6 @@
 ---
 apiVersion: meteor.zone/v1alpha1
-kind: CustomeRuntimeEnvironment
+kind: CustomRuntimeEnvironment
 metadata:
   name: s2i-minimal-py38-sample-1 # TODO
   labels:
@@ -18,7 +18,7 @@ spec:
     - boto3>=1.24.0
 ---
 apiVersion: meteor.zone/v1alpha1
-kind: CustomeRuntimeEnvironment
+kind: CustomRuntimeEnvironment
 metadata:
   name: ubi9-py39-sample-1 # TODO
   labels:
@@ -37,7 +37,7 @@ spec:
     - "pandas"
 ---
 apiVersion: meteor.zone/v1alpha1
-kind: CustomeRuntimeEnvironment
+kind: CustomRuntimeEnvironment
 metadata:
   name: ubi8-py38-sample-2 # TODO
   labels:
@@ -57,7 +57,7 @@ spec:
     - boto3>=1.24.0
 ---
 apiVersion: meteor.zone/v1alpha1
-kind: CustomeRuntimeEnvironment
+kind: CustomRuntimeEnvironment
 metadata:
   name: elyra-aidevsecops-tutorial
   labels:
