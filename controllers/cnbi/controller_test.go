@@ -30,8 +30,7 @@ import (
 )
 
 const (
-	timeout  = time.Second * 10
-	duration = time.Second * 10
+	timeout  = time.Second * 80
 	interval = time.Millisecond * 750
 )
 
@@ -61,18 +60,17 @@ var _ = Describe("CustomNBImage controller", func() {
 				Status: meteorv1alpha1.CustomNotebookImageStatus{},
 			}
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
-			time.Sleep(20 * time.Second) // FIXME 👻 smells like a race condition, please increase the timeout for slow clusters
 
 			lookupKey := types.NamespacedName{Name: "test-1", Namespace: "default"}
-			createdCNBi := &meteorv1alpha1.CustomNBImage{}
 
-			Consistently(func() bool {
+			Eventually(func(g Gomega) {
+				createdCNBi := &meteorv1alpha1.CustomNBImage{}
 				err := k8sClient.Get(ctx, lookupKey, createdCNBi)
-				return err == nil
-			}, timeout, interval).Should(BeTrue())
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(createdCNBi.Status.Conditions).ToNot(BeEmpty())
+				g.Expect(createdCNBi.Status.Phase).To(Equal(meteorv1alpha1.PhaseRunning))
+			}, timeout, interval).Should(Succeed())
 
-			Expect(createdCNBi.Status.Conditions).ShouldNot(BeEmpty())
-			Expect(createdCNBi.Status.Phase).Should(Equal(meteorv1alpha1.PhaseRunning))
 		})
 	})
 	/*
