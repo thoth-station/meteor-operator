@@ -1,3 +1,11 @@
+presets:
+  - env:
+      - name: XDG_CACHE_DIR
+        value: /tmp/.cache
+      - name: GOCACHE
+        value: /tmp/.cache/go-build
+      - name: HOME
+        value: /tmp/.cache
 presubmits:
   - name: pre-commit
     decorate: true
@@ -18,3 +26,21 @@ presubmits:
             limits:
               memory: "1Gi"
               cpu: "300m"
+  - name: make-test
+    decorate: true
+    skip_report: false
+    always_run: true
+    context: thoth-station/prow/make-test
+    spec:
+      containers:
+        - image: docker.io/golang:1.18
+          command:
+            - "make"
+            - "test"
+          resources:
+            requests:
+              memory: "500Mi"
+              cpu: "1000m"
+            limits:
+              memory: "1Gi"
+              cpu: "2000m"
