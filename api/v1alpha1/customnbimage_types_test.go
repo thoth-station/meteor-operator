@@ -227,7 +227,7 @@ func TestAggregatePhase(t *testing.T) {
 			},
 			expectedOutput: PhaseRunning,
 		},
-		"importing_missing_secret": {
+		"importing-missing-secret": {
 			cnbi: CustomNBImage{
 				Spec: CustomNBImageSpec{
 					PackageVersions: []string{},
