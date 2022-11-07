@@ -318,16 +318,25 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 			logger.Error(nil, "Tekton reported multiple conditions")
 		}
 
-		if pipelineRun.Labels["cnbi.thoth-station.ninja/pipeline"] == "import" {
-			if pipelineRun.Status.Conditions[0].Status == v1.ConditionFalse && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
-				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionFalse, "ImageImportNotReady", "Import failed, this could be due to the repository to import from does not exist or is not accessible")
-				setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed, but the Image could not be imported!")
-				removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
-			} else if pipelineRun.Status.Conditions[0].Status == v1.ConditionTrue && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
-				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionTrue, "ImageImportReady", "Import succeeded, the image is ready to be used")
-				setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed, Image is importend")
-				removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
+		// Let's check if the PipelineRun is completed successfully or not, and conclude our new conditions
+		if pipelineRun.Status.Conditions[0].Status == v1.ConditionTrue && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
+			setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed successfully.")
+			removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
+
+			if pipelineRun.Labels["cnbi.thoth-station.ninja/pipeline"] == "import" {
+				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionTrue, "ImageImportReady", "Import succeeded, the image is ready to be used.")
 			}
+			// TODO add other pipeline-specific success conditions
+		} else if pipelineRun.Status.Conditions[0].Status == v1.ConditionFalse && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
+			setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed with a failure!")
+			removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
+
+			if pipelineRun.Labels["cnbi.thoth-station.ninja/pipeline"] == "import" {
+				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionFalse, "ImageImportNotReady", "Import failed, this could be due to the repository to import from does not exist or is not accessible")
+			} else if pipelineRun.Labels["cnbi.thoth-station.ninja/pipeline"] == "gitrepo" {
+				setCondition(newStatus, meteorv1alpha1.ErrorBuildingImage, metav1.ConditionTrue, "ErrorBuildingImage", "Build failed!")
+			}
+
 		}
 
 		return newStatus
