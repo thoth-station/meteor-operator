@@ -40,12 +40,6 @@ const (
 	// ImageImportInvalid indicates that the imported image is invalid
 	ImageImportInvalid = ConditionType("ImageImportInvalid")
 
-	// PreparingImageBuild indicates that the image build is being prepared by a Tekton PipelineRun's Step
-	PreparingImageBuild = ConditionType("PreparingImageBuild")
-
-	// ErrorPreparingImageBuild indicates that the image build preparation failed
-	ErrorPreparingImageBuild = ConditionType("ErrorPreparingImageBuild")
-
 	// ErrorResolvingDependencies indicates that the dependency resolution failed during preparation of the image build
 	ErrorResolvingDependencies = ConditionType("ErrorResolvingDependencies")
 
