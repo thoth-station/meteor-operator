@@ -102,7 +102,7 @@ spec:
             - buildType
             type: object
           status:
-            description: CustomNotebookImageStatus defines the observed state of CustomNBImage
+            description: CustomNBImageStatus defines the observed state of CustomNBImage
             properties:
               conditions:
                 description: Current service state of Meteor.
