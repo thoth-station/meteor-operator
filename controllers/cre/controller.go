@@ -190,49 +190,7 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(name string, c
 			// append the parameters specific to each build type
 			params = appendBuildTypeParameters(r.CRE, params)
 
-			pipelineRun = &pipelinev1beta1.PipelineRun{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      resourceName,
-					Namespace: req.NamespacedName.Namespace,
-					Labels: map[string]string{
-						"cre.thoth-station.ninja/pipeline": name,
-					},
-				},
-				Spec: pipelinev1beta1.PipelineRunSpec{
-					PipelineRef: &pipelinev1beta1.PipelineRef{
-						Name: pipelineReferenceName,
-					},
-					Params: params,
-					Workspaces: []pipelinev1beta1.WorkspaceBinding{
-						{
-							Name: "data",
-							VolumeClaimTemplate: &v1.PersistentVolumeClaim{
-								Spec: v1.PersistentVolumeClaimSpec{
-									AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
-									Resources: v1.ResourceRequirements{
-										Requests: v1.ResourceList{
-											v1.ResourceStorage: resource.MustParse("500Mi"),
-										},
-									},
-								},
-							},
-						},
-						{
-							Name: "sslcertdir",
-							ConfigMap: &v1.ConfigMapVolumeSource{
-								LocalObjectReference: v1.LocalObjectReference{
-									Name: "openshift-service-ca.crt",
-								},
-								Items: []v1.KeyToPath{{
-									Key:  "service-ca.crt",
-									Path: "ca.crt",
-								}},
-								DefaultMode: pointer.Int32(420),
-							},
-						},
-					},
-				},
-			}
+			generatePipelineRun(r.CRE, pipelineRun, pipelineReferenceName, name, namespacedName, params)
 			_ = controllerutil.SetControllerReference(r.CRE, pipelineRun, r.Scheme) // TODO: check error
 
 			if err := r.Create(ctx, pipelineRun); err != nil {
@@ -296,6 +254,54 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(name string, c
 	}
 
 	return newStatus
+}
+
+func generatePipelineRun(cre *meteorv1alpha1.CustomRuntimeEnvironment, pipelineRun *pipelinev1beta1.PipelineRun, pipelineReferenceName, name string, namespacedName types.NamespacedName, params []pipelinev1beta1.Param) {
+	_pipelineRun := &pipelinev1beta1.PipelineRun{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      namespacedName.Name,
+			Namespace: namespacedName.Namespace,
+			Labels: map[string]string{
+				"cre.thoth-station.ninja/pipeline": name,
+			},
+		},
+		Spec: pipelinev1beta1.PipelineRunSpec{
+			PipelineRef: &pipelinev1beta1.PipelineRef{
+				Name: pipelineReferenceName,
+			},
+			Params: params,
+			Workspaces: []pipelinev1beta1.WorkspaceBinding{
+				{
+					Name: "data",
+					VolumeClaimTemplate: &v1.PersistentVolumeClaim{
+						Spec: v1.PersistentVolumeClaimSpec{
+							AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+							Resources: v1.ResourceRequirements{
+								Requests: v1.ResourceList{
+									v1.ResourceStorage: resource.MustParse("500Mi"),
+								},
+							},
+						},
+					},
+				},
+				{
+					Name: "sslcertdir",
+					ConfigMap: &v1.ConfigMapVolumeSource{
+						LocalObjectReference: v1.LocalObjectReference{
+							Name: "openshift-service-ca.crt",
+						},
+						Items: []v1.KeyToPath{{
+							Key:  "service-ca.crt",
+							Path: "ca.crt",
+						}},
+						DefaultMode: pointer.Int32(420),
+					},
+				},
+			},
+		},
+	}
+
+	_pipelineRun.DeepCopyInto(pipelineRun)
 }
 
 func appendODHAnnotations(cre *meteorv1alpha1.CustomRuntimeEnvironment, params []pipelinev1beta1.Param) []pipelinev1beta1.Param {
