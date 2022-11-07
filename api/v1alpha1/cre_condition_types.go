@@ -19,8 +19,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"strings"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -47,7 +45,3 @@ type Condition struct {
 
 // Conditions provide observations of the operational state of a Custom Notebook Image resource.
 type Conditions []Condition
-
-func (c ConditionType) hasPrefix(prefix string) bool {
-	return strings.HasPrefix(string(c), prefix)
-}

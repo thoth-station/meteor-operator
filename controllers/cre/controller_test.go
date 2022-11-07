@@ -47,7 +47,7 @@ var _ = Describe("CustomeRuntimeEnvironment controller", func() {
 	Context("when a CustomeRuntimeEnvironment object is created with a RuntimeEnvironment and a PackageList", func() {
 		packages := []string{"numpy", "pandas", "scikit-learn"}
 
-		It("should be in Phase 'Pending'", func() {
+		It("should be in Phase 'Running'", func() {
 			By("creating a CustomeRuntimeEnvironment object")
 			build := meteorv1alpha1.BuildTypeSpec{
 				BuildType: meteorv1alpha1.PackageList,

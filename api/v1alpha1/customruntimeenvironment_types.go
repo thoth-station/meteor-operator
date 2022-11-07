@@ -146,6 +146,7 @@ type CustomRuntimeEnvironmentList struct {
 	Items           []CustomRuntimeEnvironment `json:"items"`
 }
 
+//gocyclo:ignore
 // Aggregate phase from conditions
 func (cre *CustomRuntimeEnvironment) AggregatePhase() Phase {
 	pipelineRunCreated := false
