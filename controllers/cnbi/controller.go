@@ -19,7 +19,6 @@ package cnbi
 import (
 	"context"
 	"fmt"
-	"time"
 
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	v1 "k8s.io/api/core/v1"
@@ -90,12 +89,9 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// let's see if we can update the status
 	newStatus.ObservedGeneration = r.CNBi.Generation
 	if equality.Semantic.DeepEqual(newStatus, &r.CNBi.Status) {
-		return r.UpdateStatusNow(ctx, newStatus, nil)
+		err := r.updateStatus(ctx, req.NamespacedName, newStatus)
+		return ctrl.Result{}, err
 	}
-
-	/* TODO check if the PipelineRun ran for the current runtime environment
-	 * if not, delete the PipelineRun and reconcile?
-	 */
 
 	logger.Info("Reconciled CustomNotebookImage", "spec", r.CNBi.Spec, "status", r.CNBi.Status)
 	r.CNBi.Status.Phase = r.CNBi.AggregatePhase()
@@ -114,25 +110,10 @@ func (r *CustomNBImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// Force object status update. Returns a reconcile result
-func (r *CustomNBImageReconciler) UpdateStatusNow(ctx context.Context, status *meteorv1alpha1.CustomNBImageStatus, originalErr error) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
-
-	status.DeepCopyInto(&r.CNBi.Status)
-	logger.Info(("Updating status of CustomNotebookImage"), "status", r.CNBi.Status, "newStatus", status)
-
-	if err := r.Status().Update(ctx, r.CNBi); err != nil {
-		logger.WithValues("reason", err.Error()).Info("Unable to update status, retrying")
-		return ctrl.Result{Requeue: true}, nil
-	}
-	if originalErr != nil {
-		return ctrl.Result{RequeueAfter: 10 * time.Second}, originalErr
-	} else {
-		return ctrl.Result{}, nil
-	}
-}
-
 func (r *CustomNBImageReconciler) updateStatus(ctx context.Context, nn types.NamespacedName, status *meteorv1alpha1.CustomNBImageStatus) error {
+	logger := log.FromContext(ctx)
+	logger.Info(("updating status of CustomNotebookImage"), "status", r.CNBi.Status, "newStatus", status)
+
 	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		original := &meteorv1alpha1.CustomNBImage{}
 		if err := r.Get(ctx, nn, original); err != nil {
@@ -144,7 +125,7 @@ func (r *CustomNBImageReconciler) updateStatus(ctx context.Context, nn types.Nam
 		}
 		return nil
 	}); err != nil {
-		return fmt.Errorf("failed to update status of Application %s/%s: %v", nn.Namespace, nn.Name, err)
+		return fmt.Errorf("failed to update status of CNBi %s/%s: %v", nn.Namespace, nn.Name, err)
 	}
 	return nil
 }
