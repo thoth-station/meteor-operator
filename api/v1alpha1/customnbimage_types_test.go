@@ -30,11 +30,11 @@ const (
 // TestIsReady tests IsReady condition status function
 func TestIsReady(t *testing.T) {
 	testCases := map[string]struct {
-		status         CustomNotebookImageStatus
+		status         CustomNBImageStatus
 		expectedOutput bool
 	}{
 		"readySucceeded": {
-			status: CustomNotebookImageStatus{
+			status: CustomNBImageStatus{
 				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
@@ -46,7 +46,7 @@ func TestIsReady(t *testing.T) {
 			expectedOutput: true,
 		},
 		"notReadyCouldntGetPipeline": {
-			status: CustomNotebookImageStatus{
+			status: CustomNBImageStatus{
 				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
@@ -58,7 +58,7 @@ func TestIsReady(t *testing.T) {
 			expectedOutput: false,
 		},
 		"notReadyRunning": {
-			status: CustomNotebookImageStatus{
+			status: CustomNBImageStatus{
 				Conditions: []Condition{
 					{
 						Type:   "PipelineRunPrepare",
@@ -152,7 +152,7 @@ func TestAggregatePhase(t *testing.T) {
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNotebookImageStatus{
+				Status: CustomNBImageStatus{
 					Conditions: []Condition{},
 				},
 			},
@@ -168,7 +168,7 @@ func TestAggregatePhase(t *testing.T) {
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNotebookImageStatus{
+				Status: CustomNBImageStatus{
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
@@ -189,7 +189,7 @@ func TestAggregatePhase(t *testing.T) {
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNotebookImageStatus{
+				Status: CustomNBImageStatus{
 					Conditions: []Condition{
 						{
 							Type:   ErrorPipelineRunCreate,
@@ -210,7 +210,7 @@ func TestAggregatePhase(t *testing.T) {
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNotebookImageStatus{
+				Status: CustomNBImageStatus{
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
@@ -236,7 +236,7 @@ func TestAggregatePhase(t *testing.T) {
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNotebookImageStatus{
+				Status: CustomNBImageStatus{
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
@@ -262,7 +262,7 @@ func TestAggregatePhase(t *testing.T) {
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNotebookImageStatus{
+				Status: CustomNBImageStatus{
 					Conditions: []Condition{
 						{
 							Type:   PipelineRunCreated,
@@ -288,7 +288,7 @@ func TestAggregatePhase(t *testing.T) {
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNotebookImageStatus{
+				Status: CustomNBImageStatus{
 					Conditions: []Condition{
 						{
 							Type:   ImageImportReady,
@@ -314,7 +314,7 @@ func TestAggregatePhase(t *testing.T) {
 						FromImage: "quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2",
 					},
 				},
-				Status: CustomNotebookImageStatus{
+				Status: CustomNBImageStatus{
 					Conditions: []Condition{
 						/*
 						  - lastTransitionTime: "2022-10-25T12:55:46Z"

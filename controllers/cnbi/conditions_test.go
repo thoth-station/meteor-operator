@@ -28,17 +28,17 @@ import (
 
 func TestAddCondition(t *testing.T) {
 	testCases := map[string]struct {
-		status       meteorv1alpha1.CustomNotebookImageStatus
+		status       meteorv1alpha1.CustomNBImageStatus
 		expectedSize int
 	}{
 		"zero": {
-			status: meteorv1alpha1.CustomNotebookImageStatus{
+			status: meteorv1alpha1.CustomNBImageStatus{
 				Conditions: []meteorv1alpha1.Condition{},
 			},
 			expectedSize: 1,
 		},
 		"one": {
-			status: meteorv1alpha1.CustomNotebookImageStatus{
+			status: meteorv1alpha1.CustomNBImageStatus{
 				Conditions: []meteorv1alpha1.Condition{
 					{
 						Type:    meteorv1alpha1.ConditionType("test"),
@@ -63,17 +63,17 @@ func TestAddCondition(t *testing.T) {
 
 func TestSetCondition(t *testing.T) {
 	testCases := map[string]struct {
-		status       meteorv1alpha1.CustomNotebookImageStatus
+		status       meteorv1alpha1.CustomNBImageStatus
 		expectedSize int
 	}{
 		"zero": {
-			status: meteorv1alpha1.CustomNotebookImageStatus{
+			status: meteorv1alpha1.CustomNBImageStatus{
 				Conditions: []meteorv1alpha1.Condition{},
 			},
 			expectedSize: 1,
 		},
 		"one": {
-			status: meteorv1alpha1.CustomNotebookImageStatus{
+			status: meteorv1alpha1.CustomNBImageStatus{
 				Conditions: []meteorv1alpha1.Condition{
 					{
 						Type:    meteorv1alpha1.ConditionType("test"),
@@ -86,7 +86,7 @@ func TestSetCondition(t *testing.T) {
 			expectedSize: 2,
 		},
 		"two": {
-			status: meteorv1alpha1.CustomNotebookImageStatus{
+			status: meteorv1alpha1.CustomNBImageStatus{
 				Conditions: []meteorv1alpha1.Condition{
 					{
 						Type:    meteorv1alpha1.ConditionType("test2"),
@@ -99,7 +99,7 @@ func TestSetCondition(t *testing.T) {
 			expectedSize: 1,
 		},
 		"eine": { // if we got one on True, we reset it to False
-			status: meteorv1alpha1.CustomNotebookImageStatus{
+			status: meteorv1alpha1.CustomNBImageStatus{
 				Conditions: []meteorv1alpha1.Condition{
 					{
 						Type:    meteorv1alpha1.ConditionType("test2"),
@@ -124,17 +124,17 @@ func TestSetCondition(t *testing.T) {
 
 func TestRemoveCondition(t *testing.T) {
 	testCases := map[string]struct {
-		status       meteorv1alpha1.CustomNotebookImageStatus
+		status       meteorv1alpha1.CustomNBImageStatus
 		expectedSize int
 	}{
 		"zero": {
-			status: meteorv1alpha1.CustomNotebookImageStatus{
+			status: meteorv1alpha1.CustomNBImageStatus{
 				Conditions: []meteorv1alpha1.Condition{},
 			},
 			expectedSize: 0,
 		},
 		"one-to-stay": {
-			status: meteorv1alpha1.CustomNotebookImageStatus{
+			status: meteorv1alpha1.CustomNBImageStatus{
 				Conditions: []meteorv1alpha1.Condition{
 					{
 						Type:    meteorv1alpha1.ConditionType("test"),
@@ -147,7 +147,7 @@ func TestRemoveCondition(t *testing.T) {
 			expectedSize: 1,
 		},
 		"one-to-be-zero": {
-			status: meteorv1alpha1.CustomNotebookImageStatus{
+			status: meteorv1alpha1.CustomNBImageStatus{
 				Conditions: []meteorv1alpha1.Condition{
 					{
 						Type:    meteorv1alpha1.ConditionType("test2"),

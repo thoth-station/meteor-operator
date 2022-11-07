@@ -45,7 +45,7 @@ var _ = Describe("CustomNBImage Webhook", func() {
 					BuildTypeSpec:   build,
 					PackageVersions: packageVersions,
 				},
-				Status: CustomNotebookImageStatus{},
+				Status: CustomNBImageStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-1")
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
@@ -63,7 +63,7 @@ var _ = Describe("CustomNBImage Webhook", func() {
 					BuildTypeSpec:   build,
 					PackageVersions: packageVersions,
 				},
-				Status: CustomNotebookImageStatus{},
+				Status: CustomNBImageStatus{},
 			}
 
 			Expect(k8sClient.Create(context.Background(), cnbi)).ShouldNot(Succeed())
@@ -77,7 +77,7 @@ var _ = Describe("CustomNBImage Webhook", func() {
 					BuildTypeSpec:   build,
 					PackageVersions: packageVersions,
 				},
-				Status: CustomNotebookImageStatus{},
+				Status: CustomNBImageStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-3")
 
@@ -120,7 +120,7 @@ var _ = Describe("CustomNBImage Webhook", func() {
 					BuildTypeSpec:   packageListNoRuntimeEnvironmentNorBaseImage,
 					PackageVersions: packageVersions,
 				},
-				Status: CustomNotebookImageStatus{},
+				Status: CustomNBImageStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-4")
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
@@ -143,7 +143,7 @@ var _ = Describe("CustomNBImage Webhook", func() {
 					PackageVersions:    packageVersions,
 					RuntimeEnvironment: runtimeEnvironment,
 				},
-				Status: CustomNotebookImageStatus{},
+				Status: CustomNBImageStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-5")
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
@@ -162,7 +162,7 @@ var _ = Describe("CustomNBImage Webhook", func() {
 					BuildTypeSpec:   packageListBaseImage,
 					PackageVersions: packageVersions,
 				},
-				Status: CustomNotebookImageStatus{},
+				Status: CustomNBImageStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-6")
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
@@ -182,7 +182,7 @@ var _ = Describe("CustomNBImage Webhook", func() {
 					RuntimeEnvironment: runtimeEnvironment,
 					PackageVersions:    packageVersions,
 				},
-				Status: CustomNotebookImageStatus{},
+				Status: CustomNBImageStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-7")
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")

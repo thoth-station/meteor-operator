@@ -58,7 +58,7 @@ var _ = Describe("CustomNBImage controller", func() {
 					PackageVersions:    packages,
 					BuildTypeSpec:      build,
 				},
-				Status: meteorv1alpha1.CustomNotebookImageStatus{},
+				Status: meteorv1alpha1.CustomNBImageStatus{},
 			}
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
 			time.Sleep(20 * time.Second) // FIXME 👻 smells like a race condition, please increase the timeout for slow clusters

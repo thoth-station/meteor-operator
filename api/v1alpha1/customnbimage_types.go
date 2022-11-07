@@ -104,8 +104,8 @@ type CustomNBImageSpec struct {
 }
 
 //+kubebuilder:object:generate=true
-// CustomNotebookImageStatus defines the observed state of CustomNBImage
-type CustomNotebookImageStatus struct {
+// CustomNBImageStatus defines the observed state of CustomNBImage
+type CustomNBImageStatus struct {
 	// ObservedGeneration is the most recent generation observed. It corresponds to the
 	// Object's generation, which is updated on mutation by the API Server.
 	// +optional
@@ -133,8 +133,8 @@ type CustomNBImage struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   CustomNBImageSpec         `json:"spec,omitempty"`
-	Status CustomNotebookImageStatus `json:"status,omitempty"`
+	Spec   CustomNBImageSpec   `json:"spec,omitempty"`
+	Status CustomNBImageStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -196,7 +196,7 @@ func (cnbi *CustomNBImage) AggregatePhase() Phase {
 }
 
 // IsReady returns true the Ready condition status is True
-func (status CustomNotebookImageStatus) IsReady() bool {
+func (status CustomNBImageStatus) IsReady() bool {
 	for _, condition := range status.Conditions {
 		if condition.Status == metav1.ConditionTrue {
 			return true

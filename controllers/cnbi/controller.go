@@ -76,7 +76,7 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	r.CNBi.Status.Phase = r.CNBi.AggregatePhase()
 
 	// depending on the build type, we reconcile a pipelinerun
-	newStatus := &meteorv1alpha1.CustomNotebookImageStatus{}
+	newStatus := &meteorv1alpha1.CustomNBImageStatus{}
 
 	switch buildType := r.CNBi.Spec.BuildTypeSpec.BuildType; buildType {
 	case meteorv1alpha1.ImportImage:
@@ -115,7 +115,7 @@ func (r *CustomNBImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 // Force object status update. Returns a reconcile result
-func (r *CustomNBImageReconciler) UpdateStatusNow(ctx context.Context, status *meteorv1alpha1.CustomNotebookImageStatus, originalErr error) (ctrl.Result, error) {
+func (r *CustomNBImageReconciler) UpdateStatusNow(ctx context.Context, status *meteorv1alpha1.CustomNBImageStatus, originalErr error) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	status.DeepCopyInto(&r.CNBi.Status)
@@ -132,7 +132,7 @@ func (r *CustomNBImageReconciler) UpdateStatusNow(ctx context.Context, status *m
 	}
 }
 
-func (r *CustomNBImageReconciler) updateStatus(ctx context.Context, nn types.NamespacedName, status *meteorv1alpha1.CustomNotebookImageStatus) error {
+func (r *CustomNBImageReconciler) updateStatus(ctx context.Context, nn types.NamespacedName, status *meteorv1alpha1.CustomNBImageStatus) error {
 	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		original := &meteorv1alpha1.CustomNBImage{}
 		if err := r.Get(ctx, nn, original); err != nil {
@@ -150,7 +150,7 @@ func (r *CustomNBImageReconciler) updateStatus(ctx context.Context, nn types.Nam
 }
 
 // reconcilePipelineRun will reconcile the pipeline run for the CustomNBImage.
-func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.Context, req ctrl.Request) *meteorv1alpha1.CustomNotebookImageStatus {
+func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.Context, req ctrl.Request) *meteorv1alpha1.CustomNBImageStatus {
 	pipelineRun := &pipelinev1beta1.PipelineRun{}
 	resourceName := fmt.Sprintf("cnbi-%s-%s", r.CNBi.GetName(), name)
 	pipelineReferenceName := fmt.Sprintf("cnbi-%s", name)
