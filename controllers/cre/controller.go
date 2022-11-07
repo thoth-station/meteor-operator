@@ -182,98 +182,13 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(name string, c
 		if errors.IsNotFound(err) {
 			logger.Info("Creating PipelineRun")
 
+			params := []pipelinev1beta1.Param{}
+
 			// let's put the mandatory annotations into the PipelineRun
-			params := []pipelinev1beta1.Param{
-				{
-					Name: "name",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CRE.ObjectMeta.Annotations["opendatahub.io/notebook-image-name"],
-					},
-				},
-				{
-					Name: "creator",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CRE.ObjectMeta.Annotations["opendatahub.io/notebook-image-creator"],
-					},
-				},
-				{
-					Name: "description",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CRE.ObjectMeta.Annotations["opendatahub.io/notebook-image-desc"],
-					},
-				},
-			}
+			params = appendODHAnnotations(r.CRE, params)
 
-			// Add the parameters specific to each build type
-			switch buildType := r.CRE.Spec.BuildTypeSpec.BuildType; buildType {
-			case meteorv1alpha1.ImportImage:
-				params = append(params, pipelinev1beta1.Param{
-					Name: "baseImage",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CRE.Spec.BuildTypeSpec.FromImage,
-					}, // TODO we need a validator for this
-				})
-			case meteorv1alpha1.PackageList:
-				// if we have a BaseImage supplied, use it
-				if r.CRE.Spec.BaseImage != "" {
-					params = append(params, pipelinev1beta1.Param{
-						Name: "baseImage",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CRE.Spec.BaseImage,
-						},
-					})
-				} else {
-					params = append(params, pipelinev1beta1.Param{
-						Name: "osVersion",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CRE.Spec.RuntimeEnvironment.OSVersion,
-						},
-					}, pipelinev1beta1.Param{
-						Name: "osName",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CRE.Spec.RuntimeEnvironment.OSName,
-						},
-					}, pipelinev1beta1.Param{
-						Name: "pythonVersion",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: r.CRE.Spec.RuntimeEnvironment.PythonVersion,
-						},
-					})
-				}
-
-				// if we have no PackageVersion specified, we are done...
-				if len(r.CRE.Spec.PackageVersions) > 0 {
-					params = append(params, pipelinev1beta1.Param{
-						Name: "packages",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:     pipelinev1beta1.ParamTypeArray,
-							ArrayVal: r.CRE.Spec.PackageVersions,
-						},
-					})
-				}
-			case meteorv1alpha1.GitRepository:
-				params = append(params, pipelinev1beta1.Param{
-					Name: "url",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CRE.Spec.BuildTypeSpec.Repository,
-					},
-				}, pipelinev1beta1.Param{
-					Name: "ref",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: r.CRE.Spec.BuildTypeSpec.GitRef,
-					},
-				})
-			}
+			// append the parameters specific to each build type
+			params = appendBuildTypeParameters(r.CRE, params)
 
 			pipelineRun = &pipelinev1beta1.PipelineRun{
 				ObjectMeta: metav1.ObjectMeta{
@@ -318,7 +233,7 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(name string, c
 					},
 				},
 			}
-			controllerutil.SetControllerReference(r.CRE, pipelineRun, r.Scheme)
+			_ = controllerutil.SetControllerReference(r.CRE, pipelineRun, r.Scheme) // TODO: check error
 
 			if err := r.Create(ctx, pipelineRun); err != nil {
 				logger.Error(err, "Unable to create PipelineRun")
@@ -381,4 +296,105 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(name string, c
 	}
 
 	return newStatus
+}
+
+func appendODHAnnotations(cre *meteorv1alpha1.CustomRuntimeEnvironment, params []pipelinev1beta1.Param) []pipelinev1beta1.Param {
+	_params := []pipelinev1beta1.Param{
+		{
+			Name: "name",
+			Value: pipelinev1beta1.ArrayOrString{
+				Type:      pipelinev1beta1.ParamTypeString,
+				StringVal: cre.ObjectMeta.Annotations["opendatahub.io/notebook-image-name"],
+			},
+		},
+		{
+			Name: "creator",
+			Value: pipelinev1beta1.ArrayOrString{
+				Type:      pipelinev1beta1.ParamTypeString,
+				StringVal: cre.ObjectMeta.Annotations["opendatahub.io/notebook-image-creator"],
+			},
+		},
+		{
+			Name: "description",
+			Value: pipelinev1beta1.ArrayOrString{
+				Type:      pipelinev1beta1.ParamTypeString,
+				StringVal: cre.ObjectMeta.Annotations["opendatahub.io/notebook-image-desc"],
+			},
+		},
+	}
+
+	return append(params, _params...)
+}
+
+func appendBuildTypeParameters(cre *meteorv1alpha1.CustomRuntimeEnvironment, params []pipelinev1beta1.Param) []pipelinev1beta1.Param {
+	_params := []pipelinev1beta1.Param{}
+
+	switch buildType := cre.Spec.BuildTypeSpec.BuildType; buildType {
+	case meteorv1alpha1.ImportImage:
+		_params = append(_params, pipelinev1beta1.Param{
+			Name: "baseImage",
+			Value: pipelinev1beta1.ArrayOrString{
+				Type:      pipelinev1beta1.ParamTypeString,
+				StringVal: cre.Spec.BuildTypeSpec.FromImage,
+			}, // TODO we need a validator for this
+		})
+	case meteorv1alpha1.PackageList:
+		// if we have a BaseImage supplied, use it
+		if cre.Spec.BaseImage != "" {
+			_params = append(_params, pipelinev1beta1.Param{
+				Name: "baseImage",
+				Value: pipelinev1beta1.ArrayOrString{
+					Type:      pipelinev1beta1.ParamTypeString,
+					StringVal: cre.Spec.BaseImage,
+				},
+			})
+		} else {
+			_params = append(_params, pipelinev1beta1.Param{
+				Name: "osVersion",
+				Value: pipelinev1beta1.ArrayOrString{
+					Type:      pipelinev1beta1.ParamTypeString,
+					StringVal: cre.Spec.RuntimeEnvironment.OSVersion,
+				},
+			}, pipelinev1beta1.Param{
+				Name: "osName",
+				Value: pipelinev1beta1.ArrayOrString{
+					Type:      pipelinev1beta1.ParamTypeString,
+					StringVal: cre.Spec.RuntimeEnvironment.OSName,
+				},
+			}, pipelinev1beta1.Param{
+				Name: "pythonVersion",
+				Value: pipelinev1beta1.ArrayOrString{
+					Type:      pipelinev1beta1.ParamTypeString,
+					StringVal: cre.Spec.RuntimeEnvironment.PythonVersion,
+				},
+			})
+		}
+
+		// if we have no PackageVersion specified, we are done...
+		if len(cre.Spec.PackageVersions) > 0 {
+			_params = append(_params, pipelinev1beta1.Param{
+				Name: "packages",
+				Value: pipelinev1beta1.ArrayOrString{
+					Type:     pipelinev1beta1.ParamTypeArray,
+					ArrayVal: cre.Spec.PackageVersions,
+				},
+			})
+		}
+	case meteorv1alpha1.GitRepository:
+		_params = append(_params, pipelinev1beta1.Param{
+			Name: "url",
+			Value: pipelinev1beta1.ArrayOrString{
+				Type:      pipelinev1beta1.ParamTypeString,
+				StringVal: cre.Spec.BuildTypeSpec.Repository,
+			},
+		}, pipelinev1beta1.Param{
+			Name: "ref",
+			Value: pipelinev1beta1.ArrayOrString{
+				Type:      pipelinev1beta1.ParamTypeString,
+				StringVal: cre.Spec.BuildTypeSpec.GitRef,
+			},
+		})
+	}
+
+	return append(params, _params...)
 }
