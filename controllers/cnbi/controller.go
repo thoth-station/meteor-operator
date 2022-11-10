@@ -24,6 +24,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
+	meta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -278,15 +279,32 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 			if err := r.Create(ctx, pipelineRun); err != nil {
 				logger.Error(err, "Unable to create PipelineRun")
 
-				setCondition(newStatus, meteorv1alpha1.ErrorPipelineRunCreate, metav1.ConditionTrue, "PipelineRunCreateFailed", err.Error())
+				meta.SetStatusCondition(&newStatus.Conditions,
+					metav1.Condition{
+						Type:    meteorv1alpha1.ErrorPipelineRunCreate,
+						Status:  metav1.ConditionTrue,
+						Reason:  "PipelineRunCreateFailed",
+						Message: err.Error(),
+					})
 				return newStatus
 			}
-			setCondition(newStatus, meteorv1alpha1.PipelineRunCreated, metav1.ConditionTrue, "PipelineRunCreated", fmt.Sprintf("%s PipelineRun created successfully", name))
+			logger.Info("Created PipelineRun for CNBI", "PipelineRun", pipelineRun.GetNamespacedName(), "CNBi", req.NamespacedName)
+			meta.SetStatusCondition(&newStatus.Conditions, metav1.Condition{
+				Type:    meteorv1alpha1.PipelineRunCreated,
+				Status:  metav1.ConditionTrue,
+				Reason:  "PipelineRunCreated",
+				Message: fmt.Sprintf("%s PipelineRun created successfully", name),
+			})
 			return newStatus
 		}
 
 		logger.Error(err, "Error fetching PipelineRun")
-		setCondition(newStatus, meteorv1alpha1.GenericPipelineError, metav1.ConditionTrue, "PipelineRunGenericError", err.Error())
+		meta.SetStatusCondition(&newStatus.Conditions, metav1.Condition{
+			Type:    meteorv1alpha1.GenericPipelineError,
+			Status:  metav1.ConditionTrue,
+			Reason:  "PipelineRunGenericError",
+			Message: err.Error()},
+		)
 		return newStatus
 	}
 
@@ -297,21 +315,46 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 
 		// Let's check if the PipelineRun is completed successfully or not, and conclude our new conditions
 		if pipelineRun.Status.Conditions[0].Status == v1.ConditionTrue && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
-			setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed successfully.")
-			removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
+			meta.SetStatusCondition(&newStatus.Conditions, metav1.Condition{
+				Type:    meteorv1alpha1.PipelineRunCompleted,
+				Status:  metav1.ConditionTrue,
+				Reason:  "PipelineRunCompleted",
+				Message: "The PipelineRun has been completed successfully.",
+			})
+			meta.RemoveStatusCondition(&newStatus.Conditions, meteorv1alpha1.PipelineRunCreated)
 
 			if pipelineRun.Labels["cnbi.thoth-station.ninja/pipeline"] == "import" {
-				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionTrue, "ImageImportReady", "Import succeeded, the image is ready to be used.")
+				meta.SetStatusCondition(&newStatus.Conditions, metav1.Condition{
+					Type:    meteorv1alpha1.ImageImportReady,
+					Status:  metav1.ConditionTrue,
+					Reason:  "ImageImportReady",
+					Message: "Import succeeded, the image is ready to be used.",
+				})
 			}
 			// TODO add other pipeline-specific success conditions
 		} else if pipelineRun.Status.Conditions[0].Status == v1.ConditionFalse && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
-			setCondition(newStatus, meteorv1alpha1.PipelineRunCompleted, metav1.ConditionTrue, "PipelineRunCompleted", "The PipelineRun has been completed with a failure!")
-			removeCondition(newStatus, meteorv1alpha1.PipelineRunCreated)
+			meta.SetStatusCondition(&newStatus.Conditions, metav1.Condition{
+				Type:    meteorv1alpha1.PipelineRunCompleted,
+				Status:  metav1.ConditionTrue,
+				Reason:  "PipelineRunCompleted",
+				Message: "The PipelineRun has been completed with a failure!",
+			})
+			meta.RemoveStatusCondition(&newStatus.Conditions, meteorv1alpha1.PipelineRunCreated)
 
 			if pipelineRun.Labels["cnbi.thoth-station.ninja/pipeline"] == "import" {
-				setCondition(newStatus, meteorv1alpha1.ImageImportReady, metav1.ConditionFalse, "ImageImportNotReady", "Import failed, this could be due to the repository to import from does not exist or is not accessible")
+				meta.SetStatusCondition(&newStatus.Conditions, metav1.Condition{
+					Type:    meteorv1alpha1.ImageImportReady,
+					Status:  metav1.ConditionFalse,
+					Reason:  "ImageImportNotReady",
+					Message: "Import failed, this could be due to the repository to import from does not exist or is not accessible",
+				})
 			} else if pipelineRun.Labels["cnbi.thoth-station.ninja/pipeline"] == "gitrepo" {
-				setCondition(newStatus, meteorv1alpha1.ErrorBuildingImage, metav1.ConditionTrue, "ErrorBuildingImage", "Build failed!")
+				meta.SetStatusCondition(&newStatus.Conditions, metav1.Condition{
+					Type:    meteorv1alpha1.ErrorBuildingImage,
+					Status:  metav1.ConditionTrue,
+					Reason:  "ErrorBuildingImage",
+					Message: "Build failed!",
+				})
 			}
 
 		}
@@ -322,14 +365,14 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(name string, ctx context.
 
 	if pipelineRun.Status.CompletionTime != nil {
 		if pipelineRun.Status.Conditions[0].Reason == "Succeeded" { // FIXME this feels dangerous, is it really the 1st one? all the time?
-			r.CNBi.Status.Pipelines[statusIndex].Ready = "True"
+			cnbi.Status.Pipelines[statusIndex].Ready = "True"
 			if len(pipelineRun.Status.PipelineResults) > 0 {
 				if pipelineRun.Status.PipelineResults[0].Value.Type == pipelinev1beta1.ParamTypeString {
 					r.CNBi.Status.Pipelines[statusIndex].Url = pipelineRun.Status.PipelineResults[0].Value.StringVal
 				}
 			}
 		} else if pipelineRun.Status.Conditions[0].Reason == "Failed" {
-			r.CNBi.Status.Pipelines[statusIndex].Ready = "False"
+			cnbi.Status.Pipelines[statusIndex].Ready = "False"
 		}
 	}
 
