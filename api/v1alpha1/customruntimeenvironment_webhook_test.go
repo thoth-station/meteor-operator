@@ -169,9 +169,8 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 			metav1.SetMetaDataAnnotation(&cre.ObjectMeta, ODHCreatorAnnotationKey, "ginkgo+gomega")
 
 			err := k8sClient.Create(context.Background(), cre)
-			Expect(err).Should(Succeed())
 			GinkgoWriter.Printf("cre: %v", cre)
-
+			Expect(err).Should(Succeed())
 		})
 
 		It("should fail if runtimeEnvironment and baseImage is present", func() {
@@ -190,9 +189,9 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 			metav1.SetMetaDataAnnotation(&cre.ObjectMeta, ODHCreatorAnnotationKey, "ginkgo+gomega")
 
 			err := k8sClient.Create(context.Background(), cre)
+			GinkgoWriter.Printf("cre: %v, err: %v", cre, err)
 			Expect(err).ShouldNot(Succeed())
 			Expect(err).Should(MatchError("admission webhook \"vcustomruntimeenvironment.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-7\" is invalid: spec.baseImage: Invalid value: \"quay.io/thoth-station/s2i-custom-notebook:latest\": baseImage and runtimeEnvironment are mutually exclusive"))
-
 		})
 	})
 })
