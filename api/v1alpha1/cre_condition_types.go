@@ -49,5 +49,5 @@ type Condition struct {
 	Message string `json:"message,omitempty" protobuf:"bytes,6,opt,name=message"`
 }
 
-// Conditions provide observations of the operational state of a CustomNBImage resource.
+// Conditions provide observations of the operational state of a CustomRuntimeEnvironment resource.
 type Conditions []Condition

@@ -1,7 +1,8 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
-- meteor_v1alpha1_coma.yaml
-- meteor_v1alpha1_meteor.yaml
-- meteor_v1alpha1_shower.yaml
-- meteor_v1alpha1_customnbimage.yaml
+  - meteor_v1alpha1_coma.yaml
+  - meteor_v1alpha1_customruntimeenvironment_import_only.yaml
+  - meteor_v1alpha1_customruntimeenvironment.yaml
+  - meteor_v1alpha1_meteor.yaml
+  - meteor_v1alpha1_shower.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

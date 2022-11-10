@@ -27,7 +27,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: CustomRuntimeEnvironment is the Schema for the customnbimages
+        description: CustomRuntimeEnvironment is the Schema for the customruntimeenvironment
           API
         properties:
           apiVersion:

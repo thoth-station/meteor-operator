@@ -128,7 +128,7 @@ type CustomRuntimeEnvironmentStatus struct {
 //+kubebuilder:resource:shortName=cre,categories=opendatahub
 //+kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase"
 
-// CustomRuntimeEnvironment is the Schema for the customnbimages API
+// CustomRuntimeEnvironment is the Schema for the customruntimeenvironment API
 type CustomRuntimeEnvironment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
