@@ -28,7 +28,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/util/retry"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -88,14 +87,12 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// let's see if we can update the status
 	newStatus.ObservedGeneration = r.CNBi.Generation
-	if equality.Semantic.DeepEqual(newStatus, &r.CNBi.Status) {
-		err := r.updateStatus(ctx, req.NamespacedName, newStatus)
-		return ctrl.Result{}, err
+	if !equality.Semantic.DeepEqual(newStatus, &r.CNBi.Status) {
+		logger.Info("Reconciled CustomNotebookImage", "spec", r.CNBi.Spec, "status", r.CNBi.Status)
+		r.CNBi.Status.Phase = r.CNBi.AggregatePhase()
 	}
 
-	logger.Info("Reconciled CustomNotebookImage", "spec", r.CNBi.Spec, "status", r.CNBi.Status)
-	r.CNBi.Status.Phase = r.CNBi.AggregatePhase()
-	err := r.updateStatus(ctx, req.NamespacedName, newStatus)
+	err := r.Status().Update(ctx, r.CNBi)
 	return ctrl.Result{}, err
 }
 
@@ -108,26 +105,6 @@ func (r *CustomNBImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&pipelinev1beta1.PipelineRun{}).
 		Owns(&meteorv1alpha1.Meteor{}).
 		Complete(r)
-}
-
-func (r *CustomNBImageReconciler) updateStatus(ctx context.Context, nn types.NamespacedName, status *meteorv1alpha1.CustomNBImageStatus) error {
-	logger := log.FromContext(ctx)
-	logger.Info(("updating status of CustomNotebookImage"), "status", r.CNBi.Status, "newStatus", status)
-
-	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		original := &meteorv1alpha1.CustomNBImage{}
-		if err := r.Get(ctx, nn, original); err != nil {
-			return err
-		}
-		original.Status = *status
-		if err := r.Client.Status().Update(ctx, original); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		return fmt.Errorf("failed to update status of CNBi %s/%s: %v", nn.Namespace, nn.Name, err)
-	}
-	return nil
 }
 
 // reconcilePipelineRun will reconcile the pipeline run for the CustomNBImage.
