@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	timeout  = time.Second * 80
+	timeout  = time.Second * 30
 	interval = time.Millisecond * 750
 )
 
@@ -63,12 +63,14 @@ var _ = Describe("CustomNBImage controller", func() {
 
 			lookupKey := types.NamespacedName{Name: "test-1", Namespace: "default"}
 
-			Eventually(func(g Gomega) {
-				createdCNBi := &meteorv1alpha1.CustomNBImage{}
-				err := k8sClient.Get(ctx, lookupKey, createdCNBi)
-				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(createdCNBi.Status.Conditions).ToNot(BeEmpty())
-				g.Expect(createdCNBi.Status.Phase).To(Equal(meteorv1alpha1.PhaseRunning))
+			Eventually(func(gg Gomega) {
+				gg.Consistently(func(g Gomega) {
+					createdCNBi := &meteorv1alpha1.CustomNBImage{}
+					err := k8sClient.Get(ctx, lookupKey, createdCNBi)
+					g.Expect(err).NotTo(HaveOccurred())
+					g.Expect(createdCNBi.Status.Conditions).ToNot(BeEmpty())
+					g.Expect(createdCNBi.Status.Phase).To(Equal(meteorv1alpha1.PhaseRunning))
+				}, "8s", "500ms").Should(Succeed())
 			}, timeout, interval).Should(Succeed())
 
 		})
