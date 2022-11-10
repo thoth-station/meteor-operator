@@ -19,26 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"strings"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-// CNBiPhase describes the phase of the CustomNBImage
-// +kubebuilder:validation:Enum=Pending;Failed;Preparing;CreatingRepository;Resolving;Running;Building;Importing;Validating;Ready
-type CNBiPhase string
-
-const (
-	CNBiPhasePending            CNBiPhase = "Pending"
-	CNBiPhaseFailed             CNBiPhase = "Failed"
-	CNBiPhasePreparing          CNBiPhase = "Preparing"
-	CNBiPhaseCreatingRepository CNBiPhase = "CreatingRepository"
-	CNBiPhaseResolving          CNBiPhase = "Resolving"
-	CNBiPhaseRunning            CNBiPhase = "Running"
-	CNBiPhaseBuilding           CNBiPhase = "Building"
-	CNBiPhaseImporting          CNBiPhase = "Importing"
-	CNBiPhaseValidating         CNBiPhase = "Validating"
-	CNBiPhaseOk                 CNBiPhase = "Ready"
 )
 
 // BuildType describes how to build a custom notebook image.
@@ -66,6 +47,12 @@ const (
 	CNBiCreatorAnnotationKey     = "opendatahub.io/notebook-image-creator"
 )
 
+// ImagePullSecret is a secret that is used to pull images from a private registry
+type ImagePullSecret struct {
+	// Name of the secret to be used
+	Name string `json:"name"`
+}
+
 // BuildTypeSpec is the strategy super-set of configurations for all strategies.
 type BuildTypeSpec struct {
 	// BuildType is the strategy
@@ -84,6 +71,9 @@ type BuildTypeSpec struct {
 	// GitRef is the git reference within the Repository to use for building (e.g. "main")
 	// +optional
 	GitRef string `json:"gitRef,omitempty"`
+	// ImagePullSecret is the name of the secret to use for pulling the base image
+	// +optional
+	ImagePullSecret ImagePullSecret `json:"imagePullSecret,omitempty"`
 }
 
 // CustomNBImageRuntimeSpec defines a Runtime Environment, aka 'the Python version used'
@@ -113,16 +103,21 @@ type CustomNBImageSpec struct {
 	BuildTypeSpec `json:",inline"`
 }
 
+//+kubebuilder:object:generate=true
 // CustomNBImageStatus defines the observed state of CustomNBImage
 type CustomNBImageStatus struct {
-	// Current condition of the Shower.
+	// ObservedGeneration is the most recent generation observed. It corresponds to the
+	// Object's generation, which is updated on mutation by the API Server.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+	// Current condition of the Custom Notebook Image
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Phase",xDescriptors={"urn:alm:descriptor:io.kubernetes.phase'"}
 	//+optional
-	Phase CNBiPhase `json:"phase,omitempty"`
+	Phase Phase `json:"phase,omitempty"`
 	// Current service state of Meteor.
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Conditions",xDescriptors={"urn:alm:descriptor:io.kubernetes.conditions"}
 	//+optional
-	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+	Conditions []Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 	// Stores results from pipelines. Empty if neither pipeline has completed.
 	//+optional
 	Pipelines []PipelineResult `json:"pipelines,omitempty"`
@@ -152,35 +147,52 @@ type CustomNBImageList struct {
 }
 
 // Aggregate phase from conditions
-func (cnbi *CustomNBImage) AggregatePhase() CNBiPhase {
+func (cnbi *CustomNBImage) AggregatePhase() Phase {
+	pipelineRunCreated := false
+	pipelineRunSuccesseded := false
+	importReady := false
+
 	if len(cnbi.Status.Conditions) == 0 {
-		return CNBiPhasePending
+		return PhasePending
 	}
 
 	for _, c := range cnbi.Status.Conditions {
-		if c.Status == metav1.ConditionFalse {
-			return CNBiPhaseFailed
+		if c.Type == PipelineRunCompleted && c.Status == metav1.ConditionTrue {
+			pipelineRunSuccesseded = true
 		}
 
-		// Claim ready only if pipelineruns have completed
-		if strings.HasPrefix(c.Type, "PipelineRun") {
-			switch c.Reason {
-			case "Succeeded", "Completed":
-				continue
-			}
-			// TODO distinguish between preparing and building (depending on the pipelinerun name containing 'prepare' or 'build'?)
-			if strings.HasPrefix(c.Type, "PipelineRunPrepare") {
-				return CNBiPhasePreparing
-			} else if strings.HasPrefix(c.Type, "PipelineRunImport") {
-				return CNBiPhaseImporting
+		if c.Type == ErrorPipelineRunCreate && c.Status == metav1.ConditionTrue {
+			return PhaseFailed
+		}
+
+		if c.Type == PipelineRunCreated && c.Status == metav1.ConditionTrue {
+			pipelineRunCreated = true
+		}
+
+		if c.Type == ImageImportReady {
+			if c.Status == metav1.ConditionTrue {
+				importReady = true
 			}
 		}
 
-		if c.Reason != "Ready" {
-			return CNBiPhaseRunning
+		if c.Type == ImageImportInvalid && c.Status == metav1.ConditionTrue {
+			return PhaseFailed
 		}
 	}
-	return CNBiPhaseOk
+
+	if pipelineRunCreated {
+		return PhaseRunning
+	}
+
+	if pipelineRunSuccesseded {
+		if importReady {
+			return PhaseSucceeded
+		} else {
+			return PhaseFailed
+		}
+	}
+
+	return PhasePending
 }
 
 // IsReady returns true the Ready condition status is True
@@ -211,4 +223,23 @@ func (r *CustomNBImageRuntimeSpec) isValid() bool {
 	}
 
 	return true
+}
+
+// hasValidImagePullSecret checks if the ImagePullSecret is valid, eg name is not empty
+func (b *BuildTypeSpec) hasValidImagePullSecret() bool {
+	if b.ImagePullSecret != (ImagePullSecret{}) {
+		if b.ImagePullSecret.Name == "" {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (cnbi *CustomNBImage) GetConditions() []Condition {
+	return cnbi.Status.Conditions
+}
+
+func (cnbi *CustomNBImage) SetConditions(conditions []Condition) {
+	cnbi.Status.Conditions = conditions
 }

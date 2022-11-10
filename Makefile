@@ -249,6 +249,11 @@ kind-load-img: docker-build kind-create
 	@echo "Loading image into kind"
 	$(KIND) load docker-image $(IMG) --name $(KIND_CLUSTER_NAME)
 
+.PHONY: kind-copy-token
+kind-copy-token: kind
+	@echo "Copying token to clipboard"
+	kubectl -n kubernetes-dashboard create token admin-user | wl-copy
+
 .PHONY: kind-delete
 kind-delete: | $(KIND)
 	$(KIND) delete cluster --name $(KIND_CLUSTER_NAME)
