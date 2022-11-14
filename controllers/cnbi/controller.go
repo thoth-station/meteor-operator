@@ -25,11 +25,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -238,35 +236,8 @@ func (r *CustomNBImageReconciler) reconcilePipelineRun(ctx context.Context, cnbi
 					PipelineRef: &pipelinev1beta1.PipelineRef{
 						Name: fmt.Sprintf("cnbi-%s", pipeline),
 					},
-					Params: params,
-					Workspaces: []pipelinev1beta1.WorkspaceBinding{
-						{
-							Name: "data",
-							VolumeClaimTemplate: &v1.PersistentVolumeClaim{
-								Spec: v1.PersistentVolumeClaimSpec{
-									AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
-									Resources: v1.ResourceRequirements{
-										Requests: v1.ResourceList{
-											v1.ResourceStorage: resource.MustParse("500Mi"),
-										},
-									},
-								},
-							},
-						},
-						{
-							Name: "sslcertdir",
-							ConfigMap: &v1.ConfigMapVolumeSource{
-								LocalObjectReference: v1.LocalObjectReference{
-									Name: "openshift-service-ca.crt",
-								},
-								Items: []v1.KeyToPath{{
-									Key:  "service-ca.crt",
-									Path: "ca.crt",
-								}},
-								DefaultMode: pointer.Int32(420),
-							},
-						},
-					},
+					Params:     params,
+					Workspaces: workspaces_const,
 				},
 			}
 			controllerutil.SetControllerReference(cnbi, pipelineRun, r.Scheme)
