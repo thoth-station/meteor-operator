@@ -1,0 +1,3 @@
+*zz_generated* -diff linguist-generated=true
+go.{mod,sum} -diff linguist-generated=true
+config/crd/bases/*.yaml -diff linguist-generated=true
