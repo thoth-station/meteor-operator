@@ -227,7 +227,7 @@ func TestAggregatePhase(t *testing.T) {
 			},
 			expectedOutput: PhaseRunning,
 		},
-		"importing_missing_secret": {
+		"importing-missing-secret": {
 			cre: CustomRuntimeEnvironment{
 				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},

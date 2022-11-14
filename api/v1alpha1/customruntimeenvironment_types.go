@@ -40,7 +40,7 @@ const (
 	GitRepository BuildType = "GitRepository"
 )
 
-// Open Data Hub Annotations is a list of annotations that are added to the custom runtime environment container image
+// Open Data Hub Annotations is a list of annotations that are added to the ImageStream resource created by CRE
 const (
 	ODHNameAnnotationKey        = "opendatahub.io/notebook-image-name"
 	ODHDescriptionAnnotationKey = "opendatahub.io/notebook-image-desc"
