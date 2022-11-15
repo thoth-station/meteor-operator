@@ -111,14 +111,23 @@ spec:
                     point
                   properties:
                     lastTransitionTime:
-                      description: Last time the condition transitioned from one status
-                        to another.
+                      description: LastTransitionTime is the time the condition transitioned
+                        from one status to another.
                       format: date-time
                       type: string
                     message:
                       description: Human-readable message indicating details about
                         last transition.
                       type: string
+                    observedGeneration:
+                      description: observedGeneration represents the .metadata.generation
+                        that the condition was set based upon. For instance, if .metadata.generation
+                        is currently 12, but the .status.conditions[x].observedGeneration
+                        is 9, the condition is out of date with respect to the current
+                        state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
                     reason:
                       description: Unique, one-word, CamelCase reason for the condition's
                         last transition.
