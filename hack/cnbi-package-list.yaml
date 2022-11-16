@@ -10,9 +10,19 @@ spec:
   description: Build a notebook image from a package list
   params:
     - name: baseImage
+      description: Container image repository url
       type: string
     - name: packages
       type: array
+    - name: name
+      description: Image name
+      type: string
+    - name: description
+      description: Custom description
+      type: string
+    - name: creator
+      description: Owner, user who requested the import
+      type: string
   # TODO: baseImage selection with osVersion, osName, pythonVersion
   workspaces:
     - name: packages-to-install
@@ -35,9 +45,12 @@ spec:
           - name: baseImage
         steps:
           - script: | # PLACEHOLDER
-              echo
-              quay.io/thoth-station/s2i-custom-notebook
-              > $(results.baseImage.path)
+              image=quay.io/thoth-station/s2i-custom-notebook
+              if [ -n "$(params.baseImage" ]
+              then
+                image="$(params.baseImage)"
+              fi
+              echo $image > $(results.baseImage.path)
             image: alpine
     - name: build-image
       taskRef:
@@ -69,9 +82,12 @@ spec:
             apiVersion: image.openshift.io/v1
             metadata:
               annotations:
-                opendatahub.io/notebook-image-name: $(context.pipelineRun.name)
-              name: $(context.pipelineRun.name)
-              namespace: $(context.pipelineRun.namespace)
+                opendatahub.io/notebook-image-name: "$(params.name)"
+                opendatahub.io/notebook-image-desc: "$(params.description)"
+                opendatahub.io/notebook-image-creator: "$(params.creator)"
+                opendatahub.io/notebook-image-url: "$(tasks.get-base-image.results.baseImage)"
+              name: "$(context.pipelineRun.name)"
+              namespace: "$(context.pipelineRun.namespace)"
               labels:
                 opendatahub.io/notebook-image: 'true'
             spec:
