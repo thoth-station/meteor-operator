@@ -58,7 +58,6 @@ spec:
         kind: Task
       runAfter:
         - resolve-dependencies
-        - get-base-image
       workspaces:
         - name: requirements
           workspace: packages-to-install
@@ -71,8 +70,6 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
-      runAfter:
-        - build-image
       params:
         - name: SCRIPT
           value: |
