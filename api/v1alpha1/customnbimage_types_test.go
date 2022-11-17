@@ -35,7 +35,7 @@ func TestIsReady(t *testing.T) {
 	}{
 		"readySucceeded": {
 			status: CustomNBImageStatus{
-				Conditions: []Condition{
+				Conditions: []metav1.Condition{
 					{
 						Type:   "PipelineRunPrepare",
 						Status: metav1.ConditionTrue,
@@ -47,7 +47,7 @@ func TestIsReady(t *testing.T) {
 		},
 		"notReadyCouldntGetPipeline": {
 			status: CustomNBImageStatus{
-				Conditions: []Condition{
+				Conditions: []metav1.Condition{
 					{
 						Type:   "PipelineRunPrepare",
 						Status: metav1.ConditionFalse,
@@ -59,7 +59,7 @@ func TestIsReady(t *testing.T) {
 		},
 		"notReadyRunning": {
 			status: CustomNBImageStatus{
-				Conditions: []Condition{
+				Conditions: []metav1.Condition{
 					{
 						Type:   "PipelineRunPrepare",
 						Status: metav1.ConditionUnknown,
@@ -153,7 +153,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 				Status: CustomNBImageStatus{
-					Conditions: []Condition{},
+					Conditions: []metav1.Condition{},
 				},
 			},
 			expectedOutput: PhasePending,
@@ -169,7 +169,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 				Status: CustomNBImageStatus{
-					Conditions: []Condition{
+					Conditions: []metav1.Condition{
 						{
 							Type:   PipelineRunCreated,
 							Status: metav1.ConditionTrue,
@@ -190,7 +190,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 				Status: CustomNBImageStatus{
-					Conditions: []Condition{
+					Conditions: []metav1.Condition{
 						{
 							Type:   ErrorPipelineRunCreate,
 							Status: metav1.ConditionTrue,
@@ -211,7 +211,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 				Status: CustomNBImageStatus{
-					Conditions: []Condition{
+					Conditions: []metav1.Condition{
 						{
 							Type:   PipelineRunCreated,
 							Status: metav1.ConditionTrue,
@@ -237,7 +237,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 				Status: CustomNBImageStatus{
-					Conditions: []Condition{
+					Conditions: []metav1.Condition{
 						{
 							Type:   PipelineRunCreated,
 							Status: metav1.ConditionTrue,
@@ -263,7 +263,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 				Status: CustomNBImageStatus{
-					Conditions: []Condition{
+					Conditions: []metav1.Condition{
 						{
 							Type:   PipelineRunCreated,
 							Status: metav1.ConditionTrue,
@@ -289,7 +289,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 				Status: CustomNBImageStatus{
-					Conditions: []Condition{
+					Conditions: []metav1.Condition{
 						{
 							Type:   ImageImportReady,
 							Status: metav1.ConditionTrue,
@@ -315,7 +315,7 @@ func TestAggregatePhase(t *testing.T) {
 					},
 				},
 				Status: CustomNBImageStatus{
-					Conditions: []Condition{
+					Conditions: []metav1.Condition{
 						/*
 						  - lastTransitionTime: "2022-10-25T12:55:46Z"
 						    message: import PipelineRun created successfully

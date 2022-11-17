@@ -103,7 +103,7 @@ type CustomNBImageSpec struct {
 	BuildTypeSpec `json:",inline"`
 }
 
-//+kubebuilder:object:generate=true
+// +kubebuilder:object:generate=true
 // CustomNBImageStatus defines the observed state of CustomNBImage
 type CustomNBImageStatus struct {
 	// ObservedGeneration is the most recent generation observed. It corresponds to the
@@ -117,7 +117,7 @@ type CustomNBImageStatus struct {
 	// Current service state of Meteor.
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Conditions",xDescriptors={"urn:alm:descriptor:io.kubernetes.conditions"}
 	//+optional
-	Conditions []Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 	// Stores results from pipelines. Empty if neither pipeline has completed.
 	//+optional
 	Pipelines []PipelineResult `json:"pipelines,omitempty"`
@@ -234,12 +234,4 @@ func (b *BuildTypeSpec) hasValidImagePullSecret() bool {
 	}
 
 	return true
-}
-
-func (cnbi *CustomNBImage) GetConditions() []Condition {
-	return cnbi.Status.Conditions
-}
-
-func (cnbi *CustomNBImage) SetConditions(conditions []Condition) {
-	cnbi.Status.Conditions = conditions
 }

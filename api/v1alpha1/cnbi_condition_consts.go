@@ -20,38 +20,38 @@ package v1alpha1
 
 const (
 	// PipelineRunCreated indicates that the Tekton pipeline run was created
-	PipelineRunCreated = ConditionType("PipelineRunCreated")
+	PipelineRunCreated = "PipelineRunCreated"
 
 	// ErrorPipelineRunCreate indicates that the Tekton pipeline run creation failed
-	ErrorPipelineRunCreate = ConditionType("ErrorPipelineRunCreate")
+	ErrorPipelineRunCreate = "ErrorPipelineRunCreate"
 
 	// ImportingImage indicates that the image is being imported from a remote registry
-	ImportingImage = ConditionType("ImportingImage")
+	ImportingImage = "ImportingImage"
 
 	// RequredSecretMissing indicates that the secret required for authentication to the container image registry is missing
-	RequiredSecretMissing = ConditionType("RequiredSecretMissing")
+	RequiredSecretMissing = "RequiredSecretMissing"
 
 	// ValidatingImportedImage indicates that the imported image is being validated by a Tekton PipelineRun's Step
-	ValidatingImportedImage = ConditionType("ValidatingImportedImage")
+	ValidatingImportedImage = "ValidatingImportedImage"
 
 	// ImageImportReady indicates that the imported image is ready to be used
-	ImageImportReady = ConditionType("ImageImportReady")
+	ImageImportReady = "ImageImportReady"
 
 	// ImageImportInvalid indicates that the imported image is invalid
-	ImageImportInvalid = ConditionType("ImageImportInvalid")
+	ImageImportInvalid = "ImageImportInvalid"
 
 	// ErrorResolvingDependencies indicates that the dependency resolution failed during preparation of the image build
-	ErrorResolvingDependencies = ConditionType("ErrorResolvingDependencies")
+	ErrorResolvingDependencies = "ErrorResolvingDependencies"
 
 	// BuildingImage indicates that the image is being built by a Tekton PipelineRun
-	BuildingImage = ConditionType("BuildingImage")
+	BuildingImage = "BuildingImage"
 
 	// ErrorBuildingImage indicates that the image build failed
-	ErrorBuildingImage = ConditionType("ErrorBuildingImage")
+	ErrorBuildingImage = "ErrorBuildingImage"
 
 	// GenericPipelineError indicates that the pipeline failed with an error
-	GenericPipelineError = ConditionType("GenericPipelineError")
+	GenericPipelineError = "GenericPipelineError"
 
 	// PipelineRunCompleted indicates that the Tekton pipeline run completed
-	PipelineRunCompleted = ConditionType("PipelineRunCompleted")
+	PipelineRunCompleted = "PipelineRunCompleted"
 )
