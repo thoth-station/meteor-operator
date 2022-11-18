@@ -1,0 +1,14 @@
+---
+apiVersion: meteor.zone/v1alpha1
+kind: CustomNBImage
+metadata:
+  name: s2i-minimal-py38-notebook-import # TODO
+  labels:
+    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
+  annotations:
+    opendatahub.io/notebook-image-name: s2i-minimal-py38-notebook
+    opendatahub.io/notebook-image-desc: minimal notebook image for python 3.8
+    opendatahub.io/notebook-image-creator: goern
+spec:
+  buildType: ImageImport
+  fromImage: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2

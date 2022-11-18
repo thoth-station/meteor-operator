@@ -1,0 +1,15 @@
+---
+apiVersion: meteor.zone/v1alpha1
+kind: CustomNBImage
+metadata:
+  name: elyra-aidevsecops-tutorial
+  labels:
+    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
+  annotations:
+    opendatahub.io/notebook-image-name: Elyra DevSecOps Tutorial
+    opendatahub.io/notebook-image-desc: Build from the Elyra Tutorial
+    opendatahub.io/notebook-image-creator: codificat
+spec:
+  buildType: GitRepository
+  repository: https://github.com/AICoE/elyra-aidevsecops-tutorial
+  gitRef: master
