@@ -40,13 +40,19 @@ spec:
             - $(params.packages)
     ####### TODO: the rest of the tasks sould be shared between all types of sources
     - name: get-base-image
+      params:
+        - name: baseImage
+          value: $(params.baseImage)
       taskSpec:
+        params:
+          - name: baseImage
+            type: string
         results:
           - name: baseImage
         steps:
           - script: | # PLACEHOLDER
               image=quay.io/thoth-station/s2i-custom-notebook
-              if [ -n "$(params.baseImage" ]
+              if [ -n "$(params.baseImage)" ]
               then
                 image="$(params.baseImage)"
               fi
