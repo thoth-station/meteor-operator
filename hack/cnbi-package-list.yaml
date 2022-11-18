@@ -57,7 +57,7 @@ spec:
                 image="$(params.baseImage)"
               fi
               echo $image > $(results.baseImage.path)
-            image: alpine
+            image: registry.access.redhat.com/ubi9-micro
     - name: build-image
       taskRef:
         name: buildah-requirements
@@ -186,7 +186,7 @@ spec:
     - name: PACKAGES
       type: array
   steps:
-    - image: alpine
+    - image: registry.access.redhat.com/ubi9-micro
       volumeMounts:
         - name: unpinned-packages
           mountPath: /scratchspace
