@@ -1,0 +1,39 @@
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+    name: meteor-external
+subjects:
+    - kind: ServiceAccount
+      name: pipeline
+      namespace: aicoe-meteor
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: meteor-external
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+    name: meteor-external
+rules:
+    - apiGroups:
+          - image.openshift.io
+      resources:
+          - imagestreams/layers
+          - imagestreams
+      verbs:
+          - "*"
+    - apiGroups:
+          - meteor.zone
+      resources:
+          - meteorcomas/finalizers
+          - meteors/finalizers
+      verbs:
+          - update
+    - apiGroups:
+          - tekton.dev
+      resources:
+          - pipelineruns/finalizers
+      verbs:
+          - "*"

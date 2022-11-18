@@ -1,0 +1,35 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: extract-external-service
+spec:
+  params:
+    - name: externalServices
+    - name: serviceName
+    - name: serviceProperty
+  results:
+    - name: value
+  steps:
+    - name: extract-external-service
+      image: quay.io/thoth-station/s2i-thoth-dev:latest
+      env:
+        - name: EXTERNAL_SERVICES
+          value: $(params.externalServices)
+        - name: SERVICE_NAME
+          value: $(params.serviceName)
+        - name: SERVICE_PROPERTY
+          value: $(params.serviceProperty)
+        - name: RESULT
+          value: $(results.value.path)
+      script: |
+        #!/opt/app-root/bin/python
+        import json
+        import os
+
+        EXTERNAL_SERVICES = json.loads(os.getenv("EXTERNAL_SERVICES"))
+        TARGET_SERVICE = next(
+            filter(lambda x: x["name"] == os.getenv("SERVICE_NAME"), EXTERNAL_SERVICES), {}
+        )
+
+        with open(os.getenv("RESULT"), "w") as f:
+            f.write(TARGET_SERVICE[os.getenv("SERVICE_PROPERTY")])
