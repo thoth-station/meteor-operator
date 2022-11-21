@@ -1,4 +1,4 @@
-base/*.yaml -diff linguist-generated=true
+base/*_patch.yaml -diff linguist-generated=true
 certmanager/*.yaml -diff linguist-generated=true
 crd/bases/*.yaml -diff linguist-generated=true
 crd/default/*.yaml -diff linguist-generated=true
