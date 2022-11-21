@@ -121,7 +121,7 @@ func init() {
 }
 
 // Aggregate phase from conditions
-func (m *Shower) AggregatePhase() string {
+func (m *Shower) AggregatePhase() Phase {
 	if len(m.Status.Conditions) == 0 {
 		return PhasePending
 	}
@@ -134,7 +134,7 @@ func (m *Shower) AggregatePhase() string {
 			}
 		}
 	}
-	return PhaseOk
+	return PhaseSucceeded
 }
 
 func (m *Shower) GetReference(isController bool) NamespacedOwnerReference {

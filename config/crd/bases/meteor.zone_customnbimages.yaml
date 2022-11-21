@@ -63,6 +63,16 @@ spec:
                 description: GitRef is the git reference within the Repository to
                   use for building (e.g. "main")
                 type: string
+              imagePullSecret:
+                description: ImagePullSecret is the name of the secret to use for
+                  pulling the base image
+                properties:
+                  name:
+                    description: Name of the secret to be used
+                    type: string
+                required:
+                - name
+                type: object
               packageVersions:
                 description: PackageVersions is a set of Packages including their
                   Version Specifiers
@@ -163,19 +173,20 @@ spec:
                   - type
                   type: object
                 type: array
+              observedGeneration:
+                description: ObservedGeneration is the most recent generation observed.
+                  It corresponds to the Object's generation, which is updated on mutation
+                  by the API Server.
+                format: int64
+                type: integer
               phase:
-                description: Current condition of the Shower.
+                description: Current condition of the Custom Notebook Image
                 enum:
                 - Pending
                 - Failed
-                - Preparing
-                - CreatingRepository
-                - Resolving
                 - Running
-                - Building
-                - Importing
-                - Validating
-                - Ready
+                - Succeeded
+                - Unknown
                 type: string
               pipelines:
                 description: Stores results from pipelines. Empty if neither pipeline

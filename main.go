@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
-	"github.com/thoth-station/meteor-operator/controllers"
+	"github.com/thoth-station/meteor-operator/controllers/cnbi"
 	common "github.com/thoth-station/meteor-operator/controllers/common"
 	meteor "github.com/thoth-station/meteor-operator/controllers/meteor"
 	shower "github.com/thoth-station/meteor-operator/controllers/shower"
@@ -84,15 +84,6 @@ func main() {
 		LeaderElectionNamespace: "aicoe-meteor",
 	}
 
-	/* FIXME #68 using this results in a
-	```
-	ERROR setup unable to load the config file {"error": "could not decode file into runtime.Object"}
-	main.main
-	/workspace/main.go:101
-	runtime.main
-	/usr/local/go/src/runtime/proc.go:250
-	```
-	*/
 	if configFile != "" {
 		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))
 
@@ -126,7 +117,7 @@ func main() {
 		}
 	}
 
-	if err = (&controllers.CustomNBImageReconciler{
+	if err = (&cnbi.CustomNBImageReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {

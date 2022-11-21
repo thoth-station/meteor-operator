@@ -9,5 +9,9 @@ reviewers:
   - codificat
   - goern
   - harshad16
+
+emeritus_approvers:
   - tumido
-  - HumairAK
+
+labels:
+  - wg/cnbi

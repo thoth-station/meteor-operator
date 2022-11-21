@@ -146,7 +146,7 @@ func (m *Meteor) GetExpirationTimestamp() time.Time {
 }
 
 // Aggregate phase from conditions
-func (m *Meteor) AggregatePhase() string {
+func (m *Meteor) AggregatePhase() Phase {
 	if len(m.Status.Conditions) == 0 {
 		return PhaseBuilding
 	}
@@ -169,7 +169,7 @@ func (m *Meteor) AggregatePhase() string {
 			return PhaseBuilding
 		}
 	}
-	return PhaseOk
+	return PhaseSucceeded
 }
 
 func (m *Meteor) GetReference(isController bool) NamespacedOwnerReference {
