@@ -1,0 +1,49 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-package-versions-list
+spec:
+  volumes:
+    - name: unpinned-packages
+      emptyDir:
+        medium: memory
+    - name: script
+      configMap:
+        name: get-packages-script
+        defaultMode: 755
+  workspaces:
+    - name: pinned-packages
+  params:
+    - name: PACKAGES
+      type: array
+  stepTemplate:
+    volumeMounts:
+      - name: unpinned-packages
+        mountPath: /scratchspace
+      - name: script
+        mountPath: /scripts
+  steps:
+    - image: registry.access.redhat.com/ubi9-micro
+      args:
+        - /scripts/get-packages
+        - /scratchspace/requirements.in
+        - $(params.PACKAGES) # We need to use a script because of how array parameters expansion works in Tekton ( https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#substituting-array-parameters )
+    - image: registry.access.redhat.com/ubi8/python-38:latest
+      script: |
+        #!/bin/sh -e
+        pip install pip-tools # TODO: use image with pre-installed pip-tools (or other resolver)
+        pip-compile --generate-hashes /scratchspace/requirements.in > $(workspace.pinned-packages.path)/requirements.txt
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: get-packages-script
+data:
+  get-packages: |
+    #!/bin/sh
+    result_file=$1
+    shift
+    for package in "$@"
+      do echo $package >> $result_file
+    done

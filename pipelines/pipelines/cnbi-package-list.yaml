@@ -1,0 +1,101 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: cnbi-package-list
+  annotations:
+    meteor.zone/pipeline: "true"
+    shower.meteor.zone/button-label: Run code in JupyterHub
+spec:
+  description: Build a notebook image from a package list
+  params:
+    - name: baseImage
+      description: Container image repository url
+      type: string
+    - name: packages
+      type: array
+    - name: name
+      description: Image name
+      type: string
+    - name: description
+      description: Custom description
+      type: string
+    - name: creator
+      description: Owner, user who requested the import
+      type: string
+  # TODO: baseImage selection with osVersion, osName, pythonVersion
+  workspaces:
+    - name: packages-to-install
+
+  tasks:
+    - name: resolve-dependencies
+      workspaces:
+        - name: pinned-packages
+          workspace: packages-to-install
+      taskRef:
+        name: get-package-versions-list
+      params:
+        - name: PACKAGES
+          value:
+            - $(params.packages)
+    ####### TODO: the rest of the tasks sould be shared between all types of sources
+    - name: get-base-image
+      params:
+        - name: baseImage
+          value: $(params.baseImage)
+      taskSpec:
+        params:
+          - name: baseImage
+            type: string
+        results:
+          - name: baseImage
+        steps:
+          - script: | # PLACEHOLDER
+              image=quay.io/thoth-station/s2i-custom-notebook
+              if [ -n "$(params.baseImage)" ]
+              then
+                image="$(params.baseImage)"
+              fi
+              echo $image > $(results.baseImage.path)
+            image: registry.access.redhat.com/ubi9-micro
+    - name: build-image
+      taskRef:
+        name: buildah-requirements
+        kind: Task
+      runAfter:
+        - resolve-dependencies
+      workspaces:
+        - name: requirements
+          workspace: packages-to-install
+      params:
+        - name: IMAGE
+          value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+        - name: BASE_IMAGE
+          value: $(tasks.get-base-image.results.baseImage)
+    - name: create-image-stream
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        - name: SCRIPT
+          value: |
+            cat <<EOM | oc apply -f -
+            ---
+            kind: ImageStream
+            apiVersion: image.openshift.io/v1
+            metadata:
+              annotations:
+                opendatahub.io/notebook-image-name: "$(params.name)"
+                opendatahub.io/notebook-image-desc: "$(params.description)"
+                opendatahub.io/notebook-image-creator: "$(params.creator)"
+                opendatahub.io/notebook-image-url: "$(tasks.get-base-image.results.baseImage)"
+              name: "$(context.pipelineRun.name)"
+              namespace: "$(context.pipelineRun.namespace)"
+              labels:
+                opendatahub.io/notebook-image: 'true'
+            spec:
+              lookupPolicy:
+                local: true
+              tags:
+                - name: latest
+            EOM

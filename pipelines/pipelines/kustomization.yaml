@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
 - cnbi-import.yaml
 - cnbi-gitrepo.yaml
+- cnbi-package-list.yaml
