@@ -1,12 +1,2 @@
 *zz_generated* -diff linguist-generated=true
 go.{mod,sum} -diff linguist-generated=true
-config/base/*.yaml -diff linguist-generated=true
-config/certmanager/*.yaml -diff linguist-generated=true
-config/crd/bases/*.yaml -diff linguist-generated=true
-config/crd/default/*.yaml -diff linguist-generated=true
-config/manager/*.yaml -diff linguist-generated=true
-config/manifests/*.yaml -diff linguist-generated=true
-config/manifests/bases/*.yaml -diff linguist-generated=true
-config/olm/*.yaml -diff linguist-generated=true
-config/prometheus/*.yaml -diff linguist-generated=true
-config/webhook/*.yaml -diff linguist-generated=true

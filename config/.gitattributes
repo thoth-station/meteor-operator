@@ -1,0 +1,10 @@
+base/*.yaml -diff linguist-generated=true
+certmanager/*.yaml -diff linguist-generated=true
+crd/bases/*.yaml -diff linguist-generated=true
+crd/default/*.yaml -diff linguist-generated=true
+manager/*.yaml -diff linguist-generated=true
+manifests/*.yaml -diff linguist-generated=true
+manifests/bases/*.yaml -diff linguist-generated=true
+olm/*.yaml -diff linguist-generated=true
+prometheus/*.yaml -diff linguist-generated=true
+webhook/*.yaml -diff linguist-generated=true
