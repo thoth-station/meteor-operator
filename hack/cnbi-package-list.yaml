@@ -185,13 +185,14 @@ spec:
   params:
     - name: PACKAGES
       type: array
+  stepTemplate:
+    volumeMounts:
+      - name: unpinned-packages
+        mountPath: /scratchspace
+      - name: script
+        mountPath: /scripts
   steps:
     - image: registry.access.redhat.com/ubi9-micro
-      volumeMounts:
-        - name: unpinned-packages
-          mountPath: /scratchspace
-        - name: script
-          mountPath: /scripts
       args:
         - /scripts/get-packages
         - /scratchspace/requirements.in
@@ -201,6 +202,3 @@ spec:
         #!/bin/sh -e
         pip install pip-tools # TODO: use image with pre-installed pip-tools (or other resolver)
         pip-compile --generate-hashes /scratchspace/requirements.in > $(workspace.pinned-packages.path)/requirements.txt
-      volumeMounts:
-        - name: unpinned-packages
-          mountPath: /scratchspace
