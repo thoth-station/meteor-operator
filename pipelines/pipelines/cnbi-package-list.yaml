@@ -25,13 +25,12 @@ spec:
       type: string
   # TODO: baseImage selection with osVersion, osName, pythonVersion
   workspaces:
-    - name: packages-to-install
-
+    - name: data
   tasks:
     - name: resolve-dependencies
       workspaces:
         - name: pinned-packages
-          workspace: packages-to-install
+          workspace: data
       taskRef:
         name: get-package-versions-list
       params:
@@ -66,7 +65,7 @@ spec:
         - resolve-dependencies
       workspaces:
         - name: requirements
-          workspace: packages-to-install
+          workspace: data
       params:
         - name: IMAGE
           value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
