@@ -136,30 +136,15 @@ docker-push: ## Push docker image with the manager.
 
 ignore-not-found ?= false
 
-.PHONY: install
-install: manifests | $(KUSTOMIZE) ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl apply -f -
-
-.PHONY: uninstall
-uninstall: manifests | $(KUSTOMIZE) ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/crd | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
-
-.PHONY: install-pipelines
-install-pipelines: ## Install the CNBI pipelines into the configured cluster.
-		kubectl apply -f 'hack/cnbi-*.yaml'
-
-.PHONY: uninstall-pipelines
-uninstall-pipelines: ## Uninstall the CNBI pipelines from  the configured cluster. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	kubectl delete --ignore-not-found=$(ignore-not-found) -f 'hack/cnbi-*.yaml'
-
 .PHONY: deploy
 deploy: manifests | $(KUSTOMIZE) ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl apply -f -
+	for base in config/default pipelines/base ;do kubectl apply -k $$base;done
 
 .PHONY: undeploy
-undeploy: | $(KUSTOMIZE)## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+undeploy: manifests ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+	for base in pipelines/base config/default ;do kubectl delete --ignore-not-found=$(ignore-not-found) -k $$base;done
+
 
 ##@ Build Dependencies
 
