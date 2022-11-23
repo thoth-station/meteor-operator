@@ -11,7 +11,7 @@ spec:
     - name: script
       configMap:
         name: get-packages-script
-        defaultMode: 755
+        defaultMode: 0755
   workspaces:
     - name: pinned-packages
   params:
