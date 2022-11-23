@@ -7,7 +7,7 @@ spec:
   volumes:
     - name: unpinned-packages
       emptyDir:
-        medium: memory
+        medium: Memory
     - name: script
       configMap:
         name: get-packages-script
@@ -34,7 +34,7 @@ spec:
       script: |
         #!/bin/sh -e
         pip install pip-tools # TODO: use image with pre-installed pip-tools (or other resolver)
-        pip-compile --generate-hashes /scratchspace/requirements.in > $(workspace.pinned-packages.path)/requirements.txt
+        pip-compile --generate-hashes /scratchspace/requirements.in > $(workspaces.pinned-packages.path)/requirements-pinned.txt
 ---
 apiVersion: v1
 kind: ConfigMap

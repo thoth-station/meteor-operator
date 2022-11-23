@@ -34,7 +34,7 @@ spec:
       readonly: true
       description: the list of pinned python package we install in the produced image
   volumes:
-    - name: /var/lib/containers
+    - name: containers
       emptyDir: {}
   stepTemplate:
     image: $(params.BUILDER_IMAGE)
@@ -49,11 +49,11 @@ spec:
       - name: containers
         mountPath: /var/lib/containers
   steps:
-    - args: ["from", "--name", "cnbi-image", "--tls-verify=$(params.TLSVERIFY)", "docker://$(params.BASE_IMAGE))"]
+    - args: ["from", "--name", "cnbi-image", "--tls-verify=$(params.TLSVERIFY)", "docker://$(params.BASE_IMAGE)"]
       name: from
-    - args: ["copy", "cnbi-image", "$(worspaces.requirements.path)/requirements-pinned.txt", "/tmp/"]
+    - args: ["copy", "cnbi-image", "$(workspaces.requirements.path)/requirements-pinned.txt", "/tmp/"]
       name: copy
-    - args: ["run", "cnbi-image", "--", "/usr/bin/pip", "install", "-r", "/tmp/requirements-pinned.txt"]
+    - args: ["run", "cnbi-image", "--", "pip", "install", "-r", "/tmp/requirements-pinned.txt"]
       name: run
     - args: ["commit", "cnbi-image", "$(params.IMAGE)"]
       name: commit
