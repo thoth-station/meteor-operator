@@ -49,6 +49,8 @@ spec:
         value: $(params.STORAGE_DRIVER)
       - name: BUILDAH_FORMAT
         value: $(params.FORMAT)
+      - name: BUILDAH_ISOLATION
+        value: chroot
     volumeMounts:
       - name: containers
         mountPath: /var/lib/containers
