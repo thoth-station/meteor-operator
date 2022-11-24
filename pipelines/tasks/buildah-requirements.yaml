@@ -38,6 +38,8 @@ spec:
       emptyDir: {}
   stepTemplate:
     image: $(params.BUILDER_IMAGE)
+    command:
+      - /usr/bin/buildah
     env:
       - name: STORAGE_DRIVER
         value: $(params.STORAGE_DRIVER)
@@ -47,8 +49,13 @@ spec:
       - name: containers
         mountPath: /var/lib/containers
   steps:
-    - args: ["buildah", "from", "--name", "cnbi-image", "--tls-verify=$(params.TLSVERIFY)", "docker://$(params.BASE_IMAGE))"]
-    - args: ["buildah", "copy", "cnbi-image", "$(worspaces.requirements.path)/requirements-pinned.txt", "/tmp/"]
-    - args: ["buildah", "run", "cnbi-image", "--", "/usr/bin/pip", "install", "-r", "/tmp/requirements-pinned.txt"]
-    - args: ["buildah", "commit", "cnbi-image", "$(params.IMAGE)"]
-    - args: ["buildah", "push", "--tls-verify=$(params.TLSVERIFY)", "$(params.IMAGE)"]
+    - args: ["from", "--name", "cnbi-image", "--tls-verify=$(params.TLSVERIFY)", "docker://$(params.BASE_IMAGE))"]
+      name: from
+    - args: ["copy", "cnbi-image", "$(worspaces.requirements.path)/requirements-pinned.txt", "/tmp/"]
+      name: copy
+    - args: ["run", "cnbi-image", "--", "/usr/bin/pip", "install", "-r", "/tmp/requirements-pinned.txt"]
+      name: run
+    - args: ["commit", "cnbi-image", "$(params.IMAGE)"]
+      name: commit
+    - args: ["push", "--tls-verify=$(params.TLSVERIFY)", "$(params.IMAGE)"]
+      name: push

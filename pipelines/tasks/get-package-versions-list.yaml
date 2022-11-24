@@ -25,8 +25,9 @@ spec:
         mountPath: /scripts
   steps:
     - image: registry.access.redhat.com/ubi9-micro
-      args:
+      command:
         - /scripts/get-packages
+      args:
         - /scratchspace/requirements.in
         - $(params.PACKAGES) # We need to use a script because of how array parameters expansion works in Tekton ( https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#substituting-array-parameters )
     - image: registry.access.redhat.com/ubi8/python-38:latest
