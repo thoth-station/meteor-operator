@@ -134,6 +134,41 @@ docker-push: ## Push docker image with the manager.
 
 ##@ Deployment
 
+define managed_operators
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: openshift-pipelines-operator
+  namespace: openshift-operators
+spec:
+  channel: pipelines-1.7
+  name: openshift-pipelines-operator-rh
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: cert-manager
+  namespace: openshift-operators
+spec:
+  channel: stable
+  name: cert-manager
+  source: community-operators
+  sourceNamespace: openshift-marketplace
+endef
+
+define newline
+
+
+endef
+
+prerequisite: ## Deploy operator prerequisites (only works for Openshift clusters)
+	@printf '$(subst $(newline),|,$(managed_operators))' | tr '|' '\n' | kubectl apply -f -
+
+unprerequisite: ## Undeploy operator prerequisites
+	@printf '$(subst $(newline),|,$(managed_operators))' | tr '|' '\n' | kubectl delete -f -
+
 ignore-not-found ?= false
 
 .PHONY: deploy
