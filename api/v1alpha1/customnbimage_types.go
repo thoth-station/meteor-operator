@@ -127,6 +127,7 @@ type CustomNBImageStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=cnbi,categories=opendatahub
 //+kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase"
+//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // CustomNBImage is the Schema for the customnbimages API
 type CustomNBImage struct {
