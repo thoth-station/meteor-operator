@@ -1,4 +1,9 @@
 #!/bin/bash -xe
+# This script requires:
+# - a working kubectl context pointing to your quicklab cluster and an admin user.
+# - the quicklab ssh private key
+# - the binary jq, helm, and oc
+# - being connected to the Red Hat VPN
 ( command -v jq && command -v helm && command -v oc) || ( echo "This script needs jq, helm and oc"; exit 1)
 test -n "$1" || (echo "Please provide the quicklab private key as first argument" && exit 1)
 
