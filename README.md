@@ -6,6 +6,7 @@ The cluster where the operator will be working on must have these components alr
 
 - Tekton / Openshift Pipelines
 - [cert-manager](https://github.com/cert-manager/cert-manager)
+- A default storage class with dynamic PV provisioning
 
 ## Custom Resources
 
@@ -34,6 +35,8 @@ General pre-requisites:
    - for a quick local Kubernetes cluster deployment, see the `kind` instructions below
 
 2. The cluster must meet the prerequisites mentioned above (tekton, etc)
+   The script `script_nfs.bash` can install the necessary storage class if you use Quicklab
+   as your development environment (see the script header for requirements)
 
 3. To deploy the tekton pipelines and tasks CNBi Operator depends on: `make install-pipelines`
 
