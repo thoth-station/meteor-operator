@@ -141,7 +141,7 @@ metadata:
   name: openshift-pipelines-operator
   namespace: openshift-operators
 spec:
-  channel: latest
+  channel: pipelines-1.7
   name: openshift-pipelines-operator-rh
   source: redhat-operators
   sourceNamespace: openshift-marketplace
@@ -152,7 +152,7 @@ metadata:
   name: cert-manager
   namespace: openshift-operators
 spec:
-  channel: latest
+  channel: stable
   name: cert-manager
   source: community-operators
   sourceNamespace: openshift-marketplace
