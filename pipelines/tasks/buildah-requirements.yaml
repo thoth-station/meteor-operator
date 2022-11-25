@@ -36,6 +36,9 @@ spec:
   volumes:
     - name: containers
       emptyDir: {}
+    - name: openshift-ca
+      configMap:
+        name: openshift-service-ca.crt
   stepTemplate:
     image: $(params.BUILDER_IMAGE)
     securityContext:
@@ -54,6 +57,9 @@ spec:
     volumeMounts:
       - name: containers
         mountPath: /var/lib/containers
+      - name: openshift-ca
+        mountPath: /etc/ssl/certs/additional-openshift-ca.crt
+        subPath: service-ca.crt
   steps:
     - args: ["from", "--name", "cnbi-image", "--tls-verify=$(params.TLSVERIFY)", "docker://$(params.BASE_IMAGE)"]
       name: from
