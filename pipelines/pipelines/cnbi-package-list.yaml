@@ -55,7 +55,7 @@ spec:
               then
                 image="$(params.baseImage)"
               fi
-              echo $image > $(results.baseImage.path)
+              echo -n $image > $(results.baseImage.path)
             image: registry.access.redhat.com/ubi9-micro
     - name: build-image
       taskRef:
