@@ -91,7 +91,7 @@ type CustomNBImageRuntimeSpec struct {
 
 // CustomNBImageSpec defines the desired state of CustomNBImage
 type CustomNBImageSpec struct {
-	// RuntimeEnvironment is the runtime environment to use for the Custom Notebook Image
+	// RuntimeEnvironment is the runtime environment to use for the Custom Runtime Environment
 	// +optional
 	RuntimeEnvironment CustomNBImageRuntimeSpec `json:"runtimeEnvironment,omitempty"`
 	// PackageVersions is a set of Packages including their Version Specifiers
@@ -110,7 +110,7 @@ type CustomNBImageStatus struct {
 	// Object's generation, which is updated on mutation by the API Server.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
-	// Current condition of the Custom Notebook Image
+	// Current condition of the Custom Runtime Environment
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Phase",xDescriptors={"urn:alm:descriptor:io.kubernetes.phase'"}
 	//+optional
 	Phase Phase `json:"phase,omitempty"`
