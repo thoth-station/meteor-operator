@@ -140,11 +140,11 @@ func TestHasValidImagePullSecretAName(t *testing.T) {
 // TestAggregatePhase tests if condition are aggregated into the correct phase
 func TestAggregatePhase(t *testing.T) {
 	testCases := map[string]struct {
-		cnbi           CustomRuntimeEnvironment
+		cre           CustomRuntimeEnvironment
 		expectedOutput Phase
 	}{
 		"pending": {
-			cnbi: CustomRuntimeEnvironment{
+			cre: CustomRuntimeEnvironment{
 				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
@@ -160,7 +160,7 @@ func TestAggregatePhase(t *testing.T) {
 		},
 
 		"pipeline-created": {
-			cnbi: CustomRuntimeEnvironment{
+			cre: CustomRuntimeEnvironment{
 				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
@@ -181,7 +181,7 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseRunning,
 		},
 		"pipeline-create-failed": {
-			cnbi: CustomRuntimeEnvironment{
+			cre: CustomRuntimeEnvironment{
 				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
@@ -202,7 +202,7 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseFailed,
 		},
 		"importing": {
-			cnbi: CustomRuntimeEnvironment{
+			cre: CustomRuntimeEnvironment{
 				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
@@ -228,7 +228,7 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseRunning,
 		},
 		"importing-missing-secret": {
-			cnbi: CustomRuntimeEnvironment{
+			cre: CustomRuntimeEnvironment{
 				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
@@ -254,7 +254,7 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseRunning,
 		},
 		"validating": {
-			cnbi: CustomRuntimeEnvironment{
+			cre: CustomRuntimeEnvironment{
 				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
@@ -280,7 +280,7 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseRunning,
 		},
 		"import-successful": {
-			cnbi: CustomRuntimeEnvironment{
+			cre: CustomRuntimeEnvironment{
 				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
@@ -306,7 +306,7 @@ func TestAggregatePhase(t *testing.T) {
 			expectedOutput: PhaseSucceeded,
 		},
 		"import-failed": {
-			cnbi: CustomRuntimeEnvironment{
+			cre: CustomRuntimeEnvironment{
 				Spec: CustomRuntimeEnvironmentSpec{
 					PackageVersions: []string{},
 					BuildTypeSpec: BuildTypeSpec{
@@ -347,7 +347,7 @@ func TestAggregatePhase(t *testing.T) {
 	}
 
 	for tcName, tc := range testCases {
-		if output := tc.cnbi.AggregatePhase(); output != tc.expectedOutput {
+		if output := tc.cre.AggregatePhase(); output != tc.expectedOutput {
 			t.Errorf("%s Got %s while expecting %s", tcName, output, tc.expectedOutput)
 		}
 	}

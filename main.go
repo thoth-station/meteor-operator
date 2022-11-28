@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
-	"github.com/thoth-station/meteor-operator/controllers/cnbi"
+	"github.com/thoth-station/meteor-operator/controllers/cre"
 	common "github.com/thoth-station/meteor-operator/controllers/common"
 	meteor "github.com/thoth-station/meteor-operator/controllers/meteor"
 	shower "github.com/thoth-station/meteor-operator/controllers/shower"
@@ -117,7 +117,7 @@ func main() {
 		}
 	}
 
-	if err = (&cnbi.CustomRuntimeEnvironmentReconciler{
+	if err = (&cre.CustomRuntimeEnvironmentReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {

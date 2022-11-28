@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: cnbi-import
+  name: cre-import
   labels:
     app.kubernetes.io/created-by: byon
 spec:

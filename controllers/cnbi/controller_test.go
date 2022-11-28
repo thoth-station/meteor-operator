@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cnbi
+package cre
 
 import (
 	"context"
@@ -49,7 +49,7 @@ var _ = Describe("CustomRuntimeEnvironment controller", func() {
 			build := meteorv1alpha1.BuildTypeSpec{
 				BuildType: meteorv1alpha1.PackageList,
 			}
-			cnbi := &meteorv1alpha1.CustomRuntimeEnvironment{
+			cre := &meteorv1alpha1.CustomRuntimeEnvironment{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "test-1", Namespace: "default"},
 				Spec: meteorv1alpha1.CustomRuntimeEnvironmentSpec{
@@ -59,7 +59,7 @@ var _ = Describe("CustomRuntimeEnvironment controller", func() {
 				},
 				Status: meteorv1alpha1.CustomRuntimeEnvironmentStatus{},
 			}
-			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
+			Expect(k8sClient.Create(context.Background(), cre)).Should(Succeed())
 
 			lookupKey := types.NamespacedName{Name: "test-1", Namespace: "default"}
 

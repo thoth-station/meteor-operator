@@ -15,7 +15,7 @@ spec:
     listKind: CustomRuntimeEnvironmentList
     plural: customnbimages
     shortNames:
-    - cnbi
+    - cre
     singular: customnbimage
   scope: Namespaced
   versions:

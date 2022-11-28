@@ -125,7 +125,7 @@ type CustomRuntimeEnvironmentStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:resource:shortName=cnbi,categories=opendatahub
+//+kubebuilder:resource:shortName=cre,categories=opendatahub
 //+kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase"
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
@@ -148,16 +148,16 @@ type CustomRuntimeEnvironmentList struct {
 }
 
 // Aggregate phase from conditions
-func (cnbi *CustomRuntimeEnvironment) AggregatePhase() Phase {
+func (cre *CustomRuntimeEnvironment) AggregatePhase() Phase {
 	pipelineRunCreated := false
 	pipelineRunSuccesseded := false
 	importReady := false
 
-	if len(cnbi.Status.Conditions) == 0 {
+	if len(cre.Status.Conditions) == 0 {
 		return PhasePending
 	}
 
-	for _, c := range cnbi.Status.Conditions {
+	for _, c := range cre.Status.Conditions {
 		if c.Type == PipelineRunCompleted && c.Status == metav1.ConditionTrue {
 			pipelineRunSuccesseded = true
 		}
