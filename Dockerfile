@@ -1,5 +1,6 @@
 # Build the manager binary
 FROM quay.io/projectquay/golang:1.18 as builder
+ARG VERSION
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -16,8 +17,10 @@ COPY controllers/ controllers/
 COPY version/ version/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
-
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -a -o manager \
+    -ldflags "-X github.com/thoth-station/meteor-operator/version.Version=${VERSION}" \
+    main.go
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot

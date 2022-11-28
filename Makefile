@@ -118,15 +118,16 @@ test: manifests generate fmt vet | $(ENVTEST) ## Run tests.
 
 .PHONY: build
 build: generate fmt vet ## Build manager binary.
-	go build -o bin/manager main.go
-
+	go build -o bin/manager \
+	-ldflags "-X github.com/thoth-station/meteor-operator/version.Version=${VERSION}" \
+	main.go
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
-	docker build -t $(IMG) .
+	docker build --build-arg=VERSION=${VERSION} -t $(IMG) .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
