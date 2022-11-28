@@ -36,8 +36,8 @@ import (
 	meteorv1alpha1 "github.com/thoth-station/meteor-operator/api/v1alpha1"
 )
 
-// CustomNBImageReconciler reconciles a CustomNBImage object
-type CustomNBImageReconciler struct {
+// CustomRuntimeEnvironmentReconciler reconciles a CustomRuntimeEnvironment object
+type CustomRuntimeEnvironmentReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
@@ -51,10 +51,10 @@ type CustomNBImageReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *CustomRuntimeEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
 	logger := log.FromContext(ctx)
-	CNBi := meteorv1alpha1.CustomNBImage{}
+	CNBi := meteorv1alpha1.CustomRuntimeEnvironment{}
 
 	if err := r.Get(ctx, req.NamespacedName, &CNBi); err != nil {
 		if errors.IsNotFound(err) {
@@ -87,18 +87,18 @@ func (r *CustomNBImageReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *CustomNBImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *CustomRuntimeEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// TODO setup index for PipelineRuns
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&meteorv1alpha1.CustomNBImage{}).
+		For(&meteorv1alpha1.CustomRuntimeEnvironment{}).
 		Owns(&pipelinev1beta1.PipelineRun{}).
 		Owns(&meteorv1alpha1.Meteor{}).
 		Complete(r)
 }
 
-// reconcilePipelineRun will reconcile the pipeline run for the CustomNBImage.
-func (r *CustomNBImageReconciler) reconcilePipelineRun(ctx context.Context, cnbi *meteorv1alpha1.CustomNBImage) {
+// reconcilePipelineRun will reconcile the pipeline run for the CustomRuntimeEnvironment.
+func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(ctx context.Context, cnbi *meteorv1alpha1.CustomRuntimeEnvironment) {
 
 	build_types := map[meteorv1alpha1.BuildType]string{
 		meteorv1alpha1.GitRepository: "gitrepo",

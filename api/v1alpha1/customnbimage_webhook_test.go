@@ -25,8 +25,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("CustomNBImage Webhook", func() {
-	Context("when a CustomNBImage object is created", func() {
+var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
+	Context("when a CustomRuntimeEnvironment object is created", func() {
 		build := BuildTypeSpec{
 			BuildType: PackageList,
 			BaseImage: "quay.io/thoth-station/s2i-custom-notebook:latest",
@@ -37,15 +37,15 @@ var _ = Describe("CustomNBImage Webhook", func() {
 		}
 
 		It("should pass if all required annotations are present", func() {
-			By("creating a CustomNBImage object")
-			cnbi := &CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
+			By("creating a CustomRuntimeEnvironment object")
+			cnbi := &CustomRuntimeEnvironment{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-1", Namespace: "default"},
-				Spec: CustomNBImageSpec{
+				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:   build,
 					PackageVersions: packageVersions,
 				},
-				Status: CustomNBImageStatus{},
+				Status: CustomRuntimeEnvironmentStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-1")
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
@@ -55,39 +55,39 @@ var _ = Describe("CustomNBImage Webhook", func() {
 
 		})
 		It("should fail if annotations are missing completely", func() {
-			By("creating an inclomplte CustomNBImage object")
-			cnbi := &CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
+			By("creating an inclomplte CustomRuntimeEnvironment object")
+			cnbi := &CustomRuntimeEnvironment{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-2", Namespace: "default"},
-				Spec: CustomNBImageSpec{
+				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:   build,
 					PackageVersions: packageVersions,
 				},
-				Status: CustomNBImageStatus{},
+				Status: CustomRuntimeEnvironmentStatus{},
 			}
 
 			Expect(k8sClient.Create(context.Background(), cnbi)).ShouldNot(Succeed())
 		})
 		It("should fail if an annotation is missing", func() {
-			By("creating an inclomplte CustomNBImage object")
-			cnbi := &CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
+			By("creating an inclomplte CustomRuntimeEnvironment object")
+			cnbi := &CustomRuntimeEnvironment{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-3", Namespace: "default"},
-				Spec: CustomNBImageSpec{
+				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:   build,
 					PackageVersions: packageVersions,
 				},
-				Status: CustomNBImageStatus{},
+				Status: CustomRuntimeEnvironmentStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-3")
 
 			err := k8sClient.Create(context.Background(), cnbi)
 			Expect(err).ShouldNot(Succeed())
-			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomNBImage.meteor.zone \"webhook-3\" is invalid: [metadata.annotations[opendatahub.io/notebook-image-desc]: Required value: annotation is required, metadata.annotations[opendatahub.io/notebook-image-creator]: Required value: annotation is required]"))
+			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-3\" is invalid: [metadata.annotations[opendatahub.io/notebook-image-desc]: Required value: annotation is required, metadata.annotations[opendatahub.io/notebook-image-creator]: Required value: annotation is required]"))
 		})
 
 	})
-	Context("when a CustomNBImage object is created with a buildType of PackageList", func() {
+	Context("when a CustomRuntimeEnvironment object is created with a buildType of PackageList", func() {
 		packageListNoRuntimeEnvironmentNorBaseImage := BuildTypeSpec{
 			BuildType: PackageList,
 		}
@@ -102,7 +102,7 @@ var _ = Describe("CustomNBImage Webhook", func() {
 			BuildType: PackageList,
 			BaseImage: "quay.io/thoth-station/s2i-custom-notebook:latest",
 		}
-		runtimeEnvironment := CustomNBImageRuntimeSpec{
+		runtimeEnvironment := CustomRuntimeEnvironmentRuntimeSpec{
 			PythonVersion: "3.8",
 			OSName:        "ubi",
 			OSVersion:     "8",
@@ -113,14 +113,14 @@ var _ = Describe("CustomNBImage Webhook", func() {
 		}
 
 		It("should fail if neither runtimeEnvironment nor baseImage is present", func() {
-			cnbi := &CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
+			cnbi := &CustomRuntimeEnvironment{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-4", Namespace: "default"},
-				Spec: CustomNBImageSpec{
+				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:   packageListNoRuntimeEnvironmentNorBaseImage,
 					PackageVersions: packageVersions,
 				},
-				Status: CustomNBImageStatus{},
+				Status: CustomRuntimeEnvironmentStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-4")
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
@@ -130,20 +130,20 @@ var _ = Describe("CustomNBImage Webhook", func() {
 			GinkgoWriter.Printf("cnbi: %v", cnbi)
 
 			Expect(err).ShouldNot(Succeed())
-			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomNBImage.meteor.zone \"webhook-4\" is invalid: spec.baseImage: Required value: baseImage or runtimeEnvironment is required"))
+			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-4\" is invalid: spec.baseImage: Required value: baseImage or runtimeEnvironment is required"))
 
 		})
 
 		It("should pass if runtimeEnvironment is present", func() {
-			cnbi := &CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
+			cnbi := &CustomRuntimeEnvironment{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-5", Namespace: "default"},
-				Spec: CustomNBImageSpec{
+				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:      packageListRuntimeEnvironment,
 					PackageVersions:    packageVersions,
 					RuntimeEnvironment: runtimeEnvironment,
 				},
-				Status: CustomNBImageStatus{},
+				Status: CustomRuntimeEnvironmentStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-5")
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
@@ -155,14 +155,14 @@ var _ = Describe("CustomNBImage Webhook", func() {
 		})
 
 		It("should pass if baseImage is present", func() {
-			cnbi := &CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
+			cnbi := &CustomRuntimeEnvironment{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-6", Namespace: "default"},
-				Spec: CustomNBImageSpec{
+				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:   packageListBaseImage,
 					PackageVersions: packageVersions,
 				},
-				Status: CustomNBImageStatus{},
+				Status: CustomRuntimeEnvironmentStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-6")
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
@@ -174,15 +174,15 @@ var _ = Describe("CustomNBImage Webhook", func() {
 		})
 
 		It("should fail if runtimeEnvironment and baseImage is present", func() {
-			cnbi := &CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
+			cnbi := &CustomRuntimeEnvironment{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "webhook-7", Namespace: "default"},
-				Spec: CustomNBImageSpec{
+				Spec: CustomRuntimeEnvironmentSpec{
 					BuildTypeSpec:      packageListBaseImageAndRuntimeEnvironment,
 					RuntimeEnvironment: runtimeEnvironment,
 					PackageVersions:    packageVersions,
 				},
-				Status: CustomNBImageStatus{},
+				Status: CustomRuntimeEnvironmentStatus{},
 			}
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-7")
 			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
@@ -190,7 +190,7 @@ var _ = Describe("CustomNBImage Webhook", func() {
 
 			err := k8sClient.Create(context.Background(), cnbi)
 			Expect(err).ShouldNot(Succeed())
-			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomNBImage.meteor.zone \"webhook-7\" is invalid: spec.baseImage: Invalid value: \"quay.io/thoth-station/s2i-custom-notebook:latest\": baseImage and runtimeEnvironment are mutually exclusive"))
+			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-7\" is invalid: spec.baseImage: Invalid value: \"quay.io/thoth-station/s2i-custom-notebook:latest\": baseImage and runtimeEnvironment are mutually exclusive"))
 
 		})
 	})

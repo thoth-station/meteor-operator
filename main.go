@@ -117,11 +117,11 @@ func main() {
 		}
 	}
 
-	if err = (&cnbi.CustomNBImageReconciler{
+	if err = (&cnbi.CustomRuntimeEnvironmentReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "CustomNBImage")
+		setupLog.Error(err, "unable to create controller", "controller", "CustomRuntimeEnvironment")
 		os.Exit(1)
 	}
 
@@ -131,8 +131,8 @@ func main() {
 	   We'll just make sure to set `ENABLE_WEBHOOKS=false` when we run locally.
 	*/
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err = (&meteorv1alpha1.CustomNBImage{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "CustomNBImage")
+		if err = (&meteorv1alpha1.CustomRuntimeEnvironment{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "CustomRuntimeEnvironment")
 			os.Exit(1)
 		}
 	}

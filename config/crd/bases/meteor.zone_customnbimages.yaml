@@ -11,8 +11,8 @@ spec:
   names:
     categories:
     - opendatahub
-    kind: CustomNBImage
-    listKind: CustomNBImageList
+    kind: CustomRuntimeEnvironment
+    listKind: CustomRuntimeEnvironmentList
     plural: customnbimages
     shortNames:
     - cnbi
@@ -30,7 +30,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: CustomNBImage is the Schema for the customnbimages API
+        description: CustomRuntimeEnvironment is the Schema for the customnbimages API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -45,7 +45,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: CustomNBImageSpec defines the desired state of CustomNBImage
+            description: CustomRuntimeEnvironmentSpec defines the desired state of CustomRuntimeEnvironment
             properties:
               baseImage:
                 description: BaseImage is the reference to the base image, used for
@@ -105,7 +105,7 @@ spec:
             - buildType
             type: object
           status:
-            description: CustomNBImageStatus defines the observed state of CustomNBImage
+            description: CustomRuntimeEnvironmentStatus defines the observed state of CustomRuntimeEnvironment
             properties:
               conditions:
                 description: Current service state of Meteor.

@@ -31,7 +31,7 @@ import (
 // log is for logging in this package.
 var customnbimagelog = logf.Log.WithName("customnbimage-resource")
 
-func (r *CustomNBImage) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (r *CustomRuntimeEnvironment) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -39,10 +39,10 @@ func (r *CustomNBImage) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 //+kubebuilder:webhook:path=/mutate-meteor-zone-v1alpha1-customnbimage,mutating=true,failurePolicy=fail,sideEffects=None,groups=meteor.zone,resources=customnbimages,verbs=create;update,versions=v1alpha1,name=mcustomnbimage.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Defaulter = &CustomNBImage{}
+var _ webhook.Defaulter = &CustomRuntimeEnvironment{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *CustomNBImage) Default() {
+func (r *CustomRuntimeEnvironment) Default() {
 	customnbimagelog.Info("default", "name", r.Name)
 
 	// TODO(user): fill in your defaulting logic.
@@ -50,24 +50,24 @@ func (r *CustomNBImage) Default() {
 
 //+kubebuilder:webhook:path=/validate-meteor-zone-v1alpha1-customnbimage,mutating=false,failurePolicy=fail,sideEffects=None,groups=meteor.zone,resources=customnbimages,verbs=create;update,versions=v1alpha1,name=vcustomnbimage.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Validator = &CustomNBImage{}
+var _ webhook.Validator = &CustomRuntimeEnvironment{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *CustomNBImage) ValidateCreate() error {
+func (r *CustomRuntimeEnvironment) ValidateCreate() error {
 	customnbimagelog.Info("validate create", "name", r.Name)
 
-	return r.ValidateCustomNBImage()
+	return r.ValidateCustomRuntimeEnvironment()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *CustomNBImage) ValidateUpdate(old runtime.Object) error {
+func (r *CustomRuntimeEnvironment) ValidateUpdate(old runtime.Object) error {
 	customnbimagelog.Info("validate update", "name", r.Name)
 
-	return r.ValidateCustomNBImage()
+	return r.ValidateCustomRuntimeEnvironment()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *CustomNBImage) ValidateDelete() error {
+func (r *CustomRuntimeEnvironment) ValidateDelete() error {
 	customnbimagelog.Info("validate delete", "name", r.Name)
 
 	// TODO change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
@@ -75,22 +75,22 @@ func (r *CustomNBImage) ValidateDelete() error {
 	return nil
 }
 
-// ValidateCustomNBImage implements webhook.Validator for create/update
-func (r *CustomNBImage) ValidateCustomNBImage() error {
+// ValidateCustomRuntimeEnvironment implements webhook.Validator for create/update
+func (r *CustomRuntimeEnvironment) ValidateCustomRuntimeEnvironment() error {
 	var allErrs field.ErrorList
 
-	if err := r.validateCustomNBImageAnnotation(CNBiNameAnnotationKey); err != nil {
+	if err := r.validateCustomRuntimeEnvironmentAnnotation(CNBiNameAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	if err := r.validateCustomNBImageAnnotation(CNBiDescriptionAnnotationKey); err != nil {
+	if err := r.validateCustomRuntimeEnvironmentAnnotation(CNBiDescriptionAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	if err := r.validateCustomNBImageAnnotation(CNBiCreatorAnnotationKey); err != nil {
+	if err := r.validateCustomRuntimeEnvironmentAnnotation(CNBiCreatorAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
 
 	if r.Spec.BuildType == PackageList {
-		if err := r.validateCustomNBImagePackageListBuildType(); err != nil {
+		if err := r.validateCustomRuntimeEnvironmentPackageListBuildType(); err != nil {
 			allErrs = append(allErrs, err)
 		}
 	}
@@ -100,11 +100,11 @@ func (r *CustomNBImage) ValidateCustomNBImage() error {
 	}
 
 	return apierrors.NewInvalid(
-		schema.GroupKind{Group: Group, Kind: "CustomNBImage"},
+		schema.GroupKind{Group: Group, Kind: "CustomRuntimeEnvironment"},
 		r.Name, allErrs)
 }
 
-func (r *CustomNBImage) validateCustomNBImageAnnotation(annotation string) *field.Error {
+func (r *CustomRuntimeEnvironment) validateCustomRuntimeEnvironmentAnnotation(annotation string) *field.Error {
 	if r.Annotations == nil {
 		return field.Required(field.NewPath("metadata.annotations"), "annotation is required")
 	}
@@ -116,8 +116,8 @@ func (r *CustomNBImage) validateCustomNBImageAnnotation(annotation string) *fiel
 	return nil
 }
 
-func (r *CustomNBImage) validateCustomNBImagePackageListBuildType() *field.Error {
-	logf.Log.Info("validateCustomNBImagePackageListBuildType", "r", r)
+func (r *CustomRuntimeEnvironment) validateCustomRuntimeEnvironmentPackageListBuildType() *field.Error {
+	logf.Log.Info("validateCustomRuntimeEnvironmentPackageListBuildType", "r", r)
 
 	if r.Spec.PackageVersions == nil {
 		return field.Required(field.NewPath("spec.packageVersions"), "packageVersions is required")

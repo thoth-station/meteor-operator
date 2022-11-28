@@ -34,30 +34,30 @@ const (
 	interval = time.Millisecond * 750
 )
 
-var _ = Describe("CustomNBImage controller", func() {
-	uni8py38 := meteorv1alpha1.CustomNBImageRuntimeSpec{
+var _ = Describe("CustomRuntimeEnvironment controller", func() {
+	uni8py38 := meteorv1alpha1.CustomRuntimeEnvironmentRuntimeSpec{
 		PythonVersion: "3.8",
 		OSName:        "ubi",
 		OSVersion:     "8",
 	}
 
-	Context("when a CustomNBImage object is created with a RuntimeEnvironment and a PackageList", func() {
+	Context("when a CustomRuntimeEnvironment object is created with a RuntimeEnvironment and a PackageList", func() {
 		packages := []string{"numpy", "pandas", "scikit-learn"}
 
 		It("should be in Phase 'Running'", func() {
-			By("creating a CustomNBImage object")
+			By("creating a CustomRuntimeEnvironment object")
 			build := meteorv1alpha1.BuildTypeSpec{
 				BuildType: meteorv1alpha1.PackageList,
 			}
-			cnbi := &meteorv1alpha1.CustomNBImage{
-				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomNBImage"},
+			cnbi := &meteorv1alpha1.CustomRuntimeEnvironment{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "meteor.zone/v1alpha1", Kind: "CustomRuntimeEnvironment"},
 				ObjectMeta: metav1.ObjectMeta{Name: "test-1", Namespace: "default"},
-				Spec: meteorv1alpha1.CustomNBImageSpec{
+				Spec: meteorv1alpha1.CustomRuntimeEnvironmentSpec{
 					RuntimeEnvironment: uni8py38,
 					PackageVersions:    packages,
 					BuildTypeSpec:      build,
 				},
-				Status: meteorv1alpha1.CustomNBImageStatus{},
+				Status: meteorv1alpha1.CustomRuntimeEnvironmentStatus{},
 			}
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
 
@@ -65,7 +65,7 @@ var _ = Describe("CustomNBImage controller", func() {
 
 			Eventually(func(gg Gomega) {
 				gg.Consistently(func(g Gomega) {
-					createdCNBi := &meteorv1alpha1.CustomNBImage{}
+					createdCNBi := &meteorv1alpha1.CustomRuntimeEnvironment{}
 					err := k8sClient.Get(ctx, lookupKey, createdCNBi)
 					g.Expect(err).NotTo(HaveOccurred())
 					g.Expect(createdCNBi.Status.Conditions).ToNot(BeEmpty())
