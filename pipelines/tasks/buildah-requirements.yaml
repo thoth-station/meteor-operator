@@ -1,0 +1,73 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: buildah-requirements
+spec:
+  params:
+    - name: BASE_IMAGE
+      type: string
+    - description: Reference of the image buildah will produce.
+      name: IMAGE
+      type: string
+    - default: >-
+        registry.redhat.io/rhel8/buildah@sha256:0a86ecbdfbe86e9d225b7fe4b090a0dd6d323f8afdfdf2bd933ff223ddb53320
+      description: The location of the buildah builder image.
+      name: BUILDER_IMAGE
+      type: string
+    - default: vfs
+      description: Set buildah storage driver
+      name: STORAGE_DRIVER
+      type: string
+    - default: "true"
+      description: >-
+        Verify the TLS on the registry endpoint (for push/pull to a non-TLS
+        registry)
+      name: TLSVERIFY
+      type: string
+    - default: oci
+      description: "The format of the built container, oci or docker"
+      name: FORMAT
+      type: string
+  workspaces:
+    - name: requirements
+      readonly: true
+      description: the list of pinned python package we install in the produced image
+  volumes:
+    - name: containers
+      emptyDir: {}
+    - name: openshift-ca
+      configMap:
+        name: openshift-service-ca.crt
+  stepTemplate:
+    image: $(params.BUILDER_IMAGE)
+    securityContext:
+      capabilities: # TODO: check if we can use less than SETFCAP
+        add:
+        - SETFCAP
+    command:
+      - /usr/bin/buildah
+    env:
+      - name: STORAGE_DRIVER
+        value: $(params.STORAGE_DRIVER)
+      - name: BUILDAH_FORMAT
+        value: $(params.FORMAT)
+      - name: BUILDAH_ISOLATION
+        value: chroot
+    volumeMounts:
+      - name: containers
+        mountPath: /var/lib/containers
+      - name: openshift-ca
+        mountPath: /etc/ssl/certs/additional-openshift-ca.crt
+        subPath: service-ca.crt
+  steps:
+    - args: ["from", "--name", "cnbi-image", "--tls-verify=$(params.TLSVERIFY)", "docker://$(params.BASE_IMAGE)"]
+      name: from
+    - args: ["copy", "cnbi-image", "$(workspaces.requirements.path)/requirements-pinned.txt", "/tmp/"]
+      name: copy
+    - args: ["run", "cnbi-image", "--", "pip", "install", "-r", "/tmp/requirements-pinned.txt"]
+      name: run
+    - args: ["commit", "cnbi-image", "$(params.IMAGE)"]
+      name: commit
+    - args: ["push", "--tls-verify=$(params.TLSVERIFY)", "$(params.IMAGE)"]
+      name: push
