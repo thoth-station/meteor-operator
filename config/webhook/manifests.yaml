@@ -11,9 +11,9 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-meteor-zone-v1alpha1-customnbimage
+      path: /mutate-meteor-zone-v1alpha1-customruntimeenvironment
   failurePolicy: Fail
-  name: mcustomnbimage.kb.io
+  name: mcustomruntimeenvironment.kb.io
   rules:
   - apiGroups:
     - meteor.zone
@@ -23,7 +23,7 @@ webhooks:
     - CREATE
     - UPDATE
     resources:
-    - customnbimages
+    - customruntimeenvironments
   sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
@@ -38,9 +38,9 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-meteor-zone-v1alpha1-customnbimage
+      path: /validate-meteor-zone-v1alpha1-customruntimeenvironment
   failurePolicy: Fail
-  name: vcustomnbimage.kb.io
+  name: vcustomruntimeenvironment.kb.io
   rules:
   - apiGroups:
     - meteor.zone
@@ -50,5 +50,5 @@ webhooks:
     - CREATE
     - UPDATE
     resources:
-    - customnbimages
+    - customruntimeenvironments
   sideEffects: None

@@ -5,7 +5,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
-  name: customnbimages.meteor.zone
+  name: customruntimeenvironments.meteor.zone
 spec:
   group: meteor.zone
   names:
@@ -13,10 +13,10 @@ spec:
     - opendatahub
     kind: CustomRuntimeEnvironment
     listKind: CustomRuntimeEnvironmentList
-    plural: customnbimages
+    plural: customruntimeenvironments
     shortNames:
     - cre
-    singular: customnbimage
+    singular: customruntimeenvironment
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -30,7 +30,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: CustomRuntimeEnvironment is the Schema for the customnbimages API
+        description: CustomRuntimeEnvironment is the Schema for the customruntimeenvironments API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

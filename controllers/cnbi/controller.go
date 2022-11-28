@@ -42,9 +42,9 @@ type CustomRuntimeEnvironmentReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=meteor.zone,resources=customnbimages,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=meteor.zone,resources=customnbimages/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=meteor.zone,resources=customnbimages/finalizers,verbs=update
+//+kubebuilder:rbac:groups=meteor.zone,resources=customruntimeenvironments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=meteor.zone,resources=customruntimeenvironments/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=meteor.zone,resources=customruntimeenvironments/finalizers,verbs=update
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns/finalizers,verbs=update

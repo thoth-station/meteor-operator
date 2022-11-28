@@ -83,7 +83,7 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 
 			err := k8sClient.Create(context.Background(), cre)
 			Expect(err).ShouldNot(Succeed())
-			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-3\" is invalid: [metadata.annotations[opendatahub.io/notebook-image-desc]: Required value: annotation is required, metadata.annotations[opendatahub.io/notebook-image-creator]: Required value: annotation is required]"))
+			Expect(err).Should(MatchError("admission webhook \"vcustomruntimeenvironment.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-3\" is invalid: [metadata.annotations[opendatahub.io/notebook-image-desc]: Required value: annotation is required, metadata.annotations[opendatahub.io/notebook-image-creator]: Required value: annotation is required]"))
 		})
 
 	})
@@ -130,7 +130,7 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 			GinkgoWriter.Printf("cre: %v", cre)
 
 			Expect(err).ShouldNot(Succeed())
-			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-4\" is invalid: spec.baseImage: Required value: baseImage or runtimeEnvironment is required"))
+			Expect(err).Should(MatchError("admission webhook \"vcustomruntimeenvironment.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-4\" is invalid: spec.baseImage: Required value: baseImage or runtimeEnvironment is required"))
 
 		})
 
@@ -190,7 +190,7 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 
 			err := k8sClient.Create(context.Background(), cre)
 			Expect(err).ShouldNot(Succeed())
-			Expect(err).Should(MatchError("admission webhook \"vcustomnbimage.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-7\" is invalid: spec.baseImage: Invalid value: \"quay.io/thoth-station/s2i-custom-notebook:latest\": baseImage and runtimeEnvironment are mutually exclusive"))
+			Expect(err).Should(MatchError("admission webhook \"vcustomruntimeenvironment.kb.io\" denied the request: CustomRuntimeEnvironment.meteor.zone \"webhook-7\" is invalid: spec.baseImage: Invalid value: \"quay.io/thoth-station/s2i-custom-notebook:latest\": baseImage and runtimeEnvironment are mutually exclusive"))
 
 		})
 	})

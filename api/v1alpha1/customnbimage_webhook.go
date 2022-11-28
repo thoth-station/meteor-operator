@@ -29,7 +29,7 @@ import (
 )
 
 // log is for logging in this package.
-var customnbimagelog = logf.Log.WithName("customnbimage-resource")
+var customruntimeenvironmentlog = logf.Log.WithName("customruntimeenvironment-resource")
 
 func (r *CustomRuntimeEnvironment) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -37,38 +37,38 @@ func (r *CustomRuntimeEnvironment) SetupWebhookWithManager(mgr ctrl.Manager) err
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/mutate-meteor-zone-v1alpha1-customnbimage,mutating=true,failurePolicy=fail,sideEffects=None,groups=meteor.zone,resources=customnbimages,verbs=create;update,versions=v1alpha1,name=mcustomnbimage.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-meteor-zone-v1alpha1-customruntimeenvironment,mutating=true,failurePolicy=fail,sideEffects=None,groups=meteor.zone,resources=customruntimeenvironments,verbs=create;update,versions=v1alpha1,name=mcustomruntimeenvironment.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &CustomRuntimeEnvironment{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *CustomRuntimeEnvironment) Default() {
-	customnbimagelog.Info("default", "name", r.Name)
+	customruntimeenvironmentlog.Info("default", "name", r.Name)
 
 	// TODO(user): fill in your defaulting logic.
 }
 
-//+kubebuilder:webhook:path=/validate-meteor-zone-v1alpha1-customnbimage,mutating=false,failurePolicy=fail,sideEffects=None,groups=meteor.zone,resources=customnbimages,verbs=create;update,versions=v1alpha1,name=vcustomnbimage.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-meteor-zone-v1alpha1-customruntimeenvironment,mutating=false,failurePolicy=fail,sideEffects=None,groups=meteor.zone,resources=customruntimeenvironments,verbs=create;update,versions=v1alpha1,name=vcustomruntimeenvironment.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &CustomRuntimeEnvironment{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *CustomRuntimeEnvironment) ValidateCreate() error {
-	customnbimagelog.Info("validate create", "name", r.Name)
+	customruntimeenvironmentlog.Info("validate create", "name", r.Name)
 
 	return r.ValidateCustomRuntimeEnvironment()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *CustomRuntimeEnvironment) ValidateUpdate(old runtime.Object) error {
-	customnbimagelog.Info("validate update", "name", r.Name)
+	customruntimeenvironmentlog.Info("validate update", "name", r.Name)
 
 	return r.ValidateCustomRuntimeEnvironment()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *CustomRuntimeEnvironment) ValidateDelete() error {
-	customnbimagelog.Info("validate delete", "name", r.Name)
+	customruntimeenvironmentlog.Info("validate delete", "name", r.Name)
 
 	// TODO change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 	// TODO fill in your validation logic upon object deletion.
