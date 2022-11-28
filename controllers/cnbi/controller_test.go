@@ -65,11 +65,11 @@ var _ = Describe("CustomRuntimeEnvironment controller", func() {
 
 			Eventually(func(gg Gomega) {
 				gg.Consistently(func(g Gomega) {
-					createdCNBi := &meteorv1alpha1.CustomRuntimeEnvironment{}
-					err := k8sClient.Get(ctx, lookupKey, createdCNBi)
+					createdCRE := &meteorv1alpha1.CustomRuntimeEnvironment{}
+					err := k8sClient.Get(ctx, lookupKey, createdCRE)
 					g.Expect(err).NotTo(HaveOccurred())
-					g.Expect(createdCNBi.Status.Conditions).ToNot(BeEmpty())
-					g.Expect(createdCNBi.Status.Phase).To(Equal(meteorv1alpha1.PhaseRunning))
+					g.Expect(createdCRE.Status.Conditions).ToNot(BeEmpty())
+					g.Expect(createdCRE.Status.Phase).To(Equal(meteorv1alpha1.PhaseRunning))
 				}, "8s", "500ms").Should(Succeed())
 			}, timeout, interval).Should(Succeed())
 

@@ -50,7 +50,7 @@ var (
 	cancel    context.CancelFunc
 )
 
-func TestCNBiController(t *testing.T) {
+func TestCREController(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	RunSpecs(t, "Controller Suite")

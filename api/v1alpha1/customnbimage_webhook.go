@@ -79,13 +79,13 @@ func (r *CustomRuntimeEnvironment) ValidateDelete() error {
 func (r *CustomRuntimeEnvironment) ValidateCustomRuntimeEnvironment() error {
 	var allErrs field.ErrorList
 
-	if err := r.validateCustomRuntimeEnvironmentAnnotation(CNBiNameAnnotationKey); err != nil {
+	if err := r.validateCustomRuntimeEnvironmentAnnotation(CRENameAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	if err := r.validateCustomRuntimeEnvironmentAnnotation(CNBiDescriptionAnnotationKey); err != nil {
+	if err := r.validateCustomRuntimeEnvironmentAnnotation(CREDescriptionAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	if err := r.validateCustomRuntimeEnvironmentAnnotation(CNBiCreatorAnnotationKey); err != nil {
+	if err := r.validateCustomRuntimeEnvironmentAnnotation(CRECreatorAnnotationKey); err != nil {
 		allErrs = append(allErrs, err)
 	}
 

@@ -38,7 +38,7 @@ General pre-requisites:
    The script `script_nfs.bash` can install the necessary storage class if you use Quicklab
    as your development environment (see the script header for requirements)
 
-3. To deploy the tekton pipelines and tasks CNBi Operator depends on: `make install-pipelines`
+3. To deploy the tekton pipelines and tasks CRE Operator depends on: `make install-pipelines`
 
 ## Run operator locally
 

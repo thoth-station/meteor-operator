@@ -47,9 +47,9 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 				},
 				Status: CustomRuntimeEnvironmentStatus{},
 			}
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-1")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiCreatorAnnotationKey, "ginkgo+gomega")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRENameAnnotationKey, "webhook-1")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CREDescriptionAnnotationKey, "default")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRECreatorAnnotationKey, "ginkgo+gomega")
 
 			Expect(k8sClient.Create(context.Background(), cnbi)).Should(Succeed())
 
@@ -79,7 +79,7 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 				},
 				Status: CustomRuntimeEnvironmentStatus{},
 			}
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-3")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRENameAnnotationKey, "webhook-3")
 
 			err := k8sClient.Create(context.Background(), cnbi)
 			Expect(err).ShouldNot(Succeed())
@@ -122,9 +122,9 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 				},
 				Status: CustomRuntimeEnvironmentStatus{},
 			}
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-4")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiCreatorAnnotationKey, "ginkgo+gomega")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRENameAnnotationKey, "webhook-4")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CREDescriptionAnnotationKey, "default")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRECreatorAnnotationKey, "ginkgo+gomega")
 
 			err := k8sClient.Create(context.Background(), cnbi)
 			GinkgoWriter.Printf("cnbi: %v", cnbi)
@@ -145,9 +145,9 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 				},
 				Status: CustomRuntimeEnvironmentStatus{},
 			}
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-5")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiCreatorAnnotationKey, "ginkgo+gomega")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRENameAnnotationKey, "webhook-5")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CREDescriptionAnnotationKey, "default")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRECreatorAnnotationKey, "ginkgo+gomega")
 
 			err := k8sClient.Create(context.Background(), cnbi)
 			Expect(err).Should(Succeed())
@@ -164,9 +164,9 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 				},
 				Status: CustomRuntimeEnvironmentStatus{},
 			}
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-6")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiCreatorAnnotationKey, "ginkgo+gomega")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRENameAnnotationKey, "webhook-6")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CREDescriptionAnnotationKey, "default")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRECreatorAnnotationKey, "ginkgo+gomega")
 
 			err := k8sClient.Create(context.Background(), cnbi)
 			Expect(err).Should(Succeed())
@@ -184,9 +184,9 @@ var _ = Describe("CustomRuntimeEnvironment Webhook", func() {
 				},
 				Status: CustomRuntimeEnvironmentStatus{},
 			}
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiNameAnnotationKey, "webhook-7")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiDescriptionAnnotationKey, "default")
-			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CNBiCreatorAnnotationKey, "ginkgo+gomega")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRENameAnnotationKey, "webhook-7")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CREDescriptionAnnotationKey, "default")
+			metav1.SetMetaDataAnnotation(&cnbi.ObjectMeta, CRECreatorAnnotationKey, "ginkgo+gomega")
 
 			err := k8sClient.Create(context.Background(), cnbi)
 			Expect(err).ShouldNot(Succeed())

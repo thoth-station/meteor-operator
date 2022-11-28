@@ -54,9 +54,9 @@ type CustomRuntimeEnvironmentReconciler struct {
 func (r *CustomRuntimeEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
 	logger := log.FromContext(ctx)
-	CNBi := meteorv1alpha1.CustomRuntimeEnvironment{}
+	CRE := meteorv1alpha1.CustomRuntimeEnvironment{}
 
-	if err := r.Get(ctx, req.NamespacedName, &CNBi); err != nil {
+	if err := r.Get(ctx, req.NamespacedName, &CRE); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Info("Resource was deleted.")
 			err = nil
@@ -64,25 +64,25 @@ func (r *CustomRuntimeEnvironmentReconciler) Reconcile(ctx context.Context, req 
 		return ctrl.Result{}, err
 	}
 
-	if !CNBi.ObjectMeta.DeletionTimestamp.IsZero() {
+	if !CRE.ObjectMeta.DeletionTimestamp.IsZero() {
 		logger.Info("Resource being deleted, skipping further reconcile.")
 		return ctrl.Result{}, nil
 	}
-	oldStatus := CNBi.Status.DeepCopy()
+	oldStatus := CRE.Status.DeepCopy()
 
-	CNBi.Status.Phase = CNBi.AggregatePhase()
+	CRE.Status.Phase = CRE.AggregatePhase()
 
 	// depending on the build type, we reconcile a pipelinerun
-	r.reconcilePipelineRun(ctx, &CNBi)
+	r.reconcilePipelineRun(ctx, &CRE)
 
 	// let's see if we can update the status
-	CNBi.Status.ObservedGeneration = CNBi.Generation
-	if !equality.Semantic.DeepEqual(CNBi.Status, oldStatus) {
-		logger.Info("Reconciled CustomNotebookImage", "spec", CNBi.Spec, "status", CNBi.Status)
-		CNBi.Status.Phase = CNBi.AggregatePhase()
+	CRE.Status.ObservedGeneration = CRE.Generation
+	if !equality.Semantic.DeepEqual(CRE.Status, oldStatus) {
+		logger.Info("Reconciled CustomNotebookImage", "spec", CRE.Spec, "status", CRE.Status)
+		CRE.Status.Phase = CRE.AggregatePhase()
 	}
 
-	err := r.Status().Update(ctx, &CNBi)
+	err := r.Status().Update(ctx, &CRE)
 	return ctrl.Result{}, err
 }
 
@@ -254,7 +254,7 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(ctx context.Co
 						Message:            err.Error(),
 					})
 			}
-			logger.Info("Created PipelineRun for CNBI", "PipelineRun", pipelineRun.GetNamespacedName(), "CNBi", cnbi)
+			logger.Info("Created PipelineRun for CNBI", "PipelineRun", pipelineRun.GetNamespacedName(), "CRE", cnbi)
 			meta.SetStatusCondition(&cnbi.Status.Conditions, metav1.Condition{
 				ObservedGeneration: cnbi.Generation,
 				Type:               meteorv1alpha1.PipelineRunCreated,

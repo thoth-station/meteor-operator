@@ -40,11 +40,11 @@ const (
 	GitRepository BuildType = "GitRepository"
 )
 
-// CNBi Annotations is a list of annotations that are added to the custom notebook image
+// CRE Annotations is a list of annotations that are added to the custom notebook image
 const (
-	CNBiNameAnnotationKey        = "opendatahub.io/notebook-image-name"
-	CNBiDescriptionAnnotationKey = "opendatahub.io/notebook-image-desc"
-	CNBiCreatorAnnotationKey     = "opendatahub.io/notebook-image-creator"
+	CRENameAnnotationKey        = "opendatahub.io/notebook-image-name"
+	CREDescriptionAnnotationKey = "opendatahub.io/notebook-image-desc"
+	CRECreatorAnnotationKey     = "opendatahub.io/notebook-image-creator"
 )
 
 // ImagePullSecret is a secret that is used to pull images from a private registry

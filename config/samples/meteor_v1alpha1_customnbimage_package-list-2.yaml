@@ -4,7 +4,7 @@ kind: CustomRuntimeEnvironment
 metadata:
   name: ubi9-py39-sample-1 # TODO
   labels:
-    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
+    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CRE-v0.1.0
   annotations:
     opendatahub.io/notebook-image-name: ubi9py39-1
     opendatahub.io/notebook-image-desc: Build using a list of packages, ontop a UBI9 Python 3.9 base image
