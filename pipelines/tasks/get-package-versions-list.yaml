@@ -36,7 +36,7 @@ spec:
       script: |
         #!/bin/sh -e
         pip install pip-tools # TODO: use image with pre-installed pip-tools (or other resolver)
-        pip-compile --generate-hashes /scratchspace/requirements.in > $(workspaces.pinned-packages.path)/requirements-pinned.txt
+        pip-compile --generate-hashes /scratchspace/requirements.in --output-file $(workspaces.pinned-packages.path)/requirements-pinned.txt
 ---
 apiVersion: v1
 kind: ConfigMap
