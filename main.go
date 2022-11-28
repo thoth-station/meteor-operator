@@ -38,6 +38,7 @@ import (
 	common "github.com/thoth-station/meteor-operator/controllers/common"
 	meteor "github.com/thoth-station/meteor-operator/controllers/meteor"
 	shower "github.com/thoth-station/meteor-operator/controllers/shower"
+	"github.com/thoth-station/meteor-operator/version"
 )
 
 var (
@@ -83,6 +84,8 @@ func main() {
 		LeaderElectionID:        "05b1bff9.meteor.zone",
 		LeaderElectionNamespace: "aicoe-meteor",
 	}
+
+	setupLog.Info("Starting CRE controller...", "version", version.Version)
 
 	if configFile != "" {
 		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))
