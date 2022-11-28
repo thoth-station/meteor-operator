@@ -30,7 +30,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: CustomRuntimeEnvironment is the Schema for the customruntimeenvironments API
+        description: CustomRuntimeEnvironment is the Schema for the customruntimeenvironments
+          API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -45,7 +46,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: CustomRuntimeEnvironmentSpec defines the desired state of CustomRuntimeEnvironment
+            description: CustomRuntimeEnvironmentSpec defines the desired state of
+              CustomRuntimeEnvironment
             properties:
               baseImage:
                 description: BaseImage is the reference to the base image, used for
@@ -105,7 +107,8 @@ spec:
             - buildType
             type: object
           status:
-            description: CustomRuntimeEnvironmentStatus defines the observed state of CustomRuntimeEnvironment
+            description: CustomRuntimeEnvironmentStatus defines the observed state
+              of CustomRuntimeEnvironment
             properties:
               conditions:
                 description: Current service state of Meteor.

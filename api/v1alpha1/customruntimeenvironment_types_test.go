@@ -140,7 +140,7 @@ func TestHasValidImagePullSecretAName(t *testing.T) {
 // TestAggregatePhase tests if condition are aggregated into the correct phase
 func TestAggregatePhase(t *testing.T) {
 	testCases := map[string]struct {
-		cre           CustomRuntimeEnvironment
+		cre            CustomRuntimeEnvironment
 		expectedOutput Phase
 	}{
 		"pending": {
