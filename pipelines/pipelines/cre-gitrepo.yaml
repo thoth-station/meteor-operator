@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: cnbi-gitrepo
+  name: cre-gitrepo
   annotations:
     meteor.zone/pipeline: "true"
     shower.meteor.zone/button-label: Run code in JupyterHub

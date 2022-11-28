@@ -40,11 +40,11 @@ const (
 	GitRepository BuildType = "GitRepository"
 )
 
-// CNBi Annotations is a list of annotations that are added to the custom notebook image
+// CRE Annotations is a list of annotations that are added to the custom notebook image
 const (
-	CNBiNameAnnotationKey        = "opendatahub.io/notebook-image-name"
-	CNBiDescriptionAnnotationKey = "opendatahub.io/notebook-image-desc"
-	CNBiCreatorAnnotationKey     = "opendatahub.io/notebook-image-creator"
+	CRENameAnnotationKey        = "opendatahub.io/notebook-image-name"
+	CREDescriptionAnnotationKey = "opendatahub.io/notebook-image-desc"
+	CRECreatorAnnotationKey     = "opendatahub.io/notebook-image-creator"
 )
 
 // ImagePullSecret is a secret that is used to pull images from a private registry
@@ -76,8 +76,8 @@ type BuildTypeSpec struct {
 	ImagePullSecret ImagePullSecret `json:"imagePullSecret,omitempty"`
 }
 
-// CustomNBImageRuntimeSpec defines a Runtime Environment, aka 'the Python version used'
-type CustomNBImageRuntimeSpec struct {
+// CustomRuntimeEnvironmentRuntimeSpec defines a Runtime Environment, aka 'the Python version used'
+type CustomRuntimeEnvironmentRuntimeSpec struct {
 	// PythonVersion is the version of Python to use
 	// +optional
 	PythonVersion string `json:"pythonVersion,omitempty"`
@@ -89,11 +89,11 @@ type CustomNBImageRuntimeSpec struct {
 	OSVersion string `json:"osVersion,omitempty"`
 }
 
-// CustomNBImageSpec defines the desired state of CustomNBImage
-type CustomNBImageSpec struct {
-	// RuntimeEnvironment is the runtime environment to use for the Custom Notebook Image
+// CustomRuntimeEnvironmentSpec defines the desired state of CustomRuntimeEnvironment
+type CustomRuntimeEnvironmentSpec struct {
+	// RuntimeEnvironment is the runtime environment to use for the Custom Runtime Environment
 	// +optional
-	RuntimeEnvironment CustomNBImageRuntimeSpec `json:"runtimeEnvironment,omitempty"`
+	RuntimeEnvironment CustomRuntimeEnvironmentRuntimeSpec `json:"runtimeEnvironment,omitempty"`
 	// PackageVersions is a set of Packages including their Version Specifiers
 	// +optional
 	PackageVersions []string `json:"packageVersions,omitempty"`
@@ -104,13 +104,13 @@ type CustomNBImageSpec struct {
 }
 
 // +kubebuilder:object:generate=true
-// CustomNBImageStatus defines the observed state of CustomNBImage
-type CustomNBImageStatus struct {
+// CustomRuntimeEnvironmentStatus defines the observed state of CustomRuntimeEnvironment
+type CustomRuntimeEnvironmentStatus struct {
 	// ObservedGeneration is the most recent generation observed. It corresponds to the
 	// Object's generation, which is updated on mutation by the API Server.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
-	// Current condition of the Custom Notebook Image
+	// Current condition of the Custom Runtime Environment
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Phase",xDescriptors={"urn:alm:descriptor:io.kubernetes.phase'"}
 	//+optional
 	Phase Phase `json:"phase,omitempty"`
@@ -125,39 +125,39 @@ type CustomNBImageStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:resource:shortName=cnbi,categories=opendatahub
+//+kubebuilder:resource:shortName=cre,categories=opendatahub
 //+kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase"
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
-// CustomNBImage is the Schema for the customnbimages API
-type CustomNBImage struct {
+// CustomRuntimeEnvironment is the Schema for the customruntimeenvironments API
+type CustomRuntimeEnvironment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   CustomNBImageSpec   `json:"spec,omitempty"`
-	Status CustomNBImageStatus `json:"status,omitempty"`
+	Spec   CustomRuntimeEnvironmentSpec   `json:"spec,omitempty"`
+	Status CustomRuntimeEnvironmentStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// CustomNBImageList contains a list of CustomNBImage
-type CustomNBImageList struct {
+// CustomRuntimeEnvironmentList contains a list of CustomRuntimeEnvironment
+type CustomRuntimeEnvironmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []CustomNBImage `json:"items"`
+	Items           []CustomRuntimeEnvironment `json:"items"`
 }
 
 // Aggregate phase from conditions
-func (cnbi *CustomNBImage) AggregatePhase() Phase {
+func (cre *CustomRuntimeEnvironment) AggregatePhase() Phase {
 	pipelineRunCreated := false
 	pipelineRunSuccesseded := false
 	importReady := false
 
-	if len(cnbi.Status.Conditions) == 0 {
+	if len(cre.Status.Conditions) == 0 {
 		return PhasePending
 	}
 
-	for _, c := range cnbi.Status.Conditions {
+	for _, c := range cre.Status.Conditions {
 		if c.Type == PipelineRunCompleted && c.Status == metav1.ConditionTrue {
 			pipelineRunSuccesseded = true
 		}
@@ -197,7 +197,7 @@ func (cnbi *CustomNBImage) AggregatePhase() Phase {
 }
 
 // IsReady returns true the Ready condition status is True
-func (status CustomNBImageStatus) IsReady() bool {
+func (status CustomRuntimeEnvironmentStatus) IsReady() bool {
 	for _, condition := range status.Conditions {
 		if condition.Status == metav1.ConditionTrue {
 			return true
@@ -207,12 +207,12 @@ func (status CustomNBImageStatus) IsReady() bool {
 }
 
 func init() {
-	SchemeBuilder.Register(&CustomNBImage{}, &CustomNBImageList{})
+	SchemeBuilder.Register(&CustomRuntimeEnvironment{}, &CustomRuntimeEnvironmentList{})
 }
 
 // isValid checks if the RuntimeEnvironment is valid
 // This function has been completely generated by GitHub Copilot based on the comment above 🪩
-func (r *CustomNBImageRuntimeSpec) isValid() bool {
+func (r *CustomRuntimeEnvironmentRuntimeSpec) isValid() bool {
 	if r.PythonVersion == "" {
 		return false
 	}

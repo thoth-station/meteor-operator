@@ -1,10 +1,10 @@
 ---
 apiVersion: meteor.zone/v1alpha1
-kind: CustomNBImage
+kind: CustomRuntimeEnvironment
 metadata:
   name: ubi8-py38-sample-2 # TODO
   labels:
-    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CNBi-v0.1.0
+    app.kubernetes.io/created-by: cpe-_a-meteor.zone-CRE-v0.1.0
   annotations:
     opendatahub.io/notebook-image-name: ubi8-py38-sample-3
     opendatahub.io/notebook-image-desc: a Notebook with Python 3.8 and pandas and boto3

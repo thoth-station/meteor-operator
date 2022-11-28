@@ -11,7 +11,7 @@ load('ext://podman', 'podman_build')
 settings = {
     "enable_providers": ["docker"],
     "deploy_cert_manager": True,
-    "kind_cluster_name": "cnbi-dev",
+    "kind_cluster_name": "cre-dev",
     "preload_images_for_kind": True,
     "debug": {},
     "cert_manager_version": "v1.9.1",
@@ -34,9 +34,9 @@ if settings.get("deploy_cert_manager"):
 k8s_yaml('config/crd/test/tekton-pipeline-v0.39.0.yaml')
 k8s_yaml('hack/openshift-client-v0.2.yaml')
 
-k8s_yaml('hack/cnbi-gitrepo.yaml')
-k8s_yaml('hack/cnbi-import.yaml')
-k8s_yaml('hack/cnbi-prepare.yaml')
+k8s_yaml('hack/cre-gitrepo.yaml')
+k8s_yaml('hack/cre-import.yaml')
+k8s_yaml('hack/cre-prepare.yaml')
 
 k8s_yaml(kustomize('config/default'))
 

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cnbi
+package cre
 
 import (
 	"context"
@@ -50,7 +50,7 @@ var (
 	cancel    context.CancelFunc
 )
 
-func TestCNBiController(t *testing.T) {
+func TestCREController(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	RunSpecs(t, "Controller Suite")
@@ -92,7 +92,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).ToNot(HaveOccurred())
 
-	err = (&CustomNBImageReconciler{
+	err = (&CustomRuntimeEnvironmentReconciler{
 		Client: k8sManager.GetClient(),
 		Scheme: k8sManager.GetScheme(),
 	}).SetupWithManager(k8sManager)

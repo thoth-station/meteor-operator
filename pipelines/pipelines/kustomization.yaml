@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- cnbi-import.yaml
-- cnbi-gitrepo.yaml
-- cnbi-package-list.yaml
+- cre-import.yaml
+- cre-gitrepo.yaml
+- cre-package-list.yaml
