@@ -1,0 +1,33 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: python-build-wheel
+spec:
+  description: |
+    Build a package (from source_code) into a wheel (in wheel_storage)
+    and output a requirements.txt fragment (with pinned version and hash)
+  workspaces:
+    - name: source_code
+      readonly: true
+      description: The package to build
+    - name: wheel_storage
+      description: The output to put the built wheel
+  results:
+    - name: requirements_line
+      type: string
+      description: Line suitable for a pinned requirements file for installing the built wheel
+  stepTemplate:
+    image: registry.access.redhat.com/ubi9-micro
+  steps:
+    - name: build-wheel
+      command:
+        - /usr/bin/python
+      args:
+        - -m
+        - build
+        - --outdir
+        - $(workspaces.wheel_storage.path)
+        - $(workspaces.source_code.path)
+    - script: |
+         pip hash $(workspaces.wheel_storage.path)/*.whl | sed -e '1s#^dist/\([^-]*\)-\([^-]*\).*#\1==\2 #' -e 'N; s/\n//' > $(results.requirements_line.path)
