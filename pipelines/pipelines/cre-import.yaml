@@ -3,16 +3,16 @@ kind: Pipeline
 metadata:
   name: cre-import
   labels:
-    app.kubernetes.io/created-by: byon
+    app.kubernetes.io/part-of: meteor-operator
 spec:
   params:
-    - name: url
+    - name: baseImage
       description: Container image repository url
       type: string
     - name: name
       description: Image name
       type: string
-    - name: desc
+    - name: description
       description: Custom description
       type: string
     - name: creator
@@ -34,8 +34,8 @@ spec:
             echo "  Namespace:  $(context.pipelineRun.namespace)"
             echo
             echo "  Image name:        $(params.name)"
-            echo "  Image description: $(params.desc)"
-            echo "  Image URL:         $(params.url)"
+            echo "  Image description: $(params.description)"
+            echo "  Image URL:         $(params.baseImage)"
             echo
             echo "  Creator:           $(params.creator)"
             echo "  Phase:             Validating"
@@ -50,17 +50,17 @@ spec:
             apiVersion: image.openshift.io/v1
             metadata:
               annotations:
-                opendatahub.io/notebook-image-desc: $(params.desc)
+                opendatahub.io/notebook-image-desc: $(params.description)
                 opendatahub.io/notebook-image-messages: ''
                 opendatahub.io/notebook-image-name: $(params.name)
                 opendatahub.io/notebook-image-phase: Validating
-                opendatahub.io/notebook-image-url: $(params.url)
+                opendatahub.io/notebook-image-url: $(params.baseImage)
                 opendatahub.io/notebook-image-creator: $(params.creator)
                 opendatahub.io/notebook-image-origin: Admin
               name: $(context.pipelineRun.name)
               namespace: $(context.pipelineRun.namespace)
               labels:
-                app.kubernetes.io/created-by: byon
+                app.kubernetes.io/part-of: meteor-operator
             spec:
               lookupPolicy:
                 local: true
@@ -73,7 +73,7 @@ spec:
           workspace: data
       params:
         - name: url
-          value: "$(params.url)"
+          value: "$(params.baseImage)"
       taskSpec:
         params:
           - name: url
@@ -105,7 +105,7 @@ spec:
 
     - name: validate
       taskRef:
-        name: byon-validate-jupyterhub-image
+        name: validate-jupyterhub-image
       runAfter:
         - setup
       workspaces:
@@ -113,7 +113,7 @@ spec:
           workspace: data
       params:
         - name: url
-          value: "$(params.url)"
+          value: "$(params.baseImage)"
 
   finally:
     - name: update-imagestream
@@ -146,7 +146,7 @@ spec:
             fi
 
             # Parse tag
-            IMAGE_TAG=$(echo $(params.url)  | sed '/.*:.*/!s/.*/latest/; s/.*://')  # Parse text after ":" if available, use "latest" otherwise
+            IMAGE_TAG=$(echo $(params.baseImage)  | sed '/.*:.*/!s/.*/latest/; s/.*://')  # Parse text after ":" if available, use "latest" otherwise
 
             NOTEBOOK_SOFTWARE=$(cat $(workspaces.manifest-dir.path)/notebook-software.json)
             NOTEBOOK_PYTHON_DEPENDENCIES=$(cat $(workspaces.manifest-dir.path)/notebook-python-dependencies.json)
@@ -184,10 +184,10 @@ spec:
                       $NOTEBOOK_SOFTWARE
                     opendatahub.io/notebook-python-dependencies: |
                       $NOTEBOOK_PYTHON_DEPENDENCIES
-                    openshift.io/imported-from: $(params.url)
+                    openshift.io/imported-from: $(params.baseImage)
                   from:
                     kind: DockerImage
-                    name: $(params.url)
+                    name: $(params.baseImage)
                   name: $IMAGE_TAG
             EOM
 

@@ -3,7 +3,7 @@ kind: Task
 metadata:
   name: validate-jupyterhub-image
   labels:
-    app.kubernetes.io/created-by: byon
+    app.kubernetes.io/part-of: meteor-operator
 spec:
   params:
     - name: url
