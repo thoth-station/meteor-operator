@@ -40,4 +40,4 @@ k8s_yaml('hack/cre-prepare.yaml')
 
 k8s_yaml(kustomize('config/default'))
 
-podman_build('quay.io/thoth-station/meteor-operator:v0.1.0', '.')
+podman_build('quay.io/thoth-station/meteor-operator:v0.2.0', '.')
