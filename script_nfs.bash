@@ -7,7 +7,7 @@
 ( command -v jq && command -v helm && command -v oc) || ( echo "This script needs jq, helm and oc"; exit 1)
 test -n "$1" || (echo "Please provide the quicklab private key as first argument" && exit 1)
 
-host=upi-0.$(kubectl config view -o jsonpath='{.clusters[0].cluster.server}' | sed 's#https://api\.\([^:]*\):6443#\1#')
+host=upi-0.$(oc whoami --show-server | sed 's#https://api\.\([^:]*\):6443#\1#')
 user=quicklab
 
 ssh -i "$1" $user@$host sudo bash -exs <<'ENDSSH'
