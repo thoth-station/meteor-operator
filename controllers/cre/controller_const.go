@@ -16,7 +16,7 @@ limitations under the License.
 
 // SPDX-License-Identifier: Apache-2.0
 
-package cnbi
+package cre
 
 import (
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"

@@ -38,7 +38,7 @@ General pre-requisites:
    The script `script_nfs.bash` can install the necessary storage class if you use Quicklab
    as your development environment (see the script header for requirements)
 
-3. To deploy the tekton pipelines and tasks CNBi Operator depends on: `make install-pipelines`
+3. To deploy the tekton pipelines and tasks CRE Operator depends on: `make install-pipelines`
 
 ## Run operator locally
 
@@ -136,11 +136,11 @@ sudo lvm vgcreate rhel /dev/vdb
 
 #### Getting access to the MicroShift cluster from the host
 
-Assuming that your VM is `cnbi.example.com` and that the `cloud-user` user already has its client configured, you just need to copy the kubeconfig file locally:
+Assuming that your VM is `cre.example.com` and that the `cloud-user` user already has its client configured, you just need to copy the kubeconfig file locally:
 
 ```shell
-scp cloud-user@cnbi.example.net:.kube/config /tmp/microshift.config
-sed -i -e s/127.0.0.1/cnbi.example.net/ /tmp/microshift.config
+scp cloud-user@cre.example.net:.kube/config /tmp/microshift.config
+sed -i -e s/127.0.0.1/cre.example.net/ /tmp/microshift.config
 export KUBECONFIG=/tmp/microshift.config
 ```
 

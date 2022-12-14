@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1alpha1
 
-// Phase describes the phase of the CustomNBImage
+// Phase describes the phase of the CustomRuntimeEnvironment
 // +kubebuilder:validation:Enum=Pending;Failed;Running;Succeeded;Unknown
 type Phase string
 

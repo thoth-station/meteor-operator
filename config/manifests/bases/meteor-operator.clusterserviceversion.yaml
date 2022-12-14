@@ -10,7 +10,7 @@ metadata:
       Project Meteor provides a single click deployment for data science
       projects
     repository: https://github.com/thoth-station/meteor-operator
-  name: meteor-operator.v0.1.0
+  name: meteor-operator.v0.2.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}

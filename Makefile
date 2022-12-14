@@ -250,7 +250,7 @@ catalog-push: docker-push ## Push a catalog image.
 catalog-push: IMG := $(CATALOG_IMG)
 
 # local testing
-KIND_CLUSTER_NAME ?= "meteor-cnbi"
+KIND_CLUSTER_NAME ?= "meteor-cre"
 
 .PHONY: kind-create
 kind-create: | $(KIND)

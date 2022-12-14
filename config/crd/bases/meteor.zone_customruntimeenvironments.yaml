@@ -5,18 +5,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
-  name: customnbimages.meteor.zone
+  name: customruntimeenvironments.meteor.zone
 spec:
   group: meteor.zone
   names:
     categories:
     - opendatahub
-    kind: CustomNBImage
-    listKind: CustomNBImageList
-    plural: customnbimages
+    kind: CustomRuntimeEnvironment
+    listKind: CustomRuntimeEnvironmentList
+    plural: customruntimeenvironments
     shortNames:
-    - cnbi
-    singular: customnbimage
+    - cre
+    singular: customruntimeenvironment
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -30,7 +30,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: CustomNBImage is the Schema for the customnbimages API
+        description: CustomRuntimeEnvironment is the Schema for the customruntimeenvironments
+          API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -45,7 +46,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: CustomNBImageSpec defines the desired state of CustomNBImage
+            description: CustomRuntimeEnvironmentSpec defines the desired state of
+              CustomRuntimeEnvironment
             properties:
               baseImage:
                 description: BaseImage is the reference to the base image, used for
@@ -88,7 +90,7 @@ spec:
                 type: string
               runtimeEnvironment:
                 description: RuntimeEnvironment is the runtime environment to use
-                  for the Custom Notebook Image
+                  for the Custom Runtime Environment
                 properties:
                   osName:
                     description: OSName is the Name of the Operating System to use
@@ -105,7 +107,8 @@ spec:
             - buildType
             type: object
           status:
-            description: CustomNBImageStatus defines the observed state of CustomNBImage
+            description: CustomRuntimeEnvironmentStatus defines the observed state
+              of CustomRuntimeEnvironment
             properties:
               conditions:
                 description: Current service state of Meteor.
@@ -183,7 +186,7 @@ spec:
                 format: int64
                 type: integer
               phase:
-                description: Current condition of the Custom Notebook Image
+                description: Current condition of the Custom Runtime Environment
                 enum:
                 - Pending
                 - Failed

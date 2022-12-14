@@ -61,13 +61,13 @@ spec:
         mountPath: /etc/ssl/certs/additional-openshift-ca.crt
         subPath: service-ca.crt
   steps:
-    - args: ["from", "--name", "cnbi-image", "--tls-verify=$(params.TLSVERIFY)", "docker://$(params.BASE_IMAGE)"]
+    - args: ["from", "--name", "cre-image", "--tls-verify=$(params.TLSVERIFY)", "docker://$(params.BASE_IMAGE)"]
       name: from
-    - args: ["copy", "cnbi-image", "$(workspaces.requirements.path)/requirements-pinned.txt", "/tmp/"]
+    - args: ["copy", "cre-image", "$(workspaces.requirements.path)/requirements-pinned.txt", "/tmp/"]
       name: copy
-    - args: ["run", "cnbi-image", "--", "pip", "install", "-r", "/tmp/requirements-pinned.txt"]
+    - args: ["run", "cre-image", "--", "pip", "install", "-r", "/tmp/requirements-pinned.txt"]
       name: run
-    - args: ["commit", "cnbi-image", "$(params.IMAGE)"]
+    - args: ["commit", "cre-image", "$(params.IMAGE)"]
       name: commit
     - args: ["push", "--tls-verify=$(params.TLSVERIFY)", "$(params.IMAGE)"]
       name: push

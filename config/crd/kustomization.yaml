@@ -5,7 +5,7 @@ resources:
   - bases/meteor.zone_meteors.yaml
   - bases/meteor.zone_comas.yaml
   - bases/meteor.zone_showers.yaml
-  - bases/meteor.zone_customnbimages.yaml
+  - bases/meteor.zone_customruntimeenvironments.yaml
   - bases/meteor.zone_meteorconfigs.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
@@ -15,7 +15,7 @@ patchesStrategicMerge:
   # - patches/webhook_in_meteors.yaml
   #- patches/webhook_in_comas.yaml
   #- patches/webhook_in_showers.yaml
-  - patches/webhook_in_customnbimages.yaml
+  - patches/webhook_in_customruntimeenvironments.yaml
   #- patches/webhook_in_meteorconfigs.yaml
   #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
@@ -24,7 +24,7 @@ patchesStrategicMerge:
   #- patches/cainjection_in_meteors.yaml
   #- patches/cainjection_in_comas.yaml
   #- patches/cainjection_in_showers.yaml
-  - patches/cainjection_in_customnbimages.yaml
+  - patches/cainjection_in_customruntimeenvironments.yaml
   #- patches/cainjection_in_meteorconfigs.yaml
   #+kubebuilder:scaffold:crdkustomizecainjectionpatch
 
