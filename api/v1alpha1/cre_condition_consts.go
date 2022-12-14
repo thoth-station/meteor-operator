@@ -46,6 +46,9 @@ const (
 	// BuildingImage indicates that the image is being built by a Tekton PipelineRun
 	BuildingImage = "BuildingImage"
 
+	// PackageListBuildCompleted indicates that the package list build completed
+	PackageListBuildCompleted = "PackageListBuildCompleted"
+
 	// ErrorBuildingImage indicates that the image build failed
 	ErrorBuildingImage = "ErrorBuildingImage"
 

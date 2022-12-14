@@ -152,6 +152,7 @@ func (cre *CustomRuntimeEnvironment) AggregatePhase() Phase {
 	pipelineRunCreated := false
 	pipelineRunSuccesseded := false
 	importReady := false
+	packageListBuildCompleted := false
 
 	if len(cre.Status.Conditions) == 0 {
 		return PhasePending
@@ -176,6 +177,12 @@ func (cre *CustomRuntimeEnvironment) AggregatePhase() Phase {
 			}
 		}
 
+		if c.Type == PackageListBuildCompleted {
+			if c.Status == metav1.ConditionTrue {
+				packageListBuildCompleted = true
+			}
+		}
+
 		if c.Type == ImageImportInvalid && c.Status == metav1.ConditionTrue {
 			return PhaseFailed
 		}
@@ -186,7 +193,7 @@ func (cre *CustomRuntimeEnvironment) AggregatePhase() Phase {
 	}
 
 	if pipelineRunSuccesseded {
-		if importReady {
+		if importReady || packageListBuildCompleted {
 			return PhaseSucceeded
 		} else {
 			return PhaseFailed

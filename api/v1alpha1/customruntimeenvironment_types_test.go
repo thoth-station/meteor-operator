@@ -344,6 +344,33 @@ func TestAggregatePhase(t *testing.T) {
 			},
 			expectedOutput: PhaseFailed,
 		},
+		"packagelist-successful": { // regression test for #157
+			cre: CustomRuntimeEnvironment{
+				Spec: CustomRuntimeEnvironmentSpec{
+					BuildTypeSpec: BuildTypeSpec{
+						BuildType: PackageList,
+					},
+					PackageVersions: []string{"numpy", "pandas"},
+				},
+				Status: CustomRuntimeEnvironmentStatus{
+					Conditions: []metav1.Condition{
+						{
+							Type:   PipelineRunCompleted,
+							Status: metav1.ConditionTrue,
+							Reason: "PipelineRunCompleted",
+						},
+						{
+							Type:               PackageListBuildCompleted,
+							Reason:             "PackageListBuildCompleted",
+							Message:            "Build from Package List succeeded, the image is ready to be used.",
+							Status:             metav1.ConditionTrue,
+							ObservedGeneration: 1,
+						},
+					},
+				},
+			},
+			expectedOutput: PhaseSucceeded,
+		},
 	}
 
 	for tcName, tc := range testCases {
