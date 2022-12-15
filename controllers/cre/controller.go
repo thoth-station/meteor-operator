@@ -301,6 +301,16 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(ctx context.Co
 					Message:            "Import succeeded, the image is ready to be used.",
 				})
 			}
+			if pipelineRun.Labels["cre.thoth-station.ninja/pipeline"] == "package-list" {
+				meta.SetStatusCondition(&cre.Status.Conditions, metav1.Condition{
+					ObservedGeneration: cre.Generation,
+					Type:               meteorv1alpha1.PackageListBuildCompleted,
+					Status:             metav1.ConditionTrue,
+					Reason:             "PackageListBuildCompleted",
+					Message:            "Build from Package List succeeded, the image is ready to be used.",
+				})
+			}
+
 			// TODO add other pipeline-specific success conditions
 		} else if pipelineRun.Status.Conditions[0].Status == v1.ConditionFalse && pipelineRun.Status.Conditions[0].Type == "Succeeded" {
 			meta.SetStatusCondition(&cre.Status.Conditions, metav1.Condition{
@@ -327,6 +337,14 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(ctx context.Co
 					Status:             metav1.ConditionTrue,
 					Reason:             "ErrorBuildingImage",
 					Message:            "Build failed!",
+				})
+			} else if pipelineRun.Labels["cre.thoth-station.ninja/pipeline"] == "package-list" {
+				meta.SetStatusCondition(&cre.Status.Conditions, metav1.Condition{
+					ObservedGeneration: cre.Generation,
+					Type:               meteorv1alpha1.PackageListBuildCompleted,
+					Status:             metav1.ConditionFalse,
+					Reason:             "PackageListBuildCompleted",
+					Message:            "Build from Package List failed!",
 				})
 			}
 
