@@ -50,7 +50,7 @@ spec:
             apiVersion: image.openshift.io/v1
             metadata:
               annotations:
-                opendatahub.io/notebook-image-desc: $(params.description)
+                opendatahub.io/notebook-image-desc: "$(params.description)"
                 opendatahub.io/notebook-image-messages: ''
                 opendatahub.io/notebook-image-name: $(params.name)
                 opendatahub.io/notebook-image-phase: Validating
@@ -165,18 +165,8 @@ spec:
 
             cat <<EOM > patch-file.yaml
             metadata:
-              annotations:
-                opendatahub.io/notebook-image-messages: |
-                  $MESSAGES
-                opendatahub.io/notebook-image-phase: "$PHASE"
-            EOM
-
-            [ "$VISIBLE" == "true" ] && cat <<EOM >> patch-file.yaml
               labels:
-                opendatahub.io/notebook-image: 'true'
-            EOM
-
-            cat <<EOM >> patch-file.yaml
+                opendatahub.io/notebook-image: "$VISIBLE"
             spec:
               tags:
                 - annotations:
@@ -192,3 +182,7 @@ spec:
             EOM
 
             oc patch imagestream $(context.pipelineRun.name) -n $(context.pipelineRun.namespace) --type="merge" --patch-file patch-file.yaml
+
+            oc annotate imagestream $(context.pipelineRun.name) -n $(context.pipelineRun.namespace) --overwrite \
+                opendatahub.io/notebook-image-phase="$PHASE" \
+                opendatahub.io/notebook-image-messages="$MESSAGES"
