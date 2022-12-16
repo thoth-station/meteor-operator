@@ -109,8 +109,8 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(ctx context.Co
 	pipeline := build_types[cre.Spec.BuildType]
 	pipelineRun := &pipelinev1beta1.PipelineRun{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("cre-%s-%s", cre.GetName(), pipeline),
-			Namespace: cre.Namespace,
+			GenerateName: fmt.Sprintf("cre-%s-%s-", cre.GetName(), pipeline),
+			Namespace:    cre.Namespace,
 			Labels: map[string]string{
 				"cre.thoth-station.ninja/pipeline": build_types[cre.Spec.BuildType],
 			}}}
@@ -137,6 +137,7 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(ctx context.Co
 		if errors.IsNotFound(err) {
 			logger.Info("Creating PipelineRun")
 
+			// TODO: replace ArrayOrString (deprecated) https://github.com/tektoncd/pipeline/blob/75d0037daf06664cb93efe86d974e1fbf69cbbbe/pkg/apis/pipeline/v1beta1/param_types.go#L140
 			// let's put the mandatory annotations into the PipelineRun
 			params := []pipelinev1beta1.Param{
 				{
