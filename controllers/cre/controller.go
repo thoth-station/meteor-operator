@@ -19,6 +19,7 @@ package cre
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	v1 "k8s.io/api/core/v1"
@@ -109,10 +110,11 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(ctx context.Co
 	pipeline := build_types[cre.Spec.BuildType]
 	pipelineRun := &pipelinev1beta1.PipelineRun{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: fmt.Sprintf("cre-%s-%s-", cre.GetName(), pipeline),
-			Namespace:    cre.Namespace,
+			Name:      fmt.Sprintf("cre-%s-%d-%s", cre.GetName(), cre.GetGeneration(), pipeline),
+			Namespace: cre.Namespace,
 			Labels: map[string]string{
-				"cre.thoth-station.ninja/pipeline": build_types[cre.Spec.BuildType],
+				"cre.thoth-station.ninja/pipeline":         build_types[cre.Spec.BuildType],
+				"cre.thoth-station.ninja/spouseGeneration": strconv.FormatInt(cre.GetGeneration(), 10),
 			}}}
 	namespacedName := types.NamespacedName{Name: pipelineRun.GetName(), Namespace: cre.Namespace}
 
@@ -137,7 +139,6 @@ func (r *CustomRuntimeEnvironmentReconciler) reconcilePipelineRun(ctx context.Co
 		if errors.IsNotFound(err) {
 			logger.Info("Creating PipelineRun")
 
-			// TODO: replace ArrayOrString (deprecated) https://github.com/tektoncd/pipeline/blob/75d0037daf06664cb93efe86d974e1fbf69cbbbe/pkg/apis/pipeline/v1beta1/param_types.go#L140
 			// let's put the mandatory annotations into the PipelineRun
 			params := []pipelinev1beta1.Param{
 				{
