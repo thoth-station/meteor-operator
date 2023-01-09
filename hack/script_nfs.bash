@@ -10,6 +10,7 @@ test -n "$1" || (echo "Please provide the quicklab private key as first argument
 
 host=upi-0.$(oc whoami --show-server | sed 's#https://api\.\([^:]*\):6443#\1#')
 user=quicklab
+namespace=nfs-provisioner
 
 # Configure the UPI host as an NFS server
 ssh -i "$1" $user@$host sudo bash -exs <<'ENDSSH'
@@ -33,13 +34,14 @@ ENDSSH
 
 # Grant permissions to the service account to hostmount-anyuid
 oc adm policy add-scc-to-user hostmount-anyuid \
-   system:serviceaccount:$(oc project -q):nfs-subdir-external-provisioner
+   system:serviceaccount:$namespace:nfs-subdir-external-provisioner
 
 # Install the NFS-subdir external provisioner
 helm repo add nfs-subdir-external-provisioner \
    https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
 helm upgrade nfs-subdir-external-provisioner \
      nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+     --namespace $namespace --create-namespace \
      --set nfs.server=$host \
      --set nfs.path=/srv/ocpstorage \
      --wait --atomic --install
