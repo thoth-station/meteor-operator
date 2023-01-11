@@ -54,10 +54,8 @@ spec:
       runAfter:
         - generate
       workspaces:
-        - name: data
+        - name: source
           workspace: data
-        - name: sslcertdir
-          workspace: sslcertdir
       params:
         - name: IMAGE
           value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
