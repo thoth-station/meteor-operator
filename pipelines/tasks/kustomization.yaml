@@ -5,5 +5,4 @@ resources:
 - extract-external-service.yaml
 - generate-jupyterhub.yaml
 - get-package-versions-list.yaml
-- resolve-owner-reference.yaml
 - validate-jupyterhub-image.yaml

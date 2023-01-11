@@ -17,8 +17,6 @@ spec:
     - name: externalServices
       type: string
       default: "[]"
-    - name: ownerReferences
-      default: "[]"
 
   workspaces:
     - name: data
@@ -80,24 +78,12 @@ spec:
         - name: IMAGE
           value: image-registry.openshift-image-registry.svc:5000/$(tasks.extract-jupyterhub-namespace.results.value)/$(context.pipelineRun.name)
 
-    - name: resolve-owner-reference
-      taskRef:
-        name: resolve-owner-reference
-      runAfter:
-        - extract-jupyterhub-namespace
-      params:
-        - name: ownerReferences
-          value: $(params.ownerReferences)
-        - name: namespace
-          value: $(tasks.extract-jupyterhub-namespace.results.value)
-
     - name: create-image-stream
       taskRef:
         name: openshift-client
         kind: ClusterTask
       runAfter:
         - buildah
-        - resolve-owner-reference
       params:
         - name: SCRIPT
           value: |
@@ -119,5 +105,3 @@ spec:
               tags:
                 - name: latest
             EOM
-
-            oc patch -n $(tasks.extract-jupyterhub-namespace.results.value) imagestream/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'
