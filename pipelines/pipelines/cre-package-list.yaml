@@ -3,9 +3,8 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: cre-package-list
-  annotations:
-    meteor.zone/pipeline: "true"
-    shower.meteor.zone/button-label: Run code in JupyterHub
+  labels:
+    app.kubernetes.io/part-of: meteor-operator
 spec:
   description: Build a notebook image from a package list
   params:

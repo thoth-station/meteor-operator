@@ -3,9 +3,8 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: cre-gitrepo
-  annotations:
-    meteor.zone/pipeline: "true"
-    shower.meteor.zone/button-label: Run code in JupyterHub
+  labels:
+    app.kubernetes.io/part-of: meteor-operator
 spec:
   description: Build an image suitable for experiments in JupyterHub, including all dependencies resolved by Thoth Station
   params:
