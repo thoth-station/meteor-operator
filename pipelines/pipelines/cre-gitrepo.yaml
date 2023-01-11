@@ -20,10 +20,6 @@ spec:
     - name: ownerReferences
       default: "[]"
 
-  results:
-    - name: url
-      value: "$(tasks.url-to-results.results.results)"
-
   workspaces:
     - name: data
     - name: sslcertdir
