@@ -2,7 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - buildah-requirements.yaml
-- extract-external-service.yaml
 - generate-jupyterhub.yaml
 - get-package-versions-list.yaml
 - validate-jupyterhub-image.yaml

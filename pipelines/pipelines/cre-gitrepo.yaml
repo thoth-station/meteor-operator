@@ -14,9 +14,6 @@ spec:
     - name: ref
       type: string
       default: ""
-    - name: externalServices
-      type: string
-      default: "[]"
 
   workspaces:
     - name: data
@@ -51,24 +48,12 @@ spec:
         - name: url
           value: $(params.url)
 
-    - name: extract-jupyterhub-namespace
-      taskRef:
-        name: extract-external-service
-      params:
-        - name: externalServices
-          value: "$(params.externalServices)"
-        - name: serviceName
-          value: jupyterhub
-        - name: serviceProperty
-          value: namespace
-
     - name: buildah
       taskRef:
         name: buildah
         kind: ClusterTask
       runAfter:
         - generate
-        - extract-jupyterhub-namespace
       workspaces:
         - name: data
           workspace: data
@@ -76,7 +61,7 @@ spec:
           workspace: sslcertdir
       params:
         - name: IMAGE
-          value: image-registry.openshift-image-registry.svc:5000/$(tasks.extract-jupyterhub-namespace.results.value)/$(context.pipelineRun.name)
+          value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
 
     - name: create-image-stream
       taskRef:
@@ -96,7 +81,7 @@ spec:
                 opendatahub.io/notebook-image-name: $(context.pipelineRun.name)
                 opendatahub.io/notebook-image-url: $(params.url)
               name: $(context.pipelineRun.name)
-              namespace: $(tasks.extract-jupyterhub-namespace.results.value)
+              namespace: $(context.pipelineRun.namespace)
               labels:
                 opendatahub.io/notebook-image: 'true'
             spec:
