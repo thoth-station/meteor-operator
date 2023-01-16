@@ -81,6 +81,7 @@ spec:
               namespace: $(context.pipelineRun.namespace)
               labels:
                 opendatahub.io/notebook-image: 'true'
+                app.kubernetes.io/part-of: meteor-operator
             spec:
               lookupPolicy:
                 local: true
