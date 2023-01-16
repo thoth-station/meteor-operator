@@ -19,42 +19,32 @@ limitations under the License.
 package v1alpha1
 
 const (
-	// PipelineRunCreated indicates that the Tekton pipeline run was created
-	PipelineRunCreated = "PipelineRunCreated"
 
-	// ErrorPipelineRunCreate indicates that the Tekton pipeline run creation failed
-	ErrorPipelineRunCreate = "ErrorPipelineRunCreate"
+	// There is at least one ImageStreamTag available in the corresponding ImageStream.
+	Ready = "Ready"
 
-	// ImportingImage indicates that the image is being imported from a remote registry
-	ImportingImage = "ImportingImage"
+	// Reasons for (False -> True):
+	// - ImagePushed
+	// Reasons for (True -> False):
+	// - ImageStreamDeleted
+	// - ImageTagDeleted
 
-	// RequredSecretMissing indicates that the secret required for authentication to the container image registry is missing
-	RequiredSecretMissing = "RequiredSecretMissing"
+	// The ImageStreamTag corresponding to the current CRE observedGeneration exists.
+	ImageUpToDate = "ImageUpToDate"
 
-	// ValidatingImportedImage indicates that the imported image is being validated by a Tekton PipelineRun's Step
-	ValidatingImportedImage = "ValidatingImportedImage"
+	// Reasons for (False -> True):
+	// - ImagePushed
+	// Reasons for (True -> False):
+	// - ImageStreamDeleted
+	// - ImageTagDeleted
+	// - NewCreVersion
 
-	// ImageImportReady indicates that the imported image is ready to be used
-	ImageImportReady = "ImageImportReady"
+	// The last pipeline building the image errored out.
+	BuildFailing = "BuildFailing"
 
-	// ImageImportInvalid indicates that the imported image is invalid
-	ImageImportInvalid = "ImageImportInvalid"
-
-	// ErrorResolvingDependencies indicates that the dependency resolution failed during preparation of the image build
-	ErrorResolvingDependencies = "ErrorResolvingDependencies"
-
-	// BuildingImage indicates that the image is being built by a Tekton PipelineRun
-	BuildingImage = "BuildingImage"
-
-	// PackageListBuildCompleted indicates that the package list build completed
-	PackageListBuildCompleted = "PackageListBuildCompleted"
-
-	// ErrorBuildingImage indicates that the image build failed
-	ErrorBuildingImage = "ErrorBuildingImage"
-
-	// GenericPipelineError indicates that the pipeline failed with an error
-	GenericPipelineError = "GenericPipelineError"
-
-	// PipelineRunCompleted indicates that the Tekton pipeline run completed
-	PipelineRunCompleted = "PipelineRunCompleted"
+	// Reasons for (False -> True):
+	// - PipelineSucceded
+	// Reasons for (True -> False):
+	// - PipelineFailed
+	// More detailed causes of failure for pipelines should use the metav1.Condition.Message field
 )
