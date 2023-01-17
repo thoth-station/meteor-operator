@@ -13,6 +13,15 @@ spec:
     - name: ref
       type: string
       default: ""
+    - name: name
+      description: Image name
+      type: string
+    - name: description
+      description: Custom description
+      type: string
+    - name: creator
+      description: Owner, user who requested the import
+      type: string
 
   workspaces:
     - name: data
@@ -75,8 +84,11 @@ spec:
             apiVersion: image.openshift.io/v1
             metadata:
               annotations:
-                opendatahub.io/notebook-image-name: $(context.pipelineRun.name)
+                opendatahub.io/notebook-image-name: $(params.name)
+                opendatahub.io/notebook-image-desc: "$(params.description)"
                 opendatahub.io/notebook-image-url: $(params.url)
+                opendatahub.io/notebook-image-creator: $(params.creator)
+                opendatahub.io/notebook-image-origin: Admin
               name: $(context.pipelineRun.name)
               namespace: $(context.pipelineRun.namespace)
               labels:
