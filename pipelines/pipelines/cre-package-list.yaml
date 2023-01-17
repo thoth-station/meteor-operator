@@ -87,6 +87,7 @@ spec:
                 opendatahub.io/notebook-image-desc: "$(params.description)"
                 opendatahub.io/notebook-image-creator: "$(params.creator)"
                 opendatahub.io/notebook-image-url: "$(tasks.get-base-image.results.baseImage)"
+                opendatahub.io/notebook-image-phase: Succeeded
               name: "$(context.pipelineRun.name)"
               namespace: "$(context.pipelineRun.namespace)"
               labels:

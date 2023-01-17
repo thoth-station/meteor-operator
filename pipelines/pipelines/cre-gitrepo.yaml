@@ -89,6 +89,7 @@ spec:
                 opendatahub.io/notebook-image-url: $(params.url)
                 opendatahub.io/notebook-image-creator: $(params.creator)
                 opendatahub.io/notebook-image-origin: Admin
+                opendatahub.io/notebook-image-phase: Succeeded
               name: $(context.pipelineRun.name)
               namespace: $(context.pipelineRun.namespace)
               labels:
