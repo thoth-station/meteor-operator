@@ -78,6 +78,7 @@ spec:
       params:
         - name: SCRIPT
           value: |
+            # TODO: properly populate imagestreamtag annotations (deps, software)
             cat <<EOM | oc apply -f -
             ---
             kind: ImageStream
@@ -100,4 +101,7 @@ spec:
                 local: true
               tags:
                 - name: latest
+                  annotations:
+                    opendatahub.io/notebook-python-dependencies: "[]"
+                    opendatahub.io/notebook-software: "[]"
             EOM
