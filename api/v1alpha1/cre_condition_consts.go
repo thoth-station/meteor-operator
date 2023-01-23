@@ -40,11 +40,13 @@ const (
 	// - NewCreVersion
 
 	// The last pipeline building the image errored out.
-	BuildFailing = "BuildFailing"
+	LatestBuildSucceeded = "LatestBuildSucceeded"
 
-	// Reasons for (False -> True):
-	// - PipelineSucceded
-	// Reasons for (True -> False):
-	// - PipelineFailed
+	// Reasons for (True -> Unknown || False -> Unknown)
+	// - NewPipelineRun
+	// Reasons for (Unknown -> True):
+	// - PipelineRunSucceeded
+	// Reasons for (Unknown -> False):
+	// - PipelineRunFailed
 	// More detailed causes of failure for pipelines should use the metav1.Condition.Message field
 )
