@@ -3,9 +3,8 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: cre-package-list
-  annotations:
-    meteor.zone/pipeline: "true"
-    shower.meteor.zone/button-label: Run code in JupyterHub
+  labels:
+    app.kubernetes.io/part-of: meteor-operator
 spec:
   description: Build a notebook image from a package list
   params:
@@ -88,6 +87,7 @@ spec:
                 opendatahub.io/notebook-image-desc: "$(params.description)"
                 opendatahub.io/notebook-image-creator: "$(params.creator)"
                 opendatahub.io/notebook-image-url: "$(tasks.get-base-image.results.baseImage)"
+                opendatahub.io/notebook-image-phase: Succeeded
               name: "$(context.pipelineRun.name)"
               namespace: "$(context.pipelineRun.namespace)"
               labels:

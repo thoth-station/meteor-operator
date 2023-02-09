@@ -3,9 +3,8 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: cre-gitrepo
-  annotations:
-    meteor.zone/pipeline: "true"
-    shower.meteor.zone/button-label: Run code in JupyterHub
+  labels:
+    app.kubernetes.io/part-of: meteor-operator
 spec:
   description: Build an image suitable for experiments in JupyterHub, including all dependencies resolved by Thoth Station
   params:
@@ -14,15 +13,15 @@ spec:
     - name: ref
       type: string
       default: ""
-    - name: externalServices
+    - name: name
+      description: Image name
       type: string
-      default: "[]"
-    - name: ownerReferences
-      default: "[]"
-
-  results:
-    - name: url
-      value: "$(tasks.url-to-results.results.results)"
+    - name: description
+      description: Custom description
+      type: string
+    - name: creator
+      description: Owner, user who requested the import
+      type: string
 
   workspaces:
     - name: data
@@ -57,43 +56,18 @@ spec:
         - name: url
           value: $(params.url)
 
-    - name: extract-jupyterhub-namespace
-      taskRef:
-        name: extract-external-service
-      params:
-        - name: externalServices
-          value: "$(params.externalServices)"
-        - name: serviceName
-          value: jupyterhub
-        - name: serviceProperty
-          value: namespace
-
     - name: buildah
       taskRef:
         name: buildah
         kind: ClusterTask
       runAfter:
         - generate
-        - extract-jupyterhub-namespace
       workspaces:
-        - name: data
+        - name: source
           workspace: data
-        - name: sslcertdir
-          workspace: sslcertdir
       params:
         - name: IMAGE
-          value: image-registry.openshift-image-registry.svc:5000/$(tasks.extract-jupyterhub-namespace.results.value)/$(context.pipelineRun.name)
-
-    - name: resolve-owner-reference
-      taskRef:
-        name: resolve-owner-reference
-      runAfter:
-        - extract-jupyterhub-namespace
-      params:
-        - name: ownerReferences
-          value: $(params.ownerReferences)
-        - name: namespace
-          value: $(tasks.extract-jupyterhub-namespace.results.value)
+          value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
 
     - name: create-image-stream
       taskRef:
@@ -101,27 +75,33 @@ spec:
         kind: ClusterTask
       runAfter:
         - buildah
-        - resolve-owner-reference
       params:
         - name: SCRIPT
           value: |
+            # TODO: properly populate imagestreamtag annotations (deps, software)
             cat <<EOM | oc apply -f -
             ---
             kind: ImageStream
             apiVersion: image.openshift.io/v1
             metadata:
               annotations:
-                opendatahub.io/notebook-image-name: $(context.pipelineRun.name)
+                opendatahub.io/notebook-image-name: $(params.name)
+                opendatahub.io/notebook-image-desc: "$(params.description)"
                 opendatahub.io/notebook-image-url: $(params.url)
+                opendatahub.io/notebook-image-creator: $(params.creator)
+                opendatahub.io/notebook-image-origin: Admin
+                opendatahub.io/notebook-image-phase: Succeeded
               name: $(context.pipelineRun.name)
-              namespace: $(tasks.extract-jupyterhub-namespace.results.value)
+              namespace: $(context.pipelineRun.namespace)
               labels:
                 opendatahub.io/notebook-image: 'true'
+                app.kubernetes.io/part-of: meteor-operator
             spec:
               lookupPolicy:
                 local: true
               tags:
                 - name: latest
+                  annotations:
+                    opendatahub.io/notebook-python-dependencies: "[]"
+                    opendatahub.io/notebook-software: "[]"
             EOM
-
-            oc patch -n $(tasks.extract-jupyterhub-namespace.results.value) imagestream/$(context.pipelineRun.name) --type='merge' -p='$(tasks.resolve-owner-reference.results.patch)'
